@@ -1,0 +1,18 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-in">
+    <p>This node listens for mqtt messages sent from your zigbee2mqtt.</p>
+    <h3>Configuration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node.</dd>
+        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use.</dd>
+        <dt>Channel <span class="property-type">string</span></dt><dd>Select channel(s) to listen to</dd>
+        <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Output state at startup.</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+    <h5>Output</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string</span></dt><dd>current value</dd>
+<!--        <dt>meta<span class="property-type">object</span></dt><dd>Full device or group data.</dd>-->
+    </dl>
+</script>
+

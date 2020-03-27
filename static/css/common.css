@@ -1,0 +1,20 @@
+.form-row label.l-width {
+    width: 25%;
+    min-width: 120px;
+}
+.form-row label.a-width {
+    width: auto;
+}
+.s-width {width:70% !important;}
+
+.ms-choice {
+    height:34px;
+    border: 1px solid rgb(204, 204, 204);
+    line-height: 34px !important;
+}
+.ms-search input {
+    width:100% !important;
+}
+.ms-drop li label {
+    width:20px !important;
+}

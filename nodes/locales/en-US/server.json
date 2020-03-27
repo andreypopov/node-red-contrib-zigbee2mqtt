@@ -1,0 +1,20 @@
+{
+    "label": {
+        "name": "Name",
+        "host": "Host",
+        "mqtt_port": "MQTT Port",
+        "mqtt_username": "MQTT Username",
+        "mqtt_password": "MQTT Password"
+    },
+    "placeholder": {
+        "name": "Name"
+    },
+    "status": {
+        "no_server": "no server",
+        "no_device": "no device",
+        "no_connection": "no connection"
+    },
+    "tip": {
+        "deploy": "<b>Important:</b> deploy server node to get channels list"
+    }
+}

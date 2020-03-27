@@ -1,0 +1,19 @@
+{
+    "label": {
+        "name": "Name",
+        "server": "Server",
+        "channel": "Channel",
+        "command": "Command",
+        "payload": "Payload",
+        "refresh": "Refresh",
+        "refresh_devices_list": "Refresh Devices List"
+    },
+    "placeholder": {
+        "name": "Name"
+    },
+    "status": {
+        "no_server": "no server",
+        "no_device": "no device",
+        "no_payload": "no payload"
+    }
+}

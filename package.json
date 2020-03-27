@@ -1,0 +1,40 @@
+{
+  "author": {
+    "name": "Andrey Popov",
+    "email": "andrey_popov@me.com"
+  },
+  "bugs": {
+    "url": "https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/issues/"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "multiple-select": "^1.4.1",
+    "eventsource": "^0.2.1",
+    "mqtt": "^2.18.8",
+    "request": "^2.81.0"
+  },
+  "deprecated": false,
+  "description": "Zigbee2mqtt connectivity nodes for node-red",
+  "homepage": "https://github.com/andreypopov/node-red-contrib-zigbee2mqtt",
+  "keywords": [
+    "zigbee2mqtt",
+    "z2m",
+    "mqtt"
+  ],
+  "license": "GPL-3.0",
+  "name": "node-red-contrib-zigbee2mqtt",
+  "node-red": {
+    "nodes": {
+      "in": "nodes/in.js",
+      "get": "nodes/get.js",
+      "out": "nodes/out.js",
+      "server": "nodes/server.js",
+      "api": "api.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andreypopov/node-red-contrib-zigbee2mqtt.git"
+  },
+  "version": "0.0.1"
+}

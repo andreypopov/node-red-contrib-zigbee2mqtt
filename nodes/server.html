@@ -1,0 +1,60 @@
+<script type="text/x-red" data-template-name="zigbee2mqtt-server">
+    <link rel="stylesheet" href="zigbee2mqtt/static/css/common.css" type="text/css" />
+    <input autocomplete="false" name="hidden" type="text" style="display:none;">
+
+    <div class="form-row">
+        <label for="node-config-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-host" class="l-width"><i class="fa fa-location-arrow"></i> <span data-i18n="label.host"></span></label>
+        <input type="text" id="node-config-input-host">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-mqtt_port" class="l-width"><i class="fa fa-asterisk"></i> <span data-i18n="label.mqtt_port"></span></label>
+        <input type="text" id="node-config-input-mqtt_port" placeholder="1883">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-mqtt_username" class="l-width"><i class="fa fa-user"></i> <span data-i18n="label.mqtt_username"></span></label>
+        <input type="text" id="node-config-input-mqtt_username" autocomplete="new-password">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-mqtt_password" class="l-width"><i class="fa fa-lock"></i> <span data-i18n="label.mqtt_password"></span></label>
+        <input type="password" id="node-config-input-mqtt_password" autocomplete="new-password">
+    </div>
+
+    <div class="form-tips" data-i18n="[html]tip.deploy"></div>
+
+</script>
+
+<script type='text/javascript'>
+    RED.nodes.registerType('zigbee2mqtt-server', {
+        category: 'config',
+        defaults: {
+            name: {
+                value: null,
+                required: false
+            },
+            host: {
+                value: null,
+                required: true
+            },
+            mqtt_port: {
+                value: 1883,
+                required: false
+            },
+            mqtt_username: {
+                value: null,
+                required: false
+            },
+            mqtt_password: {
+                value: null,
+                required: false
+            }
+        },
+        label: function() {
+            return this.name ||  this.host;
+        }
+    });
+</script>
+
