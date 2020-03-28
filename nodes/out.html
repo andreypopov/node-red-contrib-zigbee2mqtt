@@ -6,13 +6,17 @@
         <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
     </div>
+   <div class="form-row" style="display:none;">
+        <label for="node-input-friendly_name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.friendly_name"></span></label>
+        <input type="text" id="node-input-friendly_name" data-i18n="[placeholder]placeholder.friendly_name">
+    </div>
     <div class="form-row">
         <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
         <input type="text" id="node-input-server">
     </div>
     <div class="form-row">
-        <label for="node-input-topic" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
-        <select id="node-input-topic" class="s-width" data-single="false" multiple="multiple"></select>
+        <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
+        <select id="node-input-device_id" class="s-width" data-single="true"></select>
     </div>
     <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
@@ -45,15 +49,19 @@
                 type: "zigbee2mqtt-server",
                 required: true
             },
-            topic: {
-                value: [],
+            friendly_name: {
+                value: "",
                 required: false
             },
+            device_id: {
+                value: null,
+                required: true
+            },
             command: {
-                value: '/on',
+                value: '/set',
             },
             commandType: {
-                value: 'wb_cmd',
+                value: 'z2m_cmd',
             },
             payload: {
                 value: 'payload',
@@ -82,20 +90,85 @@
         oneditprepare: function() {
             var node = this;
 
-            var WbTypes = {
-                value: 'wb_cmd',
-                label: 'WB',
-                icon: 'icons/node-red-contrib-zigbee2mqtt/zigbee2mqtt-color.png',
-                options: ['/on']
+            var topicTypes = {
+                value: 'z2m_cmd',
+                label: 'zigbee2mqtt',
+                icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                options: [
+                    {'value':'state', 'label':'State (on/off/toggle)'},
+                    {'value':'brightness', 'label':'Brightness (0..255)'},
+                    {'value':'hue', 'label':'Hue (0..360)'},
+                    {'value':'saturation', 'label':'Saturation (0..100)'},
+                    {'value':'color_temp', 'label':'Color Temperature (50..400)'},
+                    'alert'
+                ]
             };
             $('#node-input-command').typedInput({
-                types: [WbTypes, 'str', 'msg'],
+                types: [topicTypes, {value:'homekit',label:'homekit',icon: 'icons/node-red-contrib-zigbee2mqtt/homekit-logo.png',options:['homekit']}, 'str', 'msg', {value:'object',label:'object',options:['json']}],
                 default: 'msg',
                 value: 'topic',
                 typeField: $('#node-input-commandType'),
             });
+
+            $('#node-input-device_id').on('change', function(type, value) {
+                $('#node-input-command').trigger('change');
+            });
+
+            $('#node-input-command').on('change', function(type, value) {
+                var val = $(this).val();
+                //chane options
+                var options = {};
+
+                if ('state' === val) {
+                    options =  [
+                        {'value':'on', 'label':'On'},
+                        {'value':'off', 'label':'Off'},
+                        {'value':'toggle', 'label':'Toggle'}
+                    ];
+                } else if ('color_temp' === val) {
+                    options =  [
+                        {'value':'50', 'label':'Cold'},
+                        {'value':'250', 'label':'White'},
+                        {'value':'400', 'label':'Warm'}
+                    ];
+                } else if ('alert' === val) {
+                    options =  [
+                        {'value':'none', 'label':'None'},
+                        {'value':'select', 'label':'Blink short'},
+                        {'value':'lselect', 'label':'Blink log'}
+                    ];
+                }
+
+                if (options.length) {
+                    var payloadTypes = {
+                        value: 'z2m_payload',
+                        label: 'zigbee2mqtt',
+                        icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                        options: options
+                    };
+                    $('#node-input-payload').typedInput('types', [payloadTypes, 'msg', 'flow', 'global', 'str', 'num', 'date']);
+                } else {
+                    $('#node-input-payload').typedInput('types', ['msg', 'flow', 'global', 'str', 'num', 'date']);
+                }
+
+                //show/hide
+                if (['toggle'].indexOf(val) >= 0) {
+                    $('#node-input-payload').closest('.form-row').hide();
+                } else {
+                    $('#node-input-payload').closest('.form-row').show();
+                }
+            });
+
+
+            //init typedInput
+            var payloadTypes = {
+                value: 'z2m_payload',
+                label: 'zigbee2mqtt',
+                icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                options: []
+            };
             $('#node-input-payload').typedInput({
-                types: ['msg', 'flow', 'global', 'str', 'num', 'date'],
+                types: [payloadTypes, 'msg', 'flow', 'global', 'str', 'num'],
                 default: 'msg',
                 value: 'payload',
                 typeField: $('#node-input-payloadType'),
@@ -104,10 +177,19 @@
             $('#node-input-payloadType').val(node.payloadType);
 
 
-            setTimeout(function(){
-                z2m_getItemList(node.topic, '#node-input-topic', {disableReadonly:true, allowEmpty:false});
-            }, 100); //we need small timeout, too fire change event for server select
 
+            setTimeout(function(){
+                var $deviceInput = $('#node-input-device_id');
+
+                z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:false});
+
+                // $deviceInput.on('change', function(){
+                //     z2m_getItemStateList(0, '#node-input-state');
+                // });
+                // setTimeout(function () {
+                //     z2m_getItemStateList(node.state, '#node-input-state');
+                // },100);
+            }, 100); //we need small timeout, too fire change event for server select
         }
     });
 </script>

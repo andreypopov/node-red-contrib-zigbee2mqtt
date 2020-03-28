@@ -224,6 +224,8 @@ module.exports = function (RED) {
             var node = this;
             var messageString = message.toString();
 
+            console.log(topic);
+            console.log(messageString);
             //bridge
             if (topic.search(new RegExp(node.config.base_topic+'\/bridge\/')) === 0) {
                 if (node.config.base_topic + '/bridge/config/devices' == topic) {

@@ -89,6 +89,10 @@ module.exports = function(RED) {
             var node = this;
 
             if (data.device && "ieeeAddr" in data.device && data.device.ieeeAddr == node.config.device_id) {
+                //ignore /set
+                if (data.topic.search(new RegExp(node.server.getBaseTopic()+'\/'+node.config.friendly_name+'\/set')) === 0) {
+                    return;
+                }
 
                 clearTimeout(node.cleanTimer);
                 if (node.firstMsg && !node.config.outputAtStartup) {

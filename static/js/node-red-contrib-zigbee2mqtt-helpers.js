@@ -65,10 +65,10 @@ function z2m_getItemList(nodeItem, selectedItemElementName, options = {}) {
                             // }
 
 
-                            if (value.type == "EndDevice") {
+                            // if (value.type == "EndDevice") {
                                 names[value.ieeeAddr] = value.friendly_name;
                                 $('<option ' + disabled + ' value="' + value.ieeeAddr + '">' + value.friendly_name + ' (' + value.modelID + ')</option>').appendTo(groupHtml ? groupHtml : selectedItemElement);
-                            }
+                            // }
                         });
 
                         // Enable item selection
