@@ -10,18 +10,25 @@
         <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
         <input type="text" id="node-input-server">
     </div>
-    <div class="form-row">
-        <label for="permit_join_btn" class="l-width"><i class="fa fa-share-alt"></i> <span data-i18n="label.permit_join"></span></label>
-        <button style="width: 70%" class="red-ui-button permit_join_btn" id="permit_join_btn"><span data-i18n="label.permit_join_help"></span></button>
-        <button style="width: 70%" class="red-ui-button permit_join_btn active" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
-	</div>
-    <div class="form-row">
-        <label for="log_level_info_btn" class="l-width"><i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span></label>
-        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="info" id="log_level_info_btn"><span data-i18n="label.log_level_info"></span></button>
-        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="debug" id="log_level_debug_btn"><span data-i18n="label.log_level_debug"></span></button>
-        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="warn" id="log_level_warn_btn"><span data-i18n="label.log_level_warn"></span></button>
-        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="error" id="log_level_error_btn"><span data-i18n="label.log_level_error"></span></button>
-	</div>
+
+    <div id="config_wr" style="display:none;">
+        <div class="form-row">
+            <label for="permit_join_btn" class="l-width"><i class="fa fa-share-alt"></i> <span data-i18n="label.permit_join"></span></label>
+            <button style="width: 70%" class="red-ui-button permit_join_btn" id="permit_join_btn"><span data-i18n="label.permit_join_help"></span></button>
+            <button style="width: 70%" class="red-ui-button permit_join_btn active" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
+        </div>
+        <div class="form-row">
+            <label for="log_level_info_btn" class="l-width"><i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span></label>
+            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="info" id="log_level_info_btn"><span data-i18n="label.log_level_info"></span></button>
+            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="debug" id="log_level_debug_btn"><span data-i18n="label.log_level_debug"></span></button>
+            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="warn" id="log_level_warn_btn"><span data-i18n="label.log_level_warn"></span></button>
+            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="error" id="log_level_error_btn"><span data-i18n="label.log_level_error"></span></button>
+        </div>
+        <div class="form-row">
+            <label for="config_version" class="l-width"><span data-i18n="label.version"></span></label>
+            <span id="config_version" style="font-weight:bold"> - </span>
+        </div>
+    </div>
 </script>
 
 <script type='text/javascript'>
@@ -63,6 +70,8 @@
                 controllerID: node.server,
                 permit_join: true
             }).done(function (data, textStatus, jqXHR) {
+                $('#config_wr').show();
+                $('#config_version').text(data.version);
 
                 $('.log_level_btn').each(function(){
                     $(this).removeClass('active');

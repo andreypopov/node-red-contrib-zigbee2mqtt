@@ -9,7 +9,8 @@
         "log_level_info": "info",
         "log_level_debug": "debug",
         "log_level_warn": "warn",
-        "log_level_error": "error"
+        "log_level_error": "error",
+        "version": "Version"
     },
     "placeholder": {
         "name": "Name"
