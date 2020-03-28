@@ -224,8 +224,8 @@ module.exports = function (RED) {
             var node = this;
             var messageString = message.toString();
 
-            console.log(topic);
-            console.log(messageString);
+            // console.log(topic);
+            // console.log(messageString);
             //bridge
             if (topic.search(new RegExp(node.config.base_topic+'\/bridge\/')) === 0) {
                 if (node.config.base_topic + '/bridge/config/devices' == topic) {
@@ -242,11 +242,13 @@ module.exports = function (RED) {
                     payload:messageString
                 });
             } else {
-                console.log( {topic:topic, payload:messageString});
-                node.devices_values[topic] = JSON.parse(messageString);
+                // console.log( {topic:topic, payload:messageString});
+                var msg = Zigbee2mqttHelper.isJson(messageString)?JSON.parse(messageString):messageString;
+
+                node.devices_values[topic] = msg;
                 node.emit('onMQTTMessage', {
                     topic:topic,
-                    payload:JSON.parse(messageString),
+                    payload:msg,
                     device:node.getDeviceByTopic(topic)
                 });
             }
