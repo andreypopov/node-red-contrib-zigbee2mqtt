@@ -18,3 +18,6 @@
 .ms-drop li label {
     width:20px !important;
 }
+button.active {
+    background-color: #ddd;
+}

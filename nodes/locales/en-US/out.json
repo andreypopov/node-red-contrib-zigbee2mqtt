@@ -2,7 +2,7 @@
     "label": {
         "name": "Name",
         "server": "Server",
-        "channel": "Channel",
+        "topic": "Device",
         "command": "Command",
         "payload": "Payload",
         "refresh": "Refresh",

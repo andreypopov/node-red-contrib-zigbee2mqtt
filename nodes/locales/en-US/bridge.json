@@ -1,0 +1,24 @@
+{
+    "label": {
+        "name": "Name",
+        "server": "Server",
+        "permit_join": "Permit Join",
+        "permit_join_help": "Start searching devices for 3 minutes",
+        "permit_join_cancel_help": "Stop search",
+        "log_level": "Log Level",
+        "log_level_info": "info",
+        "log_level_debug": "debug",
+        "log_level_warn": "warn",
+        "log_level_error": "error"
+    },
+    "placeholder": {
+        "name": "Name"
+    },
+    "status": {
+        "no_server": "no server",
+        "no_device": "no device",
+        "no_value": "no value",
+        "no_connection": "no connection",
+        "searching": "looking for devices..."
+    }
+}

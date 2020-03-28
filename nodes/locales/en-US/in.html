@@ -1,18 +1,19 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-in">
-    <p>This node listens for mqtt messages sent from your zigbee2mqtt.</p>
+    <p>This node listens for mqtt messages sent from your zigbee2mqtt bridge.</p>
     <h3>Configuration</h3>
     <dl class="message-properties">
-        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node.</dd>
-        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use.</dd>
-        <dt>Channel <span class="property-type">string</span></dt><dd>Select channel(s) to listen to</dd>
-        <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Output state at startup.</dd>
+        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node</dd>
+        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use</dd>
+        <dt>Device <span class="property-type">string</span></dt><dd>Select device to listen to</dd>
+        <dt class="optional">Payload output <span class="property-type">string</span></dt><dd>Choose option which you want to send to payload</dd>
+        <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Output state at startup. <b>IMPORTANT:</b> set <code>retain: true</code> in zigbee2mqtt configuration.yaml for every device</dd>
     </dl>
 
     <h3>Outputs</h3>
     <h5>Output</h5>
     <dl class="message-properties">
-        <dt>payload <span class="property-type">string</span></dt><dd>current value</dd>
-<!--        <dt>meta<span class="property-type">object</span></dt><dd>Full device or group data.</dd>-->
+        <dt>payload <span class="property-type">string | object</span></dt><dd>current value</dd>
+        <dt>device<span class="property-type">object</span></dt><dd>full info</dd>
     </dl>
 </script>
 

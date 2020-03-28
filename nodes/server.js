@@ -9,9 +9,12 @@ module.exports = function (RED) {
             var node = this;
             node.config = n;
             node.connection = false;
-            node.topic = '/devices/#';
+            node.topic = node.config.base_topic+'/#';
             node.items = undefined;
+            node.devices = undefined;
             node.devices_values = [];
+            node.bridge_config = null;
+            node.bridge_state = null;
             node.on('close', () => this.onClose());
             node.setMaxListeners(0);
 
@@ -26,7 +29,6 @@ module.exports = function (RED) {
             node.mqtt.on('offline', () => this.onMQTTOffline());
             node.mqtt.on('disconnect', (error) => this.onMQTTDisconnect(error));
             node.mqtt.on('error', (error) => this.onMQTTError(error));
-
 
             // console.log(node.config._users);
         }
@@ -61,114 +63,103 @@ module.exports = function (RED) {
             node.devices_values = [];
         }
 
-        getChannels(callback, forceRefresh = false) {
+        getDevices(callback, forceRefresh = false) {
             var node = this;
 
-            // Sort of singleton construct
-            if (forceRefresh || node.items === undefined) {
+            if (forceRefresh || node.devices === undefined) {
                 node.log('Refreshing devices');
-                var that = this;
-                that.devices = [];
-                that.items = [];
-                that.end = false;
-
+                node.devices = [];
 
                 var options = {
-                    port: node.config.mqtt_port||1883,
-                    username: node.config.mqtt_username||null,
-                    password: node.config.mqtt_password||null,
-                    clientId:"NodeRed-tmp-"+node.id
+                    port: node.config.mqtt_port || 1883,
+                    username: node.config.mqtt_username || null,
+                    password: node.config.mqtt_password || null,
+                    clientId: "NodeRed-tmp-" + node.id
                 };
                 var client = mqtt.connect('mqtt://' + node.config.host, options);
 
-
                 client.on('connect', function () {
-                    client.subscribe(['/devices/+/meta/name', '/devices/+/controls/+/meta/+', '/devices/+/controls/+', '/tmp/items_list'], function (err) {
+                    client.subscribe([node.config.base_topic + '/bridge/config/devices'], function (err) {
                         if (!err) {
-                            client.publish('/tmp/items_list', 'end_reading_items_list')
+                            client.publish(node.config.base_topic + "/bridge/config/devices/get", new Date().getTime() + "")
                         } else {
-                            RED.log.error("zigbee2mqtt: error code #0023: "+err);
+                            RED.log.error("zigbee2mqtt: error code #0023: " + err);
                         }
                     })
                 });
 
                 client.on('error', function (error) {
-                    RED.log.error("zigbee2mqtt: error code #0024: "+error);
+                    RED.log.error("zigbee2mqtt: error code #0024: " + error);
                 });
 
                 client.on('message', function (topic, message) {
-                    if (message.toString() == 'end_reading_items_list') {
-                        //client.unsubscribe(['/devices/+/meta/name', '/devices/+/controls/+/meta/+', '/devices/+/controls/+', '/tmp/items_list'], function (err) {})
-                        client.end(true);
+                    client.end(true);
+                    node.devices = JSON.parse(message.toString());
 
-                        if (!that.items.length) {
-                            RED.log.warn("zigbee2mqtt: error code #0026: No items, check your settings");
-                        } else {
-                            that.items = (that.items).sort(function (a, b) {
-                                var aSize = a.device_name;
-                                var bSize = b.device_name;
-                                var aLow = a.control_name;
-                                var bLow = b.control_name;
-                                if (aSize == bSize) {
-                                    return (aLow < bLow) ? -1 : (aLow > bLow) ? 1 : 0;
-                                } else {
-                                    return (aSize < bSize) ? -1 : 1;
-                                }
-                            })
-                        }
-
-                        if (!that.end) {
-                            that.end = true;
-
-                            if (typeof(callback) === "function") {
-                                callback(that.items);
-                            }
-                        }
-                        return node.items;
-                    } else {
-                        //parse topic
-                        var topicParts = topic.split('/');
-                        var deviceName = topicParts[2];
-
-                        //meta device name
-                        if (topicParts[3] === 'meta' && topicParts[4] === 'name') {
-                            that.devices[deviceName] = {'friendly_name': message.toString(), 'controls': []}
-
-                            //meta controls
-                        } else if (topicParts[3] === 'controls' && topicParts[5] === 'meta' && deviceName in that.devices) {
-                            var controlName = topicParts[4];
-                            if (typeof(that.devices[deviceName]['controls'][controlName]) == 'undefined')
-                                that.devices[deviceName]['controls'][controlName] = {};
-
-                            that.devices[deviceName]['controls'][controlName][topicParts[6]] = message.toString()
-
-                            //devices
-                        } else if (topicParts[3] === 'controls' && deviceName in that.devices) {
-                            var controlName = topicParts[4];
-                            that.items.push({
-                                topic: topic,
-                                message: message.toString(),
-                                control_name: controlName,
-                                device_name: deviceName,
-                                device_friendly_name: typeof(that.devices[deviceName]['friendly_name']) != 'undefined' ? that.devices[deviceName]['friendly_name'] : deviceName,
-                                meta: that.devices[deviceName]['controls'][controlName]
-                            });
-                        }
+                    if (typeof(callback) === "function") {
+                        callback(node.devices);
                     }
+
+                    return node.devices;
                 })
-
-                // if (!Object.keys(node.items).length) {
-                    //node.emit('onConnectError');
-                // }
-
             } else {
                 node.log('Using cached devices');
-                if (typeof(callback) === "function") {
-                    callback(node.items);
+                if (typeof (callback) === "function") {
+                    callback(node.devices);
                 }
-                return node.items;
+                return node.devices;
             }
+        }
 
+        getDeviceById(id) {
+            var node = this;
+            var result = null;
+            for (var i in node.devices) {
+                if (id == node.devices[i]['ieeeAddr']) {
+                    result = node.devices[i];
+                    result['lastPayload'] = {};
+
+                    var topic =  node.config.base_topic+'/'+(node.devices[i]['friendly_name']?node.devices[i]['friendly_name']:node.devices[i]['ieeeAddr']);
+                    // console.log(topic);
+                    // console.log(node.devices_values);
+                    if (topic in node.devices_values) {
+                        result['lastPayload'] = node.devices_values[topic];
+                    }
+                    break;
+                }
+            }
+            return result;
+        }
+
+        getDeviceByTopic(topic) {
+            var node = this;
+            var result = null;
+            for (var i in node.devices) {
+                if (topic == node.config.base_topic+'/'+node.devices[i]['friendly_name']
+                || topic == node.config.base_topic+'/'+node.devices[i]['ieeeAddr']) {
+                    result = node.devices[i];
+                    break;
+                }
+            }
+            return result;
+        }
+
+        getBaseTopic() {
+            return this.config.base_topic;
+        }
+
+        setLogLevel(val) {
+            var node = this;
+            if (['info', 'debug', 'warn', 'error'].indexOf(val) < 0) val = 'info';
+            node.mqtt.publish(node.config.base_topic + "/bridge/config/log_level", val)
+            node.log('Log Level set to: '+val);
+        }
+
+        setPermitJoin(val) {
+            var node = this;
+            val = val?"true":"false";
+            node.mqtt.publish(node.config.base_topic + "/bridge/config/permit_join", val)
+            node.log('Permit Join set to: '+val);
         }
 
         onMQTTConnect() {
@@ -176,7 +167,9 @@ module.exports = function (RED) {
             node.connection = true;
             node.log('MQTT Connected');
             node.emit('onMQTTConnect');
-            node.subscribeMQTT();
+            node.getDevices(function() {
+                node.subscribeMQTT();
+            });
         }
 
         onMQTTDisconnect(error) {
@@ -230,8 +223,26 @@ module.exports = function (RED) {
         onMQTTMessage(topic, message) {
             var node = this;
             var messageString = message.toString();
-            node.devices_values[topic] = messageString;
-            node.emit('onMQTTMessage', {topic:topic, payload:messageString});
+
+            //bridge
+            if (topic.search(new RegExp(node.config.base_topic+'\/bridge\/')) === 0) {
+                if (node.config.base_topic + '/bridge/config/devices' == topic) {
+                    node.devices = JSON.parse(messageString);
+                }
+
+                node.emit('onMQTTMessageBridge', {
+                    topic:topic,
+                    payload:messageString
+                });
+            } else {
+                console.log( {topic:topic, payload:messageString});
+                node.devices_values[topic] = JSON.parse(messageString);
+                node.emit('onMQTTMessage', {
+                    topic:topic,
+                    payload:JSON.parse(messageString),
+                    device:node.getDeviceByTopic(topic)
+                });
+            }
         }
 
         onClose() {

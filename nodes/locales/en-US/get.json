@@ -2,7 +2,7 @@
     "label": {
         "name": "Name",
         "server": "Server",
-        "channel": "Channel",
+        "topic": "Device",
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List"
     },

@@ -2,11 +2,16 @@
     "label": {
         "name": "Name",
         "server": "Server",
-        "channel": "Channel",
+        "topic": "Device",
+        "state": "Payload output",
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List",
         "start_output": "Start Output",
-        "start_output_help": "Send value on start"
+        "start_output_help": "Send value on start",
+        "always": "Always",
+        "on_state_change": "On state change",
+        "on_update": "On update",
+        "output": "Output"
     },
     "placeholder": {
         "name": "Name"
@@ -15,14 +20,17 @@
         "no_server": "no server",
         "no_device": "no device",
         "no_connection": "no connection",
-        "connected": "connected"
+        "connected": "connected",
+        "received": "ok"
     },
     "multiselect": {
-        "groups":  "Light Groups",
         "devices": "Devices",
         "filter_devices": "Filter devices...",
         "refresh": "Refresh devices list",
         "none_selected": "None selected",
         "complete_payload": "Complete state payload"
+    },
+    "tip": {
+        "deploy": "<b>Important:</b> deploy server node to get devices list"
     }
 }

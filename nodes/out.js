@@ -11,7 +11,7 @@ module.exports = function(RED) {
             node.cleanTimer = null;
             node.server = RED.nodes.getNode(node.config.server);
 
-            if (typeof(node.config.channel) == 'string') node.config.channel = [node.config.channel]; //for compatible
+            if (typeof(node.config.topic) == 'string') node.config.topic = [node.config.topic]; //for compatible
 
             if (node.server) {
                 node.status({}); //clean
@@ -22,7 +22,7 @@ module.exports = function(RED) {
                     var channels = [];
 
                     //overwrite with topic
-                    if (!(node.config.channel).length && "topic" in message) {
+                    if (!(node.config.topic).length && "topic" in message) {
                         if (typeof(message.topic) == 'string' ) message.topic = [message.topic];
                         if (typeof(message.topic) == 'object') {
                             for (var i in message.topic) {
@@ -33,7 +33,7 @@ module.exports = function(RED) {
                             }
                         }
                     } else {
-                        channels = node.config.channel;
+                        channels = node.config.topic;
                     }
 
 

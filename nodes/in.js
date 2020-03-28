@@ -14,8 +14,6 @@ module.exports = function(RED) {
             node.cleanTimer = null;
             node.server = RED.nodes.getNode(node.config.server);
 
-            if (typeof(node.config.channel) == 'string') node.config.channel = [node.config.channel]; //for compatible
-
             node.status({}); //clean
 
             if (node.server) {
@@ -71,12 +69,11 @@ module.exports = function(RED) {
         onMQTTConnect() {
             var node = this;
 
-            node.status({
-                fill: "green",
-                shape: "dot",
-                text: "node-red-contrib-zigbee2mqtt/in:status.connected"
-            });
-
+            // node.status({
+            //     fill: "green",
+            //     shape: "dot",
+            //     text: "node-red-contrib-zigbee2mqtt/in:status.connected"
+            // });
             // node.cleanTimer = setTimeout(function () {
             //     node.status({}); //clean
             // }, 3000);
@@ -85,68 +82,43 @@ module.exports = function(RED) {
         onMQTTMessage(data) {
             var node = this;
 
-            if (node.hasChannel(data.topic)) {
+            if (data.device && "ieeeAddr" in data.device && data.device.ieeeAddr == node.config.device_id) {
+
                 clearTimeout(node.cleanTimer);
-                
+                if (node.firstMsg && !node.config.outputAtStartup) {
+                    node.firstMsg = false;
+                    return;
+                }
+
+                //text
+                var text = RED._("node-red-contrib-zigbee2mqtt/in:status.received");
+                if (parseInt(node.config.state) != 0 && node.config.state in data.payload) {
+                    text = data.payload[node.config.state];
+                }
+                if ('Battery' == data.device.powerSource) {
+                    text += ' ⚡'+data.payload.battery+'%';
+                }
+
+                node.send({
+                    payload: data.payload,
+                    payload_raw: data.payload,
+                    device: data.device
+                });
+
                 node.status({
                     fill: "green",
                     shape: "dot",
-                    text: data.payload
+                    text: text
                 });
 
-                if (node.isSingleChannelMode()) {
-                    if (node.firstMsg && !node.config.outputAtStartup) {
-                        node.firstMsg = false;
-                        return;
-                    }
-
-                    node.send({
-                        payload: data.payload,
-                        topic: data.topic,
-                        selector: Zigbee2mqttHelper.generateSelector(data.topic)
+                node.cleanTimer = setTimeout(function () {
+                    node.status({
+                        fill: "green",
+                        shape: "ring",
+                        text: text
                     });
-                } else {
-                    var data_array = Zigbee2mqttHelper.prepareDataArray(node.server, node.config.channel);
-
-                    if (node.firstMsg && !node.config.outputAtStartup && data_array.has_null) {
-                        return;
-                    }
-                    node.firstMsg = false;
-
-                    node.send({
-                        payload: data_array.data,
-                        data_array: data_array.data_full,
-                        math: data_array.math,
-                        event: {
-                            payload: data.payload,
-                            topic:data.topic,
-                            selector: Zigbee2mqttHelper.generateSelector(data.topic)
-                        }
-                    });
-
-                    node.cleanTimer = setTimeout(function () {
-                        node.status({}); //clean
-                    }, 3000);
-                }
+                }, 3000);
             }
-        }
-
-        isSingleChannelMode() {
-            return (this.config.channel).length === 1;
-        }
-
-        hasChannel(channel) {
-            var node = this;
-            var result = false;
-
-            for (var i in node.config.channel) {
-                if (node.config.channel[i] === channel) {
-                    result = true;
-                    break;
-                }
-            }
-
-            return result;
         }
 
 

@@ -18,7 +18,7 @@ module.exports = function(RED) {
         var forceRefresh = config.forceRefresh ? ['1', 'yes', 'true'].includes(config.forceRefresh.toLowerCase()) : false;
 
         if (controller && controller.constructor.name === "ServerNode") {
-            controller.getChannels(function (items) {
+            controller.getDevices(function (items) {
                 if (items) {
                     res.json(items);
                 } else {
@@ -29,4 +29,52 @@ module.exports = function(RED) {
             res.status(404).end();
         }
     });
+
+    RED.httpAdmin.get(NODE_PATH + 'getStatesByDevice', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var item = controller.getDeviceById(config.device_id);
+            if (item) {
+                res.json(item.lastPayload);
+            } else {
+                res.status(404).end();
+            }
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'setPermitJoin', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            controller.setPermitJoin(config.permit_join=='true'?true:false);
+            res.json({"result":"ok"});
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'setLogLevel', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            controller.setLogLevel(config.log_level);
+            res.json({"result":"ok"});
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'getConfig', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            res.json(controller.bridge_config);
+        } else {
+            res.status(404).end();
+        }
+    });
+
 }

@@ -6,18 +6,34 @@
         <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
     </div>
+    <div class="form-row" style="display:none;">
+        <label for="node-input-friendly_name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.friendly_name"></span></label>
+        <input type="text" id="node-input-friendly_name" data-i18n="[placeholder]placeholder.friendly_name">
+    </div>
     <div class="form-row">
         <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
         <input type="text" id="node-input-server">
     </div>
     <div class="form-row">
-        <label for="node-input-channel" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.channel"></span></label>
-        <select id="node-input-channel" class="s-width" data-single="false" multiple="multiple"></select>
+        <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
+        <select id="node-input-device_id" class="s-width" data-single="true"></select>
     </div>
     <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
         <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
     </div>
+    <div class="form-row">
+        <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
+        <select id="node-input-state" class="s-width"  data-i18n="[placeholder]multiselect.complete_payload"></select>
+    </div>
+<!--    <div class="form-row">-->
+<!--        <label for="node-input-output" class="l-width"><i class="fa fa-sign-out"></i> <span data-i18n="label.output"></span></label>-->
+<!--        <select id="node-input-output" class="s-width">-->
+<!--            <option value="always" data-i18n="label.always">Always</option>-->
+<!--            <option value="onchange" data-i18n="label.on_state_change">On state change</option>-->
+<!--            <option value="onupdate" data-i18n="label.on_update">On update</option>-->
+<!--        </select>-->
+<!--    </div>-->
     <div class="form-row">
         <label for='node-input-outputAtStartup' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.start_output"></span></label>
         <input type="checkbox" id="node-input-outputAtStartup" checked="checked" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.start_output_help"></span></input>
@@ -32,13 +48,20 @@
             name: {
                 value: ""
             },
+            friendly_name: {
+                value: "",
+                required: false
+            },
             server: {
                 type: "zigbee2mqtt-server",
                 required: true
             },
-            channel: {
+            device_id: {
                 value: null,
                 required: true
+            },
+            state: {
+                value: ""
             },
             outputAtStartup: {
                 value: true,
@@ -55,36 +78,75 @@
 
             if (this.name) {
                 label = this.name;
-            } else if  (this.channel != null && typeof(this.channel) == 'object' && this.channel.length) {
-                if (this.channel.length == 1) {
-                    var device_name = (this.channel[0]).split('/').slice(1)[1];
-                    var control_name = (this.channel[0]).split('/').slice(-1)[0];
-                    label = device_name+'/'+control_name;
-                } else {
-                    label = this.channel.length + ' channels';
-                }
-            } else if (typeof(this.channel) == 'string') {
-                var device_name = (this.channel).split('/').slice(1)[1];
-                var control_name = (this.channel).split('/').slice(-1)[0];
-                label = device_name+'/'+control_name;
+            } else if (typeof(this.friendly_name) == 'string' && this.friendly_name.length) {
+                label = this.friendly_name;
+            } else if (typeof(this.device_id) == 'string') {
+                label = this.device_id;
             }
 
             return label;
         },
         oneditprepare: function () {
             var node = this;
+
+            // var $outputSelect = $("#node-input-output");
+            //
+            // // Initialize bootstrap multiselect form
+            // $outputSelect.multipleSelect({
+            //     maxHeight: 300,
+            //     dropWidth: 320,
+            //     single: !(typeof $(this).attr('multiple') !== typeof undefined && $(this).attr('multiple') !== false),
+            //     placeholder: "Always"
+            // });
+
+
+            var updateOutput = function () {
+                var selectedState = $('#node-input-state option:selected').val();
+                var selectedDevice = $('#node-input-device_id option:selected').val();
+
+                // if ( (selectedState != 0 && selectedState != null && selectedDevice.match(/^\d/)) || (node.state != 0 && node.state != null)) {
+                //     $outputSelect.closest('.form-row').show();
+                // } else {
+                //     $outputSelect.closest('.form-row').hide();
+                // }
+                // $outputSelect.multipleSelect('refresh');
+            }
+
+            $('#node-input-state').on("change", function() {
+                state = $('#node-input-state option:selected').val();
+                if (state) { node.state = state; }
+                // if (parseInt(state) === 0) {$outputSelect.val('always').multipleSelect('refresh');}
+                updateOutput();
+            });
+
+
             setTimeout(function(){
-                WB_getItemList(node.channel, '#node-input-channel', {allowEmpty:false});
+                var $deviceInput = $('#node-input-device_id');
+
+                z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:false});
+
+                $deviceInput.on("change", function(){
+                    z2m_getItemStateList(0, '#node-input-state');
+                    device = $('#node-input-device_id option:selected').val();
+                    updateOutput();
+                });
+
+                setTimeout(function () {
+                    z2m_getItemStateList(node.state, '#node-input-state');
+                },100);
+
+                // if (!node.output) { $outputSelect.val('always').multipleSelect('refresh'); }
+
             }, 100); //we need small timeout, too fire change event for server select
         },
         oneditsave: function () {
-            var selectedOptions = $('#node-input-channel option:selected');
+            var selectedOptions = $('#node-input-device_id option:selected');
             if (selectedOptions) {
-                this.channel = selectedOptions.map(function () {
+                this.topic = selectedOptions.map(function () {
                     return $(this).val();
                 });
             } else {
-                this.channel = null;
+                this.topic = null;
             }
         }
     });

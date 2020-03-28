@@ -1,5 +1,6 @@
 {
     "label": {
+        "base_topic": "Base topic",
         "name": "Name",
         "host": "Host",
         "mqtt_port": "MQTT Port",
@@ -15,6 +16,6 @@
         "no_connection": "no connection"
     },
     "tip": {
-        "deploy": "<b>Important:</b> deploy server node to get channels list"
+        "deploy": "<b>Important:</b> deploy server node to get devices list"
     }
 }

@@ -1,0 +1,137 @@
+<script type="text/x-red" data-template-name="zigbee2mqtt-bridge">
+    <link rel="stylesheet" href="zigbee2mqtt/static/css/multiple-select.css" type="text/css" />
+    <link rel="stylesheet" href="zigbee2mqtt/static/css/common.css" type="text/css" />
+
+    <div class="form-row">
+        <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
+        <input type="text" id="node-input-server">
+    </div>
+    <div class="form-row">
+        <label for="permit_join_btn" class="l-width"><i class="fa fa-share-alt"></i> <span data-i18n="label.permit_join"></span></label>
+        <button style="width: 70%" class="red-ui-button permit_join_btn" id="permit_join_btn"><span data-i18n="label.permit_join_help"></span></button>
+        <button style="width: 70%" class="red-ui-button permit_join_btn active" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
+	</div>
+    <div class="form-row">
+        <label for="log_level_info_btn" class="l-width"><i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span></label>
+        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="info" id="log_level_info_btn"><span data-i18n="label.log_level_info"></span></button>
+        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="debug" id="log_level_debug_btn"><span data-i18n="label.log_level_debug"></span></button>
+        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="warn" id="log_level_warn_btn"><span data-i18n="label.log_level_warn"></span></button>
+        <button style="width: 17%" class="red-ui-button log_level_btn" data-level="error" id="log_level_error_btn"><span data-i18n="label.log_level_error"></span></button>
+	</div>
+</script>
+
+<script type='text/javascript'>
+    RED.nodes.registerType('zigbee2mqtt-bridge', {
+        category: 'Zigbee2mqtt',
+        color: '#FDBF48',
+        defaults: {
+            name: {
+                value: ""
+            },
+            server: {
+                type: "zigbee2mqtt-server",
+                required: true
+            },
+            topic: {
+                value: null,
+                required: false
+            }
+        },
+        inputs: 1,
+        outputs: 1,
+        outputLabels: ["value"],
+        paletteLabel: 'bridge',
+        icon: "icon.png",
+        label: function () {
+            var label = 'Zigbee2mqtt Bridge';
+            if (this.name) {
+                label = this.name;
+            }
+            return label;
+        },
+        oneditprepare: function () {
+            var node = this;
+
+            var $permitJoinBtn = $('#permit_join_btn');
+
+            //get config
+            $.getJSON('zigbee2mqtt/getConfig', {
+                controllerID: node.server,
+                permit_join: true
+            }).done(function (data, textStatus, jqXHR) {
+
+                $('.log_level_btn').each(function(){
+                    $(this).removeClass('active');
+                });
+                $('.log_level_btn#log_level_'+data.log_level+'_btn').addClass('active');
+
+
+                $('.permit_join_btn').each(function(){
+                    $(this).hide();
+                });
+
+                if (data.permit_join) {
+                    $('#permit_join_cancel_btn').show()
+                } else {
+                    $permitJoinBtn.show();
+                }
+                $('.log_level_btn#log_level_'+data.log_level+'_btn').addClass('active');
+            });
+
+
+            //log level
+            $('.log_level_btn').on('click', function(){
+                $('.log_level_btn').each(function(){
+                    $(this).removeClass('active');
+                });
+                $(this).addClass('active');
+
+                $.getJSON('zigbee2mqtt/setLogLevel', {
+                    controllerID: node.server,
+                    log_level:  $(this).data('level')
+                }).done(function (data, textStatus, jqXHR) {
+                });
+            });
+
+            var timeout = null;
+            //permit join
+            $('#permit_join_cancel_btn').on('click', function(){
+                $permitJoinBtn.show();
+                $('#permit_join_cancel_btn').hide();
+                $.getJSON('zigbee2mqtt/setPermitJoin', {
+                    controllerID: node.server,
+                    permit_join: false
+                });
+            });
+
+            $permitJoinBtn.on('click', function(){
+                clearTimeout(timeout);
+                $permitJoinBtn.hide();
+                $('#permit_join_cancel_btn').show();
+                $.getJSON('zigbee2mqtt/setPermitJoin', {
+                    controllerID: node.server,
+                    permit_join: true
+                }).done(function (data, textStatus, jqXHR) {
+                     timeout = setTimeout(function(){
+                         $permitJoinBtn.show();
+                         $('#permit_join_cancel_btn').hide();
+                        $.getJSON('zigbee2mqtt/setPermitJoin', {
+                            controllerID: node.server,
+                            permit_join: false
+                        });
+                    }, 60000*3);
+                });
+            });
+
+
+        },
+        oneditsave: function () {
+
+        }
+    });
+</script>
+

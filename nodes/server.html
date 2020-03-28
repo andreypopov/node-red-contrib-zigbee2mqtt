@@ -11,6 +11,10 @@
         <input type="text" id="node-config-input-host">
     </div>
     <div class="form-row">
+        <label for="node-config-input-base_topic" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.base_topic"></span></label>
+        <input type="text" id="node-config-input-base_topic" placeholder="zigbee2mqtt">
+    </div>
+    <div class="form-row">
         <label for="node-config-input-mqtt_port" class="l-width"><i class="fa fa-asterisk"></i> <span data-i18n="label.mqtt_port"></span></label>
         <input type="text" id="node-config-input-mqtt_port" placeholder="1883">
     </div>
@@ -22,7 +26,6 @@
         <label for="node-config-input-mqtt_password" class="l-width"><i class="fa fa-lock"></i> <span data-i18n="label.mqtt_password"></span></label>
         <input type="password" id="node-config-input-mqtt_password" autocomplete="new-password">
     </div>
-
     <div class="form-tips" data-i18n="[html]tip.deploy"></div>
 
 </script>
@@ -50,7 +53,11 @@
             mqtt_password: {
                 value: null,
                 required: false
-            }
+            },
+            base_topic: {
+                value: 'zigbee2mqtt',
+                required: true
+            },
         },
         label: function() {
             return this.name ||  this.host;

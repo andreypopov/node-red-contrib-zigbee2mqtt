@@ -13,7 +13,7 @@ module.exports = function(RED) {
             node.is_subscribed = false;
             node.server = RED.nodes.getNode(node.config.server);
 
-            if (typeof(node.config.channel) == 'string') node.config.channel = [node.config.channel]; //for compatible
+            if (typeof(node.config.topic) == 'string') node.config.topic = [node.config.topic]; //for compatible
 
             if (node.server)  {
                 node.on('input', function (message_in) {
@@ -22,7 +22,7 @@ module.exports = function(RED) {
                     var channels = [];
 
                     //overwrite with topic
-                    if (!(node.config.channel).length && "topic" in message_in) {
+                    if (!(node.config.topic).length && "topic" in message_in) {
                         if (typeof(message_in.topic) == 'string' ) message_in.topic = [message_in.topic];
                         if (typeof(message_in.topic) == 'object') {
                             for (var i in message_in.topic) {
@@ -33,7 +33,7 @@ module.exports = function(RED) {
                             }
                         }
                     } else {
-                        channels = node.config.channel;
+                        channels = node.config.topic;
                     }
 
                     if (typeof (channels) == 'object'  && channels.length) {

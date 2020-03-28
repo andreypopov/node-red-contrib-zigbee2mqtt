@@ -15,15 +15,15 @@
 	<key>softness</key>
 	<real>0.0</real>
 	<key>timestamp</key>
-	<real>606977233.632658</real>
+	<real>606977182.81130302</real>
 	<key>transform</key>
 	<array>
-		<real>1.4945054945054939</real>
+		<real>1</real>
 		<real>0.0</real>
 		<real>0.0</real>
-		<real>1.5454545454545454</real>
-		<real>-50.956043956043892</real>
-		<real>-117.27272727272721</real>
+		<real>1</real>
+		<real>0.0</real>
+		<real>0.0</real>
 		<real>0.0</real>
 		<real>0.0</real>
 	</array>
