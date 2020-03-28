@@ -101,16 +101,18 @@ module.exports = function(RED) {
                 }
 
                 //text
+                var payload = data.payload;
                 var text = RED._("node-red-contrib-zigbee2mqtt/in:status.received");
                 if (parseInt(node.config.state) != 0 && node.config.state in data.payload) {
                     text = data.payload[node.config.state];
+                    payload = data.payload[node.config.state];
                 }
                 if ('Battery' == data.device.powerSource) {
                     text += ' ⚡'+data.payload.battery+'%';
                 }
 
                 node.send({
-                    payload: data.payload,
+                    payload: payload,
                     payload_raw: data.payload,
                     device: data.device
                 });
