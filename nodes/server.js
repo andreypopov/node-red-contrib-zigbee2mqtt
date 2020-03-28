@@ -228,6 +228,11 @@ module.exports = function (RED) {
             if (topic.search(new RegExp(node.config.base_topic+'\/bridge\/')) === 0) {
                 if (node.config.base_topic + '/bridge/config/devices' == topic) {
                     node.devices = JSON.parse(messageString);
+                } else if (node.config.base_topic + '/bridge/state' == topic) {
+                    node.emit('onMQTTBridgeState', {
+                        topic:topic,
+                        payload:message.toString()=="online"
+                    });
                 }
 
                 node.emit('onMQTTMessageBridge', {

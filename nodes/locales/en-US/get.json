@@ -3,6 +3,7 @@
         "name": "Name",
         "server": "Server",
         "topic": "Device",
+        "state": "Payload output",
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List"
     },
@@ -13,6 +14,14 @@
         "no_server": "no server",
         "no_device": "no device",
         "no_value": "no value",
-        "no_connection": "no connection"
+        "no_connection": "no connection",
+        "received": "ok"
+    },
+    "multiselect": {
+        "devices": "Devices",
+        "filter_devices": "Filter devices...",
+        "refresh": "Refresh devices list",
+        "none_selected": "None selected",
+        "complete_payload": "Complete state payload"
     }
 }

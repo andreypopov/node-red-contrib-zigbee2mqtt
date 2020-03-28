@@ -26,6 +26,9 @@ module.exports = function(RED) {
                 node.listener_onMQTTMessage = function(data) { node.onMQTTMessage(data); }
                 node.server.on('onMQTTMessage', node.listener_onMQTTMessage);
 
+                node.listener_onMQTTBridgeState = function(data) { node.onMQTTBridgeState(data); }
+                node.server.on('onMQTTBridgeState', node.listener_onMQTTBridgeState);
+
                 node.on('close', () => this.onMQTTClose());
 
                 if (typeof(node.server.mqtt) === 'object') {
@@ -61,6 +64,9 @@ module.exports = function(RED) {
             }
             if (node.listener_onMQTTMessage) {
                 node.server.removeListener("onMQTTMessage", node.listener_onMQTTMessage);
+            }
+            if (node.listener_onMQTTBridgeState) {
+                node.server.removeListener("onMQTTBridgeState", node.listener_onMQTTBridgeState);
             }
 
             node.onConnectError();
@@ -121,6 +127,15 @@ module.exports = function(RED) {
             }
         }
 
+        onMQTTBridgeState(data) {
+            var node = this;
+
+            if (data.payload) {
+                node.status({});
+            } else {
+                this.onConnectError();
+            }
+        }
 
     }
     RED.nodes.registerType('zigbee2mqtt-in', Zigbee2mqttNodeIn);

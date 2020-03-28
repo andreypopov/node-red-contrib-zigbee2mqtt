@@ -72,18 +72,10 @@
 
             if (this.name) {
                 label = this.name;
-            } else if  (this.topic != null && typeof(this.topic) == 'object' && this.topic.length) {
-                if (this.topic.length == 1) {
-                    var device_name = (this.topic[0]).split('/').slice(1)[1];
-                    var control_name = (this.topic[0]).split('/').slice(-1)[0];
-                    label = device_name+'/'+control_name;
-                } else {
-                    label = this.topic.length + ' channels';
-                }
-            } else if (typeof(this.topic) == 'string' && this.topic.length) {
-                var device_name = (this.topic).split('/').slice(1)[1];
-                var control_name = (this.topic).split('/').slice(-1)[0];
-                label = device_name+'/'+control_name;
+            } else if (typeof(this.friendly_name) == 'string' && this.friendly_name.length) {
+                label = this.friendly_name;
+            } else if (typeof(this.device_id) == 'string') {
+                label = this.device_id;
             }
             return label;
         },

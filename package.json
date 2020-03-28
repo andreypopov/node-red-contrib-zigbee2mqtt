@@ -27,6 +27,7 @@
   "node-red": {
     "nodes": {
       "in": "nodes/in.js",
+      "get": "nodes/get.js",
       "bridge": "nodes/bridge.js",
       "server": "nodes/server.js",
       "api": "api.js"
@@ -36,5 +37,5 @@
     "type": "git",
     "url": "git+https://github.com/andreypopov/node-red-contrib-zigbee2mqtt.git"
   },
-  "version": "0.0.2"
+  "version": "0.0.4"
 }

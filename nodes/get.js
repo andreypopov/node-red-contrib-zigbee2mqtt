@@ -13,69 +13,50 @@ module.exports = function(RED) {
             node.is_subscribed = false;
             node.server = RED.nodes.getNode(node.config.server);
 
-            if (typeof(node.config.topic) == 'string') node.config.topic = [node.config.topic]; //for compatible
 
             if (node.server)  {
                 node.on('input', function (message_in) {
                     clearTimeout(node.cleanTimer);
 
-                    var channels = [];
+                    if (node.config.device_id) {
 
-                    //overwrite with topic
-                    if (!(node.config.topic).length && "topic" in message_in) {
-                        if (typeof(message_in.topic) == 'string' ) message_in.topic = [message_in.topic];
-                        if (typeof(message_in.topic) == 'object') {
-                            for (var i in message_in.topic) {
-                                var topic = message_in.topic[i];
-                                if (typeof(topic) == 'string' && topic in node.server.devices_values) {
-                                    channels.push(topic);
-                                }
-                            }
-                        }
-                    } else {
-                        channels = node.config.topic;
-                    }
+                        var device = node.server.getDeviceById(node.config.device_id);
+                        console.log(device);
+                        var result = null;
 
-                    if (typeof (channels) == 'object'  && channels.length) {
-                        var result = {};
-                        var hasData = false;
-                        if (channels.length === 1) {
-                            message_in.topic = channels[0];
-                            message_in.selector = Zigbee2mqttHelper.generateSelector(message_in.topic);
-                            if (channels[0] in node.server.devices_values) {
-                                result = node.server.devices_values[channels[0]];
-                                hasData = true;
+                        if ("lastPayload" in device) {
+                            if (parseInt(node.config.state) != 0 && node.config.state in device.lastPayload) {
+                                result = device.lastPayload[node.config.state];
                             } else {
-                                result = null;
+                                result = device.lastPayload;
                             }
-                        } else {
-                            var data_array = Zigbee2mqttHelper.prepareDataArray(node.server, channels);
-                            hasData = data_array.is_data;
-                            result = data_array.data;
-                            message_in.data_array = data_array.data_full;
-                            message_in.math = data_array.math;
-                        }
 
-                        message_in.payload_in = message_in.payload;
-                        message_in.payload = result;
-                        node.send(message_in);
+                            message_in.payload_in = message_in.payload;
+                            message_in.payload = result;
+                            message_in.payload_raw = device.lastPayload;
+                            message_in.device = device;
+                            node.send(message_in);
 
-                        if (hasData) {
+                            //text
+                            var text = RED._("node-red-contrib-zigbee2mqtt/get:status.received");
+                            if (parseInt(node.config.state) != 0 && node.config.state in device.lastPayload) {
+                                text = device.lastPayload[node.config.state];
+                            }
+                            // if ('Battery' == device.powerSource) {
+                            //     text += ' ⚡'+device.lastPayload.battery+'%';
+                            // }
+
                             node.status({
                                 fill: "green",
                                 shape: "dot",
-                                text: channels.length === 1?result:"ok"
+                                text: text
                             });
-                        } else {
-                            node.status({
-                                fill: "red",
-                                shape: "dot",
-                                text: "node-red-contrib-zigbee2mqtt/get:status.no_value"
-                            });
+
+                            node.cleanTimer = setTimeout(function () {
+                                node.status({});
+                            }, 3000);
                         }
-                        node.cleanTimer = setTimeout(function () {
-                            node.status({}); //clean
-                        }, 3000);
+
                     } else {
                         node.status({
                             fill: "red",
