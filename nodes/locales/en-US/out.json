@@ -5,15 +5,25 @@
         "topic": "Device",
         "command": "Command",
         "payload": "Payload",
+        "transition": "Transition, sec",
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List"
     },
     "placeholder": {
-        "name": "Name"
+        "name": "Name",
+        "transition": "in seconds"
     },
     "status": {
         "no_server": "no server",
         "no_device": "no device",
         "no_payload": "no payload"
+    },
+    "help": {
+        "important": "IMPORTANT:",
+        "description": "Description:",
+        "options": "Options:",
+        "command_homekit": "This is experimental feature, works only with Lightbulb Service for now. ",
+        "command_brightness_move": "Instead of setting a brightness by value, you can also move it and stop it after a certain time. Example: -5 payload will start moving the brightness down at 5 units per second.",
+        "option_transition": "Specifies the number of seconds the transition to this state takes. Doesn't work for brightness=0, state=toggle."
     }
 }

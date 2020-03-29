@@ -1,14 +1,24 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-out">
-    <p>Send mqtt message to defined channel.</p>
+    <p>Send mqtt command to your device.</p>
     <h3>Configuration</h3>
     <dl class="message-properties">
-        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node.</dd>
-        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use.</dd>
-        <dt>Channel <span class="property-type">string</span></dt><dd>Select channel(s) to listen to</dd>
+        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node</dd>
+        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use</dd>
+        <dt>Device <span class="property-type">string</span></dt><dd>Select your device</dd>
+        <dt>Command <span class="property-type">string</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> predefined commands</li>
+                <li><b>homekit:</b> select if data is from homekit node</li>
+                <li><b>json:</b> custom data in json format</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">string or object</span></dt><dd>Select your payload data source</dd>
     </dl>
-    <h3>Commands</h3>
-    <dl class="message-properties">
-        <dt>topic <span class="property-type">string</span></dt><dd>send command by topic, works only with empty Channel setting</dd>
-    </dl>
+
+<!--    <h3>Options</h3>-->
+<!--    <dl class="message-properties">-->
+<!--        <dt class="optional">Transition time <span class="property-type">int</span></dt><dd>Works with brightness.</dd>-->
+<!--    </dl>-->
 </script>
 

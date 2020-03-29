@@ -17,9 +17,9 @@ module.exports = function(RED) {
                 node.on('input', function(message) {
                     clearTimeout(node.cleanTimer);
 
-// console.log(node);
                     if (node.config.device_id) {
                         var payload;
+                        var options = {};
                         switch (node.config.payloadType) {
                             case 'flow':
                             case 'global': {
@@ -32,10 +32,10 @@ module.exports = function(RED) {
                                 });
                                 break;
                             }
-                            case 'date': {
-                                payload = Date.now();
-                                break;
-                            }
+                            // case 'date': {
+                            //     payload = Date.now();
+                            //     break;
+                            // }
                             case 'z2m_payload':
                                 payload = node.config.payload;
                                 break;
@@ -50,14 +50,26 @@ module.exports = function(RED) {
                                 break;
                             }
 
-                            case 'object': {
-                                payload = node.config.payload;
+                            case 'json': {
+                                if (Zigbee2mqttHelper.isJson(node.config.payload)) {
+                                    payload = JSON.parse(node.config.payload);
+                                } else {
+                                    node.warn('Incorrect payload. Waiting for valid JSON');
+                                    node.status({
+                                        fill: "red",
+                                        shape: "dot",
+                                        text: "node-red-contrib-zigbee2mqtt/out:status.no_payload"
+                                    });
+                                    node.cleanTimer = setTimeout(function(){
+                                        node.status({}); //clean
+                                    }, 3000);
+                                }
                                 break;
                             }
 
-                            case 'homekit':
-                                payload = node.formatHomeKit(message, payload);
-                                break;
+                            // case 'homekit':
+                            //     payload = node.formatHomeKit(message, payload);
+                            //     break;
 
                             case 'msg':
                             default: {
@@ -76,22 +88,18 @@ module.exports = function(RED) {
                             case 'z2m_cmd':
                                 command = node.config.command;
                                 switch (command) {
-
-
-                                    case 'bri':
+                                    case 'state':
+                                    case 'brightness':
                                     case 'hue':
-                                    case 'sat':
+                                    case 'saturation':
                                     case 'color_temp':
-                                    case 'scene': // added scene, payload is the scene ID
-                                    case 'colorloopspeed':
-                                        // case 'transitiontime':
-                                        payload = parseInt(payload);
+                                        if ("transition" in node.config && (node.config.transition).length > 0) {
+                                            options['transition'] = parseInt(node.config.transition);
+                                        }
                                         break;
 
-                                    case 'json':
+                                    case 'brightness_move':
                                     case 'alert':
-                                    case 'effect':
-                                    case 'state':
                                     default: {
                                         break;
                                     }
@@ -99,7 +107,12 @@ module.exports = function(RED) {
                                 break;
 
                             case 'homekit':
-                              //  payload = node.formatHomeKit(message, payload);
+                                console.log(message['payload']);
+                                payload = node.formatHomeKit(message, message['payload']);
+                                console.log(payload);
+                                break;
+
+                            case 'json':
                                 break;
 
                             case 'str':
@@ -127,13 +140,32 @@ module.exports = function(RED) {
                             }, 3000);
 
                             var toSend = {};
-                            toSend[command] = payload;
+                            var text = '';
+                            if (typeof(payload) == 'object') {
+                                toSend = payload;
+                                text = 'json';
+                            } else {
+                                toSend[command] = payload;
+                                text = command+': '+payload;
+                            }
+                            //add options
+                            if (Object.keys(options).length) {
+                                for (var key in options) {
+                                    toSend[key] = options[key];
+                                }
+                            }
 
                             node.log('Published to mqtt topic: ' + node.server.getBaseTopic()+'/'+node.config.friendly_name + '/set : ' + JSON.stringify(toSend));
                             node.server.mqtt.publish(node.server.getBaseTopic()+'/'+node.config.friendly_name + '/set', JSON.stringify(toSend));
 
-
-
+                            node.status({
+                                fill: "green",
+                                shape: "dot",
+                                text: text
+                            });
+                            node.cleanTimer = setTimeout(function(){
+                                node.status({}); //clean
+                            }, 3000);
                         } else {
                             node.status({
                                 fill: "red",
@@ -160,7 +192,7 @@ module.exports = function(RED) {
         }
 
         formatHomeKit(message, payload) {
-            if (message.hap.context === undefined) {
+            if ("hap" in message && message.hap.context === undefined) {
                 return null;
             }
 
@@ -168,17 +200,21 @@ module.exports = function(RED) {
 
             if (payload.On !== undefined) {
                 msg['state'] = payload.On?"on":"off";
-            } else if (payload.Brightness !== undefined) {
+            }
+            if (payload.Brightness !== undefined) {
                 msg['brightness'] =  Zigbee2mqttHelper.convertRange(payload.Brightness, [0,100], [0,255]);
                 if (payload.Brightness >= 254) payload.Brightness = 255;
                 msg['state'] = payload.Brightness > 0?"on":"off"
-            } else if (payload.Hue !== undefined) {
+            }
+            if (payload.Hue !== undefined) {
                 msg['hue'] = payload.Hue;
                 msg['state'] = "on";
-            } else if (payload.Saturation !== undefined) {
+            }
+            if (payload.Saturation !== undefined) {
                 msg['saturation'] = payload.Saturation;
                 msg['state'] = "on";
-            } else if (payload.ColorTemperature !== undefined) {
+            }
+            if (payload.ColorTemperature !== undefined) {
                 msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [140,500], [50,400]);
                 msg['state'] = "on";
             }

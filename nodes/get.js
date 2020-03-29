@@ -21,7 +21,7 @@ module.exports = function(RED) {
                     if (node.config.device_id) {
 
                         var device = node.server.getDeviceById(node.config.device_id);
-                        console.log(device);
+                        // console.log(device);
                         var result = null;
 
                         if ("lastPayload" in device) {

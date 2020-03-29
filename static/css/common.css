@@ -21,3 +21,10 @@
 button.active {
     background-color: #ddd;
 }
+.help_block {
+    display: none;
+}
+.help-tips {
+    font-style: italic;
+    font-size: 12px;
+}

@@ -22,8 +22,6 @@
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
         <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
     </div>
-
-
     <div class="form-row">
         <label for="node-input-command" class="l-width"><i class="fa fa-tasks"></i> <span data-i18n="label.command"></span></label>
         <input type="text" id="node-input-command" style="width:70%">
@@ -33,6 +31,34 @@
         <label for="node-input-payload" class="l-width"><i class="fa fa-envelope"></i> <span data-i18n="label.payload"></span></label>
         <input type="text" id="node-input-payload" style="width:70%">
         <input type="hidden" id="node-input-payloadType">
+    </div>
+
+
+    <div class="form-row node-input-rule-container-row">
+        <ol id="node-input-rule-container"></ol>
+    </div>
+    <hr>
+
+    <!--homekit-->
+    <div class="form-tips help_block help_block__homekit_homekit">
+        <strong><span data-i18n="help.important"></span></strong><br>
+        <span data-i18n="help.command_homekit"></span>
+    </div>
+    <!--brightness_move-->
+    <div class="form-tips help_block help_block__z2m_cmd_brightness_move">
+        <strong><span data-i18n="help.description"></span></strong><br>
+        <span data-i18n="help.command_brightness_move"></span>
+    </div>
+    <!--transition-->
+    <div class="help_block help_block__z2m_cmd_brightness help_block__z2m_cmd_state help_block__z2m_cmd_color_temp help_block__z2m_cmd_hue help_block__z2m_cmd_saturation">
+        <strong><span data-i18n="help.options"></span></strong><br>
+
+        <div class="form-row">
+            <label for="node-input-transition" class="l-width"><i class="fa fa-clock-o"></i> <span data-i18n="label.transition"></span></label>
+             <input type="number" id="node-input-transition" data-i18n="[placeholder]placeholder.transition">
+        </div>
+         <span class="help-tips" data-i18n="help.option_transition"></span>
+
     </div>
 </script>
 
@@ -68,7 +94,11 @@
             },
             payloadType: {
                 value: 'msg',
-            }
+            },
+            transition: {
+                value: 0,
+                required: false
+            },
         },
         inputLabels: "value",
         paletteLabel: 'out',
@@ -95,8 +125,9 @@
                 label: 'zigbee2mqtt',
                 icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
                 options: [
-                    {'value':'state', 'label':'State (on/off/toggle)'},
+                    {'value':'state', 'label':'State (on|off|toggle)'},
                     {'value':'brightness', 'label':'Brightness (0..255)'},
+                    {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
                     {'value':'hue', 'label':'Hue (0..360)'},
                     {'value':'saturation', 'label':'Saturation (0..100)'},
                     {'value':'color_temp', 'label':'Color Temperature (50..400)'},
@@ -104,7 +135,7 @@
                 ]
             };
             $('#node-input-command').typedInput({
-                types: [topicTypes, {value:'homekit',label:'homekit',icon: 'icons/node-red-contrib-zigbee2mqtt/homekit-logo.png',options:['homekit']}, 'str', 'msg', {value:'object',label:'object',options:['json']}],
+                types: [topicTypes, {value:'homekit',label:'homekit',icon: 'icons/node-red-contrib-zigbee2mqtt/homekit-logo.png',options:['homekit']}, 'str', 'msg', {value:'json',label:'JSON',options:['{}']}],
                 default: 'msg',
                 value: 'topic',
                 typeField: $('#node-input-commandType'),
@@ -146,17 +177,19 @@
                         icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
                         options: options
                     };
-                    $('#node-input-payload').typedInput('types', [payloadTypes, 'msg', 'flow', 'global', 'str', 'num', 'date']);
+                    $('#node-input-payload').typedInput('types', [payloadTypes, 'msg', 'flow', 'global', 'str', 'num', 'json']);
                 } else {
-                    $('#node-input-payload').typedInput('types', ['msg', 'flow', 'global', 'str', 'num', 'date']);
+                    $('#node-input-payload').typedInput('types', ['msg', 'flow', 'global', 'str', 'num', 'json']);
                 }
 
                 //show/hide
-                if (['toggle'].indexOf(val) >= 0) {
+                if (['homekit'].indexOf(val) >= 0) {
                     $('#node-input-payload').closest('.form-row').hide();
                 } else {
                     $('#node-input-payload').closest('.form-row').show();
                 }
+
+                showHelpBlock();
             });
 
 
@@ -168,7 +201,7 @@
                 options: []
             };
             $('#node-input-payload').typedInput({
-                types: [payloadTypes, 'msg', 'flow', 'global', 'str', 'num'],
+                types: [payloadTypes, 'msg', 'flow', 'global', 'str', 'num', 'json'],
                 default: 'msg',
                 value: 'payload',
                 typeField: $('#node-input-payloadType'),
@@ -182,7 +215,7 @@
                 var $deviceInput = $('#node-input-device_id');
 
                 z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:false});
-
+                showHelpBlock();
                 // $deviceInput.on('change', function(){
                 //     z2m_getItemStateList(0, '#node-input-state');
                 // });
@@ -190,6 +223,18 @@
                 //     z2m_getItemStateList(node.state, '#node-input-state');
                 // },100);
             }, 100); //we need small timeout, too fire change event for server select
+
+            function showHelpBlock() {
+                var command = $('#node-input-command').val(); //state
+                var commandType = $('#node-input-commandType').val(); //z2m_cmd
+                var payload = $('#node-input-payloadType').val(); //msg
+                var payloadType = $('#node-input-payload').val(); //payload
+                if (command == '{}') command = 'json';
+
+                $('.help_block').hide();
+                $('.help_block__'+commandType+'_'+command).show();
+            }
+
         }
     });
 </script>
