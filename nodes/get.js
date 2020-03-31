@@ -21,40 +21,46 @@ module.exports = function(RED) {
                     if (node.config.device_id) {
 
                         var device = node.server.getDeviceById(node.config.device_id);
-                        // console.log(device);
-                        var result = null;
+                        if (device) {
+                            // console.log(device);
+                            var result = null;
 
-                        if ("lastPayload" in device) {
-                            if (parseInt(node.config.state) != 0 && node.config.state in device.lastPayload) {
-                                result = device.lastPayload[node.config.state];
-                            } else {
-                                result = device.lastPayload;
+                            if ("lastPayload" in device) {
+                                if (parseInt(node.config.state) != 0 && node.config.state in device.lastPayload) {
+                                    result = device.lastPayload[node.config.state];
+                                } else {
+                                    result = device.lastPayload;
+                                }
+
+                                message_in.payload_in = message_in.payload;
+                                message_in.payload = result;
+                                message_in.payload_raw = device.lastPayload;
+                                message_in.device = device;
+                                node.send(message_in);
+
+                                //text
+                                var text = RED._("node-red-contrib-zigbee2mqtt/get:status.received");
+                                if (parseInt(node.config.state) != 0 && node.config.state in device.lastPayload) {
+                                    text = device.lastPayload[node.config.state];
+                                }
+
+                                node.status({
+                                    fill: "green",
+                                    shape: "dot",
+                                    text: text
+                                });
+
+                                node.cleanTimer = setTimeout(function () {
+                                    node.status({});
+                                }, 3000);
                             }
-
-                            message_in.payload_in = message_in.payload;
-                            message_in.payload = result;
-                            message_in.payload_raw = device.lastPayload;
-                            message_in.device = device;
-                            node.send(message_in);
-
-                            //text
-                            var text = RED._("node-red-contrib-zigbee2mqtt/get:status.received");
-                            if (parseInt(node.config.state) != 0 && node.config.state in device.lastPayload) {
-                                text = device.lastPayload[node.config.state];
-                            }
-                            // if ('Battery' == device.powerSource) {
-                            //     text += ' ⚡'+device.lastPayload.battery+'%';
-                            // }
-
+                        } else {
+                            node.warn('Empty devices list. Bug?');
                             node.status({
-                                fill: "green",
+                                fill: "red",
                                 shape: "dot",
-                                text: text
+                                text: "node-red-contrib-zigbee2mqtt/get:status.no_device"
                             });
-
-                            node.cleanTimer = setTimeout(function () {
-                                node.status({});
-                            }, 3000);
                         }
 
                     } else {

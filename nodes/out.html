@@ -143,6 +143,8 @@
 
             $('#node-input-device_id').on('change', function(type, value) {
                 $('#node-input-command').trigger('change');
+
+                $('#node-input-friendly_name').val($('#node-input-device_id option:selected').attr('data-friendly_name'));
             });
 
             $('#node-input-command').on('change', function(type, value) {
@@ -154,7 +156,9 @@
                     options =  [
                         {'value':'on', 'label':'On'},
                         {'value':'off', 'label':'Off'},
-                        {'value':'toggle', 'label':'Toggle'}
+                        {'value':'toggle', 'label':'Toggle'},
+                        {'value':'lock', 'label':'Lock'},
+                        {'value':'unlock', 'label':'Unlock'}
                     ];
                 } else if ('color_temp' === val) {
                     options =  [
