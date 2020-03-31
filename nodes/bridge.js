@@ -153,6 +153,7 @@ module.exports = function(RED) {
         onMQTTConnect() {
             var node = this;
 
+            node.setNodeStatus();
             // node.status({
             //     fill: "green",
             //     shape: "dot",
@@ -200,10 +201,40 @@ module.exports = function(RED) {
                     topic: data.topic
                 });
             } else if (node.server.getBaseTopic()+'/bridge/log' == data.topic) {
-                node.send({
-                    payload: JSON.parse(data.payload),
-                    topic: data.topic
-                });
+
+                if (Zigbee2mqttHelper.isJson(data.payload)) {
+                    var parsedData = JSON.parse(data.payload);
+
+                    if ("payload" in parsedData && "type" in parsedData.payload) {
+                        if ("device_connected" == parsedData.payload.type) {
+
+                        } else if ("pairing" == parsedData.payload.type) {
+                            if ("interview_successful" == parsedData.payload.message) {
+                                node.status({
+                                    fill: "green",
+                                    shape: "ring",
+                                    text: "node-red-contrib-zigbee2mqtt/bridge:status.paired"
+                                });
+                                setTimeout(function(){
+                                    node.setNodeStatus();
+                                }, 3000);
+                            }
+
+                        } else if ("device_announced" == parsedData.payload.type) {
+
+                        }
+                    }
+
+                    node.send({
+                        payload: parsedData,
+                        topic: data.topic
+                    });
+                } else {
+                    node.send({
+                        payload: data.payload,
+                        topic: data.topic
+                    });
+                }
             } else if (node.server.getBaseTopic()+'/bridge/config' == data.topic) {
                 node.server.bridge_config = JSON.parse(data.payload);
                 node.setNodeStatus();

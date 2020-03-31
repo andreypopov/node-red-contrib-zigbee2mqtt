@@ -37,37 +37,10 @@ function z2m_getItemList(nodeItem, selectedItemElementName, options = {}) {
                             nameSuffix = '';
 
 
-                            // //readonly
-                            // if (typeof value.meta !== 'undefined'
-                            //     && typeof value.meta.type !== 'undefined'
-                            //     && options.disableReadonly
-                            //     && parseInt(value.meta.readonly) == 1
-                            // ) {
-                            //     disabled = 'disabled="disabled"';
-                            //     nameSuffix = 'readonly';
-                            //     return true;
-                            // }
-                            //
-                            // //filter by type
-                            // if (typeof value.meta !== 'undefined'
-                            //     && typeof value.meta.type !== 'undefined'
-                            //     && options.filterType
-                            //     && value.meta.type != options.filterType) {
-                            //     disabled = 'disabled="disabled"';
-                            //     nameSuffix = value.meta.type;
-                            //     return true;
-                            // }
-                            //
-                            // if (optgroup != value.device_name) {
-                            //     groupHtml = $('<optgroup/>', { label: value.device_friendly_name});
-                            //     groupHtml.appendTo(selectedItemElement);
-                            //     optgroup = value.device_name;
-                            // }
-
 
                             // if (value.type == "EndDevice") {
                                 names[value.ieeeAddr] = value.friendly_name;
-                                $('<option ' + disabled + ' value="' + value.ieeeAddr + '">' + value.friendly_name + ' (' + value.modelID + ')</option>').appendTo(groupHtml ? groupHtml : selectedItemElement);
+                                $('<option ' + disabled + ' value="' + value.ieeeAddr + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + ' (' + value.modelID + ')</option>').appendTo(groupHtml ? groupHtml : selectedItemElement);
                             // }
                         });
 

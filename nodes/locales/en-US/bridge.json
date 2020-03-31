@@ -20,6 +20,17 @@
         "no_device": "no device",
         "no_value": "no value",
         "no_connection": "no connection",
-        "searching": "looking for devices..."
+        "searching": "looking for devices...",
+        "paired": "paired!"
+    },
+    "tabs": {
+        "bridge": "Bridge",
+        "devices":  "Devices"
+    },
+    "devices": {
+        "ieee_addr": "IeeeAddr",
+        "friendly_name": "Friendly name",
+        "model": "Model",
+        "device": "Device"
     }
 }

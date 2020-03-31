@@ -1,3 +1,20 @@
+<style>
+    .node-input-devices-friendly_name {
+        width:100%;
+    }
+    .device_wr {
+    }
+    #node-z2m-devices_table {
+        border-spacing: 5px;
+        border-collapse: separate;
+    }
+    #node-z2m-devices_table th {
+        text-align: left;
+    }
+    #node-z2m-devices_table td {
+        vertical-align: top;
+    }
+</style>
 <script type="text/x-red" data-template-name="zigbee2mqtt-bridge">
     <link rel="stylesheet" href="zigbee2mqtt/static/css/multiple-select.css" type="text/css" />
     <link rel="stylesheet" href="zigbee2mqtt/static/css/common.css" type="text/css" />
@@ -13,20 +30,44 @@
 
     <div id="config_wr" style="display:none;">
         <div class="form-row">
-            <label for="permit_join_btn" class="l-width"><i class="fa fa-share-alt"></i> <span data-i18n="label.permit_join"></span></label>
-            <button style="width: 70%" class="red-ui-button permit_join_btn" id="permit_join_btn"><span data-i18n="label.permit_join_help"></span></button>
-            <button style="width: 70%" class="red-ui-button permit_join_btn active" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
+            <!-- Tabsheets -->
+            <ul style="background: #fff; min-width: 600px; margin-bottom: 20px;" id="node-z2m-tabs"></ul>
         </div>
-        <div class="form-row">
-            <label for="log_level_info_btn" class="l-width"><i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span></label>
-            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="info" id="log_level_info_btn"><span data-i18n="label.log_level_info"></span></button>
-            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="debug" id="log_level_debug_btn"><span data-i18n="label.log_level_debug"></span></button>
-            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="warn" id="log_level_warn_btn"><span data-i18n="label.log_level_warn"></span></button>
-            <button style="width: 17%" class="red-ui-button log_level_btn" data-level="error" id="log_level_error_btn"><span data-i18n="label.log_level_error"></span></button>
-        </div>
-        <div class="form-row">
-            <label for="config_version" class="l-width"><span data-i18n="label.version"></span></label>
-            <span id="config_version" style="font-weight:bold"> - </span>
+        <div id="node-z2m-tabs-content" style="min-height: 150px">
+            <!-- Content of all tabsheets -->
+            <div id="node-z2m-tab-bridge" class="node-z2m-tab-bridge" style="position: relative; margin-top: 30px;">
+                <div class="form-row">
+                    <label for="permit_join_btn" class="l-width"><i class="fa fa-share-alt"></i> <span data-i18n="label.permit_join"></span></label>
+                    <button style="width: 70%" class="red-ui-button permit_join_btn" id="permit_join_btn"><span data-i18n="label.permit_join_help"></span></button>
+                    <button style="width: 70%" class="red-ui-button permit_join_btn active" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
+                </div>
+                <div class="form-row">
+                    <label for="log_level_info_btn" class="l-width"><i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span></label>
+                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="info" id="log_level_info_btn"><span data-i18n="label.log_level_info"></span></button>
+                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="debug" id="log_level_debug_btn"><span data-i18n="label.log_level_debug"></span></button>
+                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="warn" id="log_level_warn_btn"><span data-i18n="label.log_level_warn"></span></button>
+                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="error" id="log_level_error_btn"><span data-i18n="label.log_level_error"></span></button>
+                </div>
+                <div class="form-row">
+                    <label for="config_version" class="l-width"><span data-i18n="label.version"></span></label>
+                    <span id="config_version" style="font-weight:bold"> - </span>
+                </div>
+            </div>
+
+            <div id="node-z2m-tab-devices" class="node-z2m-tab-devices" style="position: relative; margin-top: 30px;">
+                <table id="node-z2m-devices_table">
+                    <thead>
+                        <th style="width:150px"><span data-i18n="devices.friendly_name"></span></th>
+                        <th style="width:95%;"><span data-i18n="devices.device"></span></th>
+                        <th style="width:50px;"></th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="form-row form-row-auto-height">
+                    <ol id="node-input-devices-container"></ol>
+                </div>
+            </div>
         </div>
     </div>
 </script>
@@ -70,6 +111,25 @@
                 controllerID: node.server,
                 permit_join: true
             }).done(function (data, textStatus, jqXHR) {
+
+                node.tabs = RED.tabs.create({
+                    id: "node-z2m-tabs",
+                    onchange: function(tab) {
+                        $("#node-z2m-tabs-content").children().hide();
+                        $("#" + tab.id).show();
+                    }
+                });
+                node.tabs.addTab({
+                    id: "node-z2m-tab-bridge",
+                    label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.bridge")
+                });
+                node.tabs.addTab({
+                    id: "node-z2m-tab-devices",
+                    label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.devices")
+                });
+
+
+
                 $('#config_wr').show();
                 $('#config_version').text(data.version);
 
@@ -134,6 +194,43 @@
                         });
                     }, 60000*3);
                 });
+            });
+
+
+            $.getJSON('zigbee2mqtt/getDevices', {
+                controllerID: node.server,
+                forceRefresh: false
+            }).done(function (data, textStatus, jqXHR) {
+
+
+                if (data) {
+                    data.forEach(function (device, index) {
+                        if ("Coordinator" === device.type) return;
+
+                        var input = '<input class="node-input-devices-friendly_name" type="text" value="'+device.friendly_name+'">';
+                        var info = '<div class="device_wr"><span><b>'+device.ieeeAddr+'</b>: '+device.modelID+'</span><div class="help-tips">'+device.description+'</div></div>';
+                        var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button red-ui-button-small"><i class="fa fa-remove"></i></a>'
+                        var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button red-ui-button-small" data-ieeeaddr="'+device.ieeeAddr+'"><i class="fa fa-check"></i>&nbsp;set</a>'
+
+                        $('#node-z2m-devices_table tbody').append('<tr><td>'+input+'</td><td>'+info+'</td><td>'+saveBtn+'</td></tr>');
+                    });
+
+                    $('#node-z2m-devices_table .red-ui-item-save').on('click', function(){
+
+                        var ieeeAddr = $(this).attr('data-ieeeaddr');
+                        var newName = $(this).closest('tr').find('.node-input-devices-friendly_name').val();
+
+                        $.getJSON('zigbee2mqtt/renameDevice', {
+                            controllerID: node.server,
+                            ieeeAddr: ieeeAddr,
+                            newName: newName
+                        }).done(function (data, textStatus, jqXHR) {
+                            if ("error" in data) alert(data.description);
+                        });
+                    });
+                }
+
+
             });
 
 

@@ -1,24 +1,16 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-bridge">
-    <p>This node reads mqtt message from defined channel.</p>
+    <p>Listens all <code>zigbee2mqtt/bridge/#</code> messages.</p>
     <h3>Configuration</h3>
     <dl class="message-properties">
         <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node.</dd>
         <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use.</dd>
-        <dt>Channel <span class="property-type">string</span></dt><dd>Select channel(s) to listen to</dd>
     </dl>
 
     <h3>Outputs</h3>
     <h5>Output</h5>
     <dl class="message-properties">
-        <dt>payload <span class="property-type">string</span></dt><dd>current value</dd>
-        <dt>payload_in<span class="property-type">object</span></dt><dd>input payload</dd>
-        <dt>topic<span class="property-type">string</span></dt><dd>mqtt topic name</dd>
-        <dt>math<span class="property-type">object</span></dt><dd>sum, avg, min, max, count of returned values</dd>
-    </dl>
-
-    <h3>Commands</h3>
-    <dl class="message-properties">
-        <dt>topic <span class="property-type">string</span></dt><dd>send command by topic, works only with empty Channel setting</dd>
+        <dt>payload <span class="property-type">string</span></dt><dd>mqtt message</dd>
+        <dt>topic<span class="property-type">string</span></dt><dd>mqtt topic</dd>
     </dl>
 </script>
 

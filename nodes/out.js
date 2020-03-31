@@ -107,9 +107,7 @@ module.exports = function(RED) {
                                 break;
 
                             case 'homekit':
-                                console.log(message['payload']);
                                 payload = node.formatHomeKit(message, message['payload']);
-                                console.log(payload);
                                 break;
 
                             case 'json':
@@ -117,7 +115,7 @@ module.exports = function(RED) {
 
                             case 'str':
                             default: {
-                                command = node.command;
+                                command = node.config.command;
                                 break;
                             }
                         }

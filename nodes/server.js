@@ -70,6 +70,9 @@ module.exports = function (RED) {
                 node.log('Refreshing devices');
                 node.devices = [];
 
+                var timeout = null;
+                var timeout_ms = 5000;
+
                 var options = {
                     port: node.config.mqtt_port || 1883,
                     username: node.config.mqtt_username || null,
@@ -79,28 +82,50 @@ module.exports = function (RED) {
                 var client = mqtt.connect('mqtt://' + node.config.host, options);
 
                 client.on('connect', function () {
-                    client.subscribe([node.config.base_topic + '/bridge/config/devices'], function (err) {
+
+                    //end function after timeout, if now response
+                    timeout = setTimeout(function(){
+                        client.end(true);
+                    }, timeout_ms);
+
+                    client.subscribe(node.topic, function (err) {
                         if (!err) {
-                            client.publish(node.config.base_topic + "/bridge/config/devices/get", new Date().getTime() + "")
+                            client.publish(node.getBaseTopic() + "/bridge/config/devices/get", new Date().getTime() + "")
                         } else {
                             RED.log.error("zigbee2mqtt: error code #0023: " + err);
+                            client.end(true);
                         }
                     })
                 });
 
                 client.on('error', function (error) {
                     RED.log.error("zigbee2mqtt: error code #0024: " + error);
+                    client.end(true);
+                });
+
+                client.on('end', function (error, s) {
+                   // console.log('END');
+                    clearTimeout(timeout);
+
+                    if (typeof (callback) === "function") {
+                        callback(node.devices);
+                    }
+                    // console.log("return");
+                    // console.log(node.devices);
+                    return node.devices;
                 });
 
                 client.on('message', function (topic, message) {
-                    client.end(true);
-                    node.devices = JSON.parse(message.toString());
-
-                    if (typeof(callback) === "function") {
-                        callback(node.devices);
+                    if (node.getBaseTopic() + "/bridge/state" == topic) {
+                        node.bridge_state = message.toString();
+                        if (message.toString() != "online") {
+                            RED.log.error("zigbee2mqtt: bridge status: " + message.toString());
+                        }
                     }
-
-                    return node.devices;
+                    if (node.getBaseTopic() + "/bridge/config/devices" == topic) {
+                        node.devices = JSON.parse(message.toString());
+                        client.end(true);
+                    }
                 })
             } else {
                 node.log('Using cached devices');
@@ -110,6 +135,7 @@ module.exports = function (RED) {
                 return node.devices;
             }
         }
+
 
         getDeviceById(id) {
             var node = this;
@@ -151,15 +177,38 @@ module.exports = function (RED) {
         setLogLevel(val) {
             var node = this;
             if (['info', 'debug', 'warn', 'error'].indexOf(val) < 0) val = 'info';
-            node.mqtt.publish(node.config.base_topic + "/bridge/config/log_level", val)
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/log_level", val);
             node.log('Log Level set to: '+val);
         }
 
         setPermitJoin(val) {
             var node = this;
             val = val?"true":"false";
-            node.mqtt.publish(node.config.base_topic + "/bridge/config/permit_join", val)
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/permit_join", val);
             node.log('Permit Join set to: '+val);
+        }
+
+        renameDevice(ieeeAddr, newName) {
+            var node = this;
+
+            var device = node.getDeviceById(ieeeAddr);
+            if (!device) {
+                return {"error":true,"description":"no such device"};
+            }
+
+            if (!newName.length)  {
+                return {"error":true,"description":"can not be empty"};
+            }
+
+            var payload = {
+                "old":device.friendly_name,
+                "new":newName
+            };
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/rename", JSON.stringify(payload));
+            node.log('Rename device '+ieeeAddr+' to '+newName);
+
+            return {"success":true,"description":"command sent"};
         }
 
         onMQTTConnect() {
@@ -167,9 +216,10 @@ module.exports = function (RED) {
             node.connection = true;
             node.log('MQTT Connected');
             node.emit('onMQTTConnect');
-            node.getDevices(function() {
+            node.getDevices(function(){
                 node.subscribeMQTT();
             });
+
         }
 
         onMQTTDisconnect(error) {
@@ -192,7 +242,7 @@ module.exports = function (RED) {
             var node = this;
             // node.connection = true;
             node.log('MQTT Offline');
-            // console.log();
+            console.log("MQTT OFFLINE");
 
         }
 
@@ -227,15 +277,25 @@ module.exports = function (RED) {
             // console.log(topic);
             // console.log(messageString);
             //bridge
-            if (topic.search(new RegExp(node.config.base_topic+'\/bridge\/')) === 0) {
-                if (node.config.base_topic + '/bridge/config/devices' == topic) {
+            if (topic.search(new RegExp(node.getBaseTopic()+'\/bridge\/')) === 0) {
+                if (node.getBaseTopic() + '/bridge/config/devices' == topic) {
                     node.devices = JSON.parse(messageString);
-                } else if (node.config.base_topic + '/bridge/state' == topic) {
+                } else if (node.getBaseTopic() + '/bridge/state' == topic) {
                     node.emit('onMQTTBridgeState', {
                         topic:topic,
                         payload:message.toString()=="online"
                     });
+                } else if (node.getBaseTopic() + '/bridge/log' == topic) {
+                    if (Zigbee2mqttHelper.isJson(messageString)) {
+                        var payload = JSON.parse(messageString);
+                        if ("type" in payload) {
+                            if ("device_renamed" == payload.type) {
+                                node.getDevices(null, true);
+                            }
+                        }
+                    }
                 }
+
 
                 node.emit('onMQTTMessageBridge', {
                     topic:topic,

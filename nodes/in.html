@@ -129,6 +129,8 @@
                     z2m_getItemStateList(0, '#node-input-state');
                     device = $('#node-input-device_id option:selected').val();
                     updateOutput();
+
+                    $('#node-input-friendly_name').val($('#node-input-device_id option:selected').attr('data-friendly_name'));
                 });
 
                 setTimeout(function () {
