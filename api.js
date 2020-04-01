@@ -36,7 +36,7 @@ module.exports = function(RED) {
         if (controller && controller.constructor.name === "ServerNode") {
             var item = controller.getDeviceById(config.device_id);
             if (item) {
-                res.json(item.lastPayload);
+                res.json([item.lastPayload, item.homekit]);
             } else {
                 res.status(404).end();
             }

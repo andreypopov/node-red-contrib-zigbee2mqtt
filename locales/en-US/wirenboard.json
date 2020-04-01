@@ -1,6 +1,0 @@
-{
-    "zigbee2mqtt" : {
-        "message1": "This is my first message",
-        "message2": "This is my second message"
-    }
-}

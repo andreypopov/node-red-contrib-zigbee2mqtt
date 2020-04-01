@@ -104,7 +104,7 @@ module.exports = function (RED) {
                 });
 
                 client.on('end', function (error, s) {
-                   // console.log('END');
+                    // console.log('END');
                     clearTimeout(timeout);
 
                     if (typeof (callback) === "function") {
@@ -140,16 +140,17 @@ module.exports = function (RED) {
         getDeviceById(id) {
             var node = this;
             var result = null;
+            console.log('**********');
+            console.log(node.devices_values);
             for (var i in node.devices) {
                 if (id == node.devices[i]['ieeeAddr']) {
                     result = node.devices[i];
                     result['lastPayload'] = {};
 
                     var topic =  node.config.base_topic+'/'+(node.devices[i]['friendly_name']?node.devices[i]['friendly_name']:node.devices[i]['ieeeAddr']);
-                    // console.log(topic);
-                    // console.log(node.devices_values);
                     if (topic in node.devices_values) {
                         result['lastPayload'] = node.devices_values[topic];
+                        result['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic], node.devices[i])
                     }
                     break;
                 }
@@ -162,7 +163,7 @@ module.exports = function (RED) {
             var result = null;
             for (var i in node.devices) {
                 if (topic == node.config.base_topic+'/'+node.devices[i]['friendly_name']
-                || topic == node.config.base_topic+'/'+node.devices[i]['ieeeAddr']) {
+                    || topic == node.config.base_topic+'/'+node.devices[i]['ieeeAddr']) {
                     result = node.devices[i];
                     break;
                 }
@@ -302,15 +303,21 @@ module.exports = function (RED) {
                     payload:messageString
                 });
             } else {
-                // console.log( {topic:topic, payload:messageString});
-                var msg = Zigbee2mqttHelper.isJson(messageString)?JSON.parse(messageString):messageString;
+                var payload_json = Zigbee2mqttHelper.isJson(messageString)?JSON.parse(messageString):messageString;
 
-                node.devices_values[topic] = msg;
-                node.emit('onMQTTMessage', {
-                    topic:topic,
-                    payload:msg,
-                    device:node.getDeviceByTopic(topic)
-                });
+                //isSet
+                if (topic.substring(topic.length - 4, topic.length) != '/set') {
+                    //clone object for payload output
+                    var payload = {};
+                    Object.assign(payload, payload_json);
+
+                    node.devices_values[topic] = payload_json;
+                    node.emit('onMQTTMessage', {
+                        topic: topic,
+                        payload: payload,
+                        device: node.getDeviceByTopic(topic)
+                    });
+                }
             }
         }
 

@@ -36,11 +36,9 @@ function z2m_getItemList(nodeItem, selectedItemElementName, options = {}) {
                             disabled = '';
                             nameSuffix = '';
 
-
-
                             // if (value.type == "EndDevice") {
-                                names[value.ieeeAddr] = value.friendly_name;
-                                $('<option ' + disabled + ' value="' + value.ieeeAddr + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + ' (' + value.modelID + ')</option>').appendTo(groupHtml ? groupHtml : selectedItemElement);
+                            names[value.ieeeAddr] = value.friendly_name;
+                            $('<option ' + disabled + ' value="' + value.ieeeAddr + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + ' (' + value.modelID + ')</option>').appendTo(groupHtml ? groupHtml : selectedItemElement);
                             // }
                         });
 
@@ -143,16 +141,33 @@ function z2m_getItemStateList(nodeItem, selectedItemElementName, options = {}) {
                     try {
                         selectedItemElement.html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/in:multiselect.complete_payload")+'</option>');
 
+                        var groupHtml = '';
+                        groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.zigbee2mqtt")});
+                        groupHtml.appendTo(selectedItemElement);
 
-                        $.each(data, function(index, value) {
-                            // $('<option  value="' + index +'">'+index+'</option>').appendTo(selectedItemElement);
-                            $('<option  value="' + index +'">'+index+' ('+value+')</option>').appendTo(selectedItemElement);
+                        $.each(data[0], function(index, value) {
+                            var text = index;
+                            if (typeof(value) != 'object') text +=' ('+value+')';
+                            $('<option  value="' + index +'">'+text+'</option>').appendTo(groupHtml);
                         });
+
+
+                        //homekit formats
+                        if (Object.keys(data[1]).length) {
+                            // if (options.groups && groupsByName) {
+                            groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.homekit")});
+                            groupHtml.appendTo(selectedItemElement);
+
+                            $.each(data[1], function (index, value) {
+                                $('<option  value="homekit_' + index + '">' + index + '</option>').appendTo(groupHtml);
+                            });
+                        }
+
 
                         // Enable item selection
                         selectedItemElement.multipleSelect('enable');
 
-                        console.log('=======>');console.log(itemName);
+                        // console.log('=======>');console.log(itemName);
                         // Finally, set the value of the input select to the selected value
                         if (selectedItemElement.find('option[value='+itemName+']').length) {
                             selectedItemElement.val(itemName);

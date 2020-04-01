@@ -185,9 +185,9 @@
                     controllerID: node.server,
                     permit_join: true
                 }).done(function (data, textStatus, jqXHR) {
-                     timeout = setTimeout(function(){
-                         $permitJoinBtn.show();
-                         $('#permit_join_cancel_btn').hide();
+                    timeout = setTimeout(function(){
+                        $permitJoinBtn.show();
+                        $('#permit_join_cancel_btn').hide();
                         $.getJSON('zigbee2mqtt/setPermitJoin', {
                             controllerID: node.server,
                             permit_join: false

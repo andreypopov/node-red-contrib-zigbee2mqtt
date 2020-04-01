@@ -28,7 +28,9 @@
         "filter_devices": "Filter devices...",
         "refresh": "Refresh devices list",
         "none_selected": "None selected",
-        "complete_payload": "Complete state payload"
+        "complete_payload": "Complete state payload",
+        "zigbee2mqtt": "Zigbee2Mqtt",
+        "homekit": "Homekit"
     },
     "tip": {
         "deploy": "<b>Important:</b> deploy server node to get devices list"
