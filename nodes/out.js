@@ -90,8 +90,39 @@ module.exports = function(RED) {
                                 switch (command) {
                                     case 'state':
                                     case 'brightness':
-                                    case 'hue':
-                                    case 'saturation':
+                                        break;
+
+                                    case 'position':
+                                        payload = parseInt(payload);
+                                        break;
+
+                                    case 'color':
+                                        payload =  {"color":payload};
+                                        break;
+                                    case 'color_rgb':
+                                        payload =  {"color":{"rgb": payload}};
+                                        break;
+                                    case 'color_hex':
+                                        command = "color";
+                                        payload =  {"color":{"hex": payload}};
+                                        break;
+                                    case 'color_hsb':
+                                        command = "color";
+                                        payload =  {"color":{"hsb": payload}};
+                                        break;
+                                    case 'color_hsv':
+                                        command = "color";
+                                        payload =  {"color":{"hsv": payload}};
+                                        break;
+                                    case 'color_hue':
+                                        command = "color";
+                                        payload =  {"color":{"hue": payload}};
+                                        break;
+                                    case 'color_saturation':
+                                        command = "color";
+                                        payload =  {"color":{"saturation": payload}};
+                                        break;
+
                                     case 'color_temp':
                                         if ("transition" in node.config && (node.config.transition).length > 0) {
                                             options['transition'] = parseInt(node.config.transition);
@@ -205,16 +236,19 @@ module.exports = function(RED) {
                 msg['state'] = payload.Brightness > 0?"on":"off"
             }
             if (payload.Hue !== undefined) {
-                msg['hue'] = payload.Hue;
+                msg['color'] = {"hue":payload.Hue};
                 msg['state'] = "on";
             }
             if (payload.Saturation !== undefined) {
-                msg['saturation'] = payload.Saturation;
+                msg['color'] = {"saturation":payload.Saturation};
                 msg['state'] = "on";
             }
             if (payload.ColorTemperature !== undefined) {
                 msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [140,500], [50,400]);
                 msg['state'] = "on";
+            }
+            if (payload.LockTargetState !== undefined) {
+                msg['state'] = payload.LockTargetState?"LOCK":"UNLOCK";
             }
 
             return msg;
