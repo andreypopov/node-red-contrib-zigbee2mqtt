@@ -21,7 +21,10 @@
         "no_value": "no value",
         "no_connection": "no connection",
         "searching": "looking for devices...",
-        "paired": "paired!"
+        "paired": "paired!",
+        "pairing": "pairing...",
+        "connected": "connected",
+        "failed": "failed!"
     },
     "tabs": {
         "bridge": "Bridge",

@@ -121,8 +121,11 @@ module.exports = function (RED) {
                         if (message.toString() != "online") {
                             RED.log.error("zigbee2mqtt: bridge status: " + message.toString());
                         }
-                    }
-                    if (node.getBaseTopic() + "/bridge/config/devices" == topic) {
+
+                    } else if (node.getBaseTopic()+'/bridge/config' == topic) {
+                        node.bridge_config = JSON.parse(message.toString());
+
+                    } else if (node.getBaseTopic() + "/bridge/config/devices" == topic) {
                         node.devices = JSON.parse(message.toString());
                         client.end(true);
                     }
@@ -281,9 +284,12 @@ module.exports = function (RED) {
                     node.devices = JSON.parse(messageString);
                 } else if (node.getBaseTopic() + '/bridge/state' == topic) {
                     node.emit('onMQTTBridgeState', {
-                        topic:topic,
-                        payload:message.toString()=="online"
+                        topic: topic,
+                        payload: message.toString() == "online"
                     });
+                } else if (node.getBaseTopic()+'/bridge/config' == topic) {
+                    node.bridge_config = JSON.parse(message.toString());
+
                 } else if (node.getBaseTopic() + '/bridge/log' == topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         var payload = JSON.parse(messageString);
