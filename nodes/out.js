@@ -138,7 +138,8 @@ module.exports = function(RED) {
                                 break;
 
                             case 'homekit':
-                                payload = node.formatHomeKit(message, message['payload']);
+                                payload = node.formatHomeKit(message, node.server.getDeviceById(node.config.device_id));
+                                options['transition'] = 0; //doesnt work well
                                 break;
 
                             case 'json':
@@ -220,11 +221,12 @@ module.exports = function(RED) {
             }
         }
 
-        formatHomeKit(message, payload) {
+        formatHomeKit(message, device) {
             if ("hap" in message && message.hap.context === undefined) {
                 return null;
             }
 
+            var payload = message['payload'];
             var msg = {};
 
             if (payload.On !== undefined) {
@@ -237,14 +239,19 @@ module.exports = function(RED) {
             }
             if (payload.Hue !== undefined) {
                 msg['color'] = {"hue":payload.Hue};
+                if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                if ("color" in device.lastPayload && "saturation" in device.lastPayload.color) msg['color']['saturation'] = device.lastPayload.color.saturation;
                 msg['state'] = "on";
             }
             if (payload.Saturation !== undefined) {
                 msg['color'] = {"saturation":payload.Saturation};
+                if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                if ("color" in device.lastPayload && "hue" in device.lastPayload.color) msg['color']['hue'] = device.lastPayload.color.hue;
                 msg['state'] = "on";
             }
             if (payload.ColorTemperature !== undefined) {
                 msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [140,500], [50,400]);
+                if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
                 msg['state'] = "on";
             }
             if (payload.LockTargetState !== undefined) {

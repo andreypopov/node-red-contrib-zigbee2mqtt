@@ -114,6 +114,9 @@ module.exports = function(RED) {
                         payload = data.payload[node.config.state];
                     } else if (node.config.state.split("homekit_").join('') in homekit_payload) {
                         payload = homekit_payload[node.config.state.split("homekit_").join('')];
+                        // console.log(data.payload);
+                        // console.log(payload);
+                        // console.log('=============');
                     }
                 }
                 if ('Battery' == data.device.powerSource && "battery" in data.payload && parseInt(data.payload.battery)>0) {

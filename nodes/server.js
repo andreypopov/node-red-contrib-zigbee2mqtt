@@ -140,8 +140,6 @@ module.exports = function (RED) {
         getDeviceById(id) {
             var node = this;
             var result = null;
-            console.log('**********');
-            console.log(node.devices_values);
             for (var i in node.devices) {
                 if (id == node.devices[i]['ieeeAddr']) {
                     result = node.devices[i];
@@ -310,7 +308,10 @@ module.exports = function (RED) {
                     //clone object for payload output
                     var payload = {};
                     Object.assign(payload, payload_json);
-
+// console.log('==========MQTT START')
+// console.log(topic);
+// console.log(payload_json);
+// console.log('==========MQTT END')
                     node.devices_values[topic] = payload_json;
                     node.emit('onMQTTMessage', {
                         topic: topic,
