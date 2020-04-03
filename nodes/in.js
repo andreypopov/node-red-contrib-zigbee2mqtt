@@ -88,7 +88,10 @@ module.exports = function(RED) {
         onMQTTMessage(data) {
             var node = this;
 
-            if (data.device && "ieeeAddr" in data.device && data.device.ieeeAddr == node.config.device_id) {
+            // console.log(data.group);
+            // console.log(node.config.device_id);
+            if ( (data.device && "ieeeAddr" in data.device && data.device.ieeeAddr == node.config.device_id)
+            || (data.group && "ID" in data.group && data.group.ID == node.config.device_id) ) {
                 //ignore /set
                 if (data.topic.search(new RegExp(node.server.getBaseTopic()+'\/'+node.config.friendly_name+'\/set')) === 0) {
                     return;
@@ -102,8 +105,16 @@ module.exports = function(RED) {
                 }
 
 
-                var homekit_payload = Zigbee2mqttHelper.payload2homekit(data.payload, data.device);
-                var format_payload = node.formatPayload(data.payload, data.device);
+                if (data.device) {
+                    var homekit_payload = Zigbee2mqttHelper.payload2homekit(data.payload, data.device);
+                    var format_payload = Zigbee2mqttHelper.formatPayload(data.payload, data.device);
+                } else if (data.group) {
+                    var homekit_payload = Zigbee2mqttHelper.payload2homekit(data.payload, data.group);
+                    var format_payload = Zigbee2mqttHelper.formatPayload(data.payload, data.group);
+                } else {
+                    var homekit_payload = null;
+                    var format_payload = null;
+                }
 
                 //text
                 var payload = data.payload;
@@ -112,14 +123,11 @@ module.exports = function(RED) {
                     if (node.config.state in data.payload) {
                         text = data.payload[node.config.state];
                         payload = data.payload[node.config.state];
-                    } else if (node.config.state.split("homekit_").join('') in homekit_payload) {
+                    } else if (homekit_payload && node.config.state.split("homekit_").join('') in homekit_payload) {
                         payload = homekit_payload[node.config.state.split("homekit_").join('')];
-                        // console.log(data.payload);
-                        // console.log(payload);
-                        // console.log('=============');
                     }
                 }
-                if ('Battery' == data.device.powerSource && "battery" in data.payload && parseInt(data.payload.battery)>0) {
+                if (data.device && "powerSource" in data.device && 'Battery' == data.device.powerSource && "battery" in data.payload && parseInt(data.payload.battery)>0) {
                     text += ' ⚡'+data.payload.battery+'%';
                 }
 
@@ -127,6 +135,7 @@ module.exports = function(RED) {
                     payload: payload,
                     payload_raw: data.payload,
                     device: data.device,
+                    group: data.group,
                     homekit: homekit_payload,
                     format: format_payload
                 });
@@ -157,22 +166,7 @@ module.exports = function(RED) {
             }
         }
 
-        formatPayload(payload, device) {
-            var node = this;
-            var result = {};
 
-            //convert XY to RGB, HSV
-            if ("color" in payload && "x" in payload.color) {
-                var bri = "brightness" in payload?payload.brightness:255;
-                var rgb = Zigbee2mqttHelper.cie2rgb(payload.color.x, payload.color.y, bri);
-                var hsv = Zigbee2mqttHelper.rgb2hsv(rgb.r, rgb.g, rgb.b);
-                result['color'] = {
-                    "rgb":rgb,
-                    "hsv":hsv
-                };
-            }
-            return result;
-        }
     }
     RED.nodes.registerType('zigbee2mqtt-in', Zigbee2mqttNodeIn);
 };

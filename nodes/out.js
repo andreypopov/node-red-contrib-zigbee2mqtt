@@ -89,7 +89,10 @@ module.exports = function(RED) {
                                 command = node.config.command;
                                 switch (command) {
                                     case 'state':
+                                        break;
                                     case 'brightness':
+                                        payload = parseInt(payload);
+                                        options["state"] = payload>0?"on":"Off";
                                         break;
 
                                     case 'position':
@@ -230,28 +233,42 @@ module.exports = function(RED) {
             var msg = {};
 
             if (payload.On !== undefined) {
+                if ("lastPayload" in device) {
+                    if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                }
                 msg['state'] = payload.On?"on":"off";
             }
             if (payload.Brightness !== undefined) {
                 msg['brightness'] =  Zigbee2mqttHelper.convertRange(payload.Brightness, [0,100], [0,255]);
+                if ("lastPayload" in device) {
+                    if ("lastPayload" in device) device.lastPayload.brightness = msg['brightness'];
+                }
                 if (payload.Brightness >= 254) payload.Brightness = 255;
                 msg['state'] = payload.Brightness > 0?"on":"off"
             }
             if (payload.Hue !== undefined) {
                 msg['color'] = {"hue":payload.Hue};
-                if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
-                if ("color" in device.lastPayload && "saturation" in device.lastPayload.color) msg['color']['saturation'] = device.lastPayload.color.saturation;
+                if ("lastPayload" in device) {
+                    if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                    if ("color" in device.lastPayload && "saturation" in device.lastPayload.color) msg['color']['saturation'] = device.lastPayload.color.saturation;
+                    if ("color" in device.lastPayload && "hue" in device.lastPayload.color) device.lastPayload.color.hue = payload.Hue;
+                }
                 msg['state'] = "on";
             }
             if (payload.Saturation !== undefined) {
                 msg['color'] = {"saturation":payload.Saturation};
-                if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
-                if ("color" in device.lastPayload && "hue" in device.lastPayload.color) msg['color']['hue'] = device.lastPayload.color.hue;
+                if ("lastPayload" in device) {
+                    if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                    if ("color" in device.lastPayload && "hue" in device.lastPayload.color) msg['color']['hue'] = device.lastPayload.color.hue;
+                    if ("color" in device.lastPayload && "saturation" in device.lastPayload.color) msg['color']['saturation'] = payload.Saturation;
+                }
                 msg['state'] = "on";
             }
             if (payload.ColorTemperature !== undefined) {
                 msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [140,500], [50,400]);
-                if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                if ("lastPayload" in device) {
+                    if ("color_temp" in device.lastPayload)  device.lastPayload.color_temp = msg['color_temp'];
+                }
                 msg['state'] = "on";
             }
             if (payload.LockTargetState !== undefined) {

@@ -11,6 +11,7 @@ module.exports = function (RED) {
             node.connection = false;
             node.topic = node.config.base_topic+'/#';
             node.items = undefined;
+            node.groups = undefined;
             node.devices = undefined;
             node.devices_values = [];
             node.bridge_config = null;
@@ -63,12 +64,13 @@ module.exports = function (RED) {
             node.devices_values = [];
         }
 
-        getDevices(callback, forceRefresh = false) {
+        getDevices(callback, forceRefresh = false, withGroups = false) {
             var node = this;
 
             if (forceRefresh || node.devices === undefined) {
                 node.log('Refreshing devices');
                 node.devices = [];
+                node.groups = [];
 
                 var timeout = null;
                 var timeout_ms = 5000;
@@ -90,7 +92,9 @@ module.exports = function (RED) {
 
                     client.subscribe(node.topic, function (err) {
                         if (!err) {
-                            client.publish(node.getBaseTopic() + "/bridge/config/devices/get", new Date().getTime() + "")
+                            // node.mqtt.publish(node.getBaseTopic() + "/bridge/config/groups", new Date().getTime() + "");
+                            client.publish(node.getBaseTopic() + "/bridge/config/groups", new Date().getTime() + "");
+                            client.publish(node.getBaseTopic() + "/bridge/config/devices/get", new Date().getTime() + "");
                         } else {
                             RED.log.error("zigbee2mqtt: error code #0023: " + err);
                             client.end(true);
@@ -108,11 +112,9 @@ module.exports = function (RED) {
                     clearTimeout(timeout);
 
                     if (typeof (callback) === "function") {
-                        callback(node.devices);
+                        callback(withGroups?[node.devices, node.groups]:node.devices);
                     }
-                    // console.log("return");
-                    // console.log(node.devices);
-                    return node.devices;
+                    return withGroups?[node.devices, node.groups]:node.devices;
                 });
 
                 client.on('message', function (topic, message) {
@@ -120,6 +122,17 @@ module.exports = function (RED) {
                         node.bridge_state = message.toString();
                         if (message.toString() != "online") {
                             RED.log.error("zigbee2mqtt: bridge status: " + message.toString());
+                        }
+
+                    } else if (node.getBaseTopic()+'/bridge/log' == topic) {
+                        var messageString = message.toString();
+                        if (Zigbee2mqttHelper.isJson(messageString)) {
+                            var payload = JSON.parse(messageString);
+                            if ("type" in payload) {
+                                if ("groups" == payload.type) {
+                                    node.groups = payload.message;
+                                }
+                            }
                         }
 
                     } else if (node.getBaseTopic()+'/bridge/config' == topic) {
@@ -133,9 +146,9 @@ module.exports = function (RED) {
             } else {
                 node.log('Using cached devices');
                 if (typeof (callback) === "function") {
-                    callback(node.devices);
+                    callback(withGroups?[node.devices, node.groups]:node.devices);
                 }
-                return node.devices;
+                return withGroups?[node.devices, node.groups]:node.devices;
             }
         }
 
@@ -148,7 +161,7 @@ module.exports = function (RED) {
                     result = node.devices[i];
                     result['lastPayload'] = {};
 
-                    var topic =  node.config.base_topic+'/'+(node.devices[i]['friendly_name']?node.devices[i]['friendly_name']:node.devices[i]['ieeeAddr']);
+                    var topic =  node.getBaseTopic()+'/'+(node.devices[i]['friendly_name']?node.devices[i]['friendly_name']:node.devices[i]['ieeeAddr']);
                     if (topic in node.devices_values) {
                         result['lastPayload'] = node.devices_values[topic];
                         result['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic], node.devices[i])
@@ -159,13 +172,58 @@ module.exports = function (RED) {
             return result;
         }
 
+        getGroupById(id) {
+            var node = this;
+            var result = null;
+            for (var i in node.groups) {
+                if (id == node.groups[i]['ID']) {
+                    result = node.groups[i];
+                    result['lastPayload'] = {};
+
+                    var topic =  node.getBaseTopic()+'/'+(node.groups[i]['friendly_name']?node.groups[i]['friendly_name']:node.groups[i]['ID']);
+                    if (topic in node.devices_values) {
+                        result['lastPayload'] = node.devices_values[topic];
+                        result['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic], node.groups[i])
+                    }
+                    break;
+                }
+            }
+            return result;
+        }
+
+        getLastStateById(id) {
+            var node = this;
+            var device = node.getDeviceById(id);
+            if (device) {
+                return device;
+            }
+            var group = node.getGroupById(id);
+            if (group) {
+                return group;
+            }
+            return {};
+        }
+
         getDeviceByTopic(topic) {
             var node = this;
             var result = null;
             for (var i in node.devices) {
-                if (topic == node.config.base_topic+'/'+node.devices[i]['friendly_name']
-                    || topic == node.config.base_topic+'/'+node.devices[i]['ieeeAddr']) {
+                if (topic == node.getBaseTopic()+'/'+node.devices[i]['friendly_name']
+                    || topic == node.getBaseTopic()+'/'+node.devices[i]['ieeeAddr']) {
                     result = node.devices[i];
+                    break;
+                }
+            }
+            return result;
+        }
+
+        getGroupByTopic(topic) {
+            var node = this;
+            var result = null;
+            for (var i in node.groups) {
+                if (topic == node.getBaseTopic()+'/'+node.groups[i]['friendly_name']
+                    || topic == node.getBaseTopic()+'/'+node.groups[i]['ID']) {
+                    result = node.groups[i];
                     break;
                 }
             }
@@ -294,7 +352,8 @@ module.exports = function (RED) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         var payload = JSON.parse(messageString);
                         if ("type" in payload) {
-                            if ("device_renamed" == payload.type) {
+                            if ("groups" == payload.type) {
+                            } else if ("device_renamed" == payload.type) {
                                 node.getDevices(null, true);
                             }
                         }
@@ -322,7 +381,8 @@ module.exports = function (RED) {
                     node.emit('onMQTTMessage', {
                         topic: topic,
                         payload: payload,
-                        device: node.getDeviceByTopic(topic)
+                        device: node.getDeviceByTopic(topic),
+                        group: node.getGroupByTopic(topic)
                     });
                 }
             }

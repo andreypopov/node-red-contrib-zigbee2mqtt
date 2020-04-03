@@ -30,7 +30,8 @@
         "none_selected": "None selected",
         "complete_payload": "Complete state payload",
         "zigbee2mqtt": "Zigbee2Mqtt",
-        "homekit": "Homekit"
+        "homekit": "Homekit",
+        "groups": "Groups"
     },
     "tip": {
         "deploy": "<b>Important:</b> deploy server node to get devices list"

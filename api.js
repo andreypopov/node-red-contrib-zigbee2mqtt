@@ -24,7 +24,22 @@ module.exports = function(RED) {
                 } else {
                     res.status(404).end();
                 }
-            }, forceRefresh);
+            }, forceRefresh, true);
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'getLastStateById', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var item = controller.getLastStateById(config.device_id);
+            if (item) {
+                res.json([item.lastPayload, item.homekit]);
+            } else {
+                res.status(404).end();
+            }
         } else {
             res.status(404).end();
         }
@@ -44,6 +59,7 @@ module.exports = function(RED) {
             res.status(404).end();
         }
     });
+
 
     RED.httpAdmin.get(NODE_PATH + 'setPermitJoin', function (req, res) {
         var config = req.query;

@@ -32,14 +32,32 @@ function z2m_getItemList(nodeItem, selectedItemElementName, options = {}) {
                         // var selected = false;
                         var groupHtml = '';
                         var names = {};
-                        $.each(data, function(index, value) {
-                            disabled = '';
-                            nameSuffix = '';
 
-                            // if (value.type == "EndDevice") {
+                        var devices = data[0];
+                        var groups = data[1];
+
+                        //groups
+                        groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.groups")});
+                        groupHtml.appendTo(selectedItemElement);
+                        $.each(groups, function(index, value) {
+                            names[value.ID] = value.friendly_name;
+                            var text = '';
+                            if ("devices" in value && typeof(value.devices) != 'undefined' && value.devices.length > 0) {
+                                text = ' ('+value.devices.length+')';
+                            }
+                            $('<option value="' + value.ID + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + text + '</option>').appendTo(groupHtml);
+                        });
+
+                        //devices
+                        groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.devices")});
+                        groupHtml.appendTo(selectedItemElement);
+                        $.each(devices, function(index, value) {
                             names[value.ieeeAddr] = value.friendly_name;
-                            $('<option ' + disabled + ' value="' + value.ieeeAddr + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + ' (' + value.modelID + ')</option>').appendTo(groupHtml ? groupHtml : selectedItemElement);
-                            // }
+                            var model = '';
+                            if ("modelID" in value && typeof(value.modelID) != undefined) {
+                                model = ' (' + value.modelID + ')';
+                            }
+                            $('<option value="' + value.ieeeAddr + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + model + '</option>').appendTo(groupHtml);
                         });
 
                         // Enable item selection
@@ -133,7 +151,7 @@ function z2m_getItemStateList(nodeItem, selectedItemElementName, options = {}) {
 
         var uniqueId = $('#node-input-device_id').val();
         if (controller && uniqueId) {
-            $.getJSON('zigbee2mqtt/getStatesByDevice', {
+            $.getJSON('zigbee2mqtt/getLastStateById', {
                 controllerID: controller.id,
                 device_id:uniqueId
             })
@@ -142,18 +160,21 @@ function z2m_getItemStateList(nodeItem, selectedItemElementName, options = {}) {
                         selectedItemElement.html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/in:multiselect.complete_payload")+'</option>');
 
                         var groupHtml = '';
-                        groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.zigbee2mqtt")});
-                        groupHtml.appendTo(selectedItemElement);
 
-                        $.each(data[0], function(index, value) {
-                            var text = index;
-                            if (typeof(value) != 'object') text +=' ('+value+')';
-                            $('<option  value="' + index +'">'+text+'</option>').appendTo(groupHtml);
-                        });
+                        if (data[0] && Object.keys(data[0]).length) {
+                            groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.zigbee2mqtt")});
+                            groupHtml.appendTo(selectedItemElement);
+
+                            $.each(data[0], function (index, value) {
+                                var text = index;
+                                if (typeof (value) != 'object') text += ' (' + value + ')';
+                                $('<option  value="' + index + '">' + text + '</option>').appendTo(groupHtml);
+                            });
+                        }
 
 
                         //homekit formats
-                        if (Object.keys(data[1]).length) {
+                        if (data[1] && Object.keys(data[1]).length) {
                             // if (options.groups && groupsByName) {
                             groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.homekit")});
                             groupHtml.appendTo(selectedItemElement);
