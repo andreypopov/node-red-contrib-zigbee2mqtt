@@ -104,4 +104,36 @@ module.exports = function(RED) {
         }
     });
 
+    RED.httpAdmin.get(NODE_PATH + 'renameGroup', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var response = controller.renameGroup(config.id, config.newName);
+            res.json(response);
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'removeGroup', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var response = controller.removeGroup(config.id);
+            res.json(response);
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'addGroup', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var response = controller.addGroup(config.name);
+            res.json(response);
+        } else {
+            res.status(404).end();
+        }
+    });
 }

@@ -28,12 +28,25 @@
     },
     "tabs": {
         "bridge": "Bridge",
-        "devices":  "Devices"
+        "devices":  "Devices",
+        "groups":  "Groups"
     },
     "devices": {
         "ieee_addr": "IeeeAddr",
         "friendly_name": "Friendly name",
         "model": "Model",
-        "device": "Device"
+        "device": "Device",
+        "set": "set",
+        "remove": "remove"
+    },
+    "groups": {
+        "id": "ID",
+        "friendly_name": "Friendly name",
+        "devices": "Devices",
+        "set": "set",
+        "remove": "remove",
+        "add": "Add group",
+        "enter_group_name": "Enter group name",
+        "sure_remove": "Are you sure you want to remove group?"
     }
 }

@@ -271,6 +271,52 @@ module.exports = function (RED) {
             return {"success":true,"description":"command sent"};
         }
 
+        renameGroup(id, newName) {
+            var node = this;
+
+            var group = node.getGroupById(id);
+            if (!group) {
+                return {"error":true,"description":"no such group"};
+            }
+
+            if (!newName.length)  {
+                return {"error":true,"description":"can not be empty"};
+            }
+
+            var payload = {
+                "old":group.friendly_name,
+                "new":newName
+            };
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/rename", JSON.stringify(payload));
+            node.log('Rename group '+id+' to '+newName);
+
+            return {"success":true,"description":"command sent"};
+        }
+
+        removeGroup(id) {
+            var node = this;
+
+            var group = node.getGroupById(id);
+            if (!group) {
+                return {"error":true,"description":"no such group"};
+            }
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/remove_group", group.friendly_name);
+            node.log('Remove group: '+group.friendly_name);
+
+            return {"success":true,"description":"command sent"};
+        }
+
+        addGroup(name) {
+            var node = this;
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/add_group", name);
+            node.log('Add group: '+name);
+
+            return {"success":true,"description":"command sent"};
+        }
+
         onMQTTConnect() {
             var node = this;
             node.connection = true;
@@ -352,9 +398,15 @@ module.exports = function (RED) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         var payload = JSON.parse(messageString);
                         if ("type" in payload) {
-                            if ("groups" == payload.type) {
-                            } else if ("device_renamed" == payload.type) {
-                                node.getDevices(null, true);
+                            switch (payload.type) {
+                                case "device_renamed":
+                                case "device_announced":
+                                case "device_removed":
+                                case "group_renamed":
+                                case "group_added":
+                                case "group_removed":
+                                    node.getDevices(null, true);
+                                break;
                             }
                         }
                     }
