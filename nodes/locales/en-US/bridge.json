@@ -10,7 +10,9 @@
         "log_level_debug": "debug",
         "log_level_warn": "warn",
         "log_level_error": "error",
-        "version": "Version"
+        "version": "Version",
+        "refresh": "Refresh",
+        "refresh_all": "Refresh all data"
     },
     "placeholder": {
         "name": "Name"
@@ -37,7 +39,8 @@
         "model": "Model",
         "device": "Device",
         "set": "set",
-        "remove": "remove"
+        "remove": "remove",
+        "sure_remove": "Are you sure you want to remove device?"
     },
     "groups": {
         "id": "ID",

@@ -26,6 +26,10 @@
         <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
         <input type="text" id="node-input-server">
     </div>
+    <div class="form-row">
+        <label for="refreshBtn" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
+        <a class="red-ui-button s-width" id="refreshBtn"><span data-i18n="label.refresh_all"></span></a>
+    </div>
 
     <div id="config_wr" style="display:none;">
         <div class="form-row">
@@ -38,7 +42,7 @@
                 <div class="form-row">
                     <label for="permit_join_btn" class="l-width"><i class="fa fa-share-alt"></i> <span data-i18n="label.permit_join"></span></label>
                     <button style="width: 70%" class="red-ui-button permit_join_btn" id="permit_join_btn"><span data-i18n="label.permit_join_help"></span></button>
-                    <button style="width: 70%" class="red-ui-button permit_join_btn active" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
+                    <button style="width: 70%" class="red-ui-button permit_join_btn" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
                 </div>
                 <div class="form-row">
                     <label for="log_level_info_btn" class="l-width"><i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span></label>
@@ -59,6 +63,7 @@
                         <th style="width:150px"><span data-i18n="devices.friendly_name"></span></th>
                         <th style="width:95%;"><span data-i18n="devices.device"></span></th>
                         <th style="width:50px;"></th>
+                        <th style="width:50px;"></th>
                     </thead>
                     <tbody>
                     </tbody>
@@ -72,7 +77,6 @@
             <a href="#" class="red-ui-item-add red-ui-button"><i class="fa fa-plus"></i>&nbsp;<span data-i18n="groups.add"></span></a>
                 <table class="z2m_table" id="node-z2m-groups_table">
                     <thead>
-                        <th style="width:50px"><span data-i18n="groups.id"></span></th>
                         <th style="width:95%;"><span data-i18n="groups.friendly_name"></span></th>
                         <th style="width:50px;"></th>
                         <th style="width:50px;"></th>
@@ -120,189 +124,217 @@
         oneditprepare: function () {
             var node = this;
 
-            var $permitJoinBtn = $('#permit_join_btn');
-
-            //get config
-            $.getJSON('zigbee2mqtt/getConfig', {
-                controllerID: node.server,
-                permit_join: true
-            }).done(function (data, textStatus, jqXHR) {
-
-                node.tabs = RED.tabs.create({
-                    id: "node-z2m-tabs",
-                    onchange: function(tab) {
-                        $("#node-z2m-tabs-content").children().hide();
-                        $("#" + tab.id).show();
-                    }
-                });
-                node.tabs.addTab({
-                    id: "node-z2m-tab-bridge",
-                    label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.bridge")
-                });
-                node.tabs.addTab({
-                    id: "node-z2m-tab-devices",
-                    label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.devices")
-                });
-                node.tabs.addTab({
-                    id: "node-z2m-tab-groups",
-                    label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.groups")
-                });
-
-
-
-                $('#config_wr').show();
-                $('#config_version').text(data.version);
-
-                $('.log_level_btn').each(function(){
-                    $(this).removeClass('active');
-                });
-                $('.log_level_btn#log_level_'+data.log_level+'_btn').addClass('active');
-
-
-                $('.permit_join_btn').each(function(){
-                    $(this).hide();
-                });
-
-                if (data.permit_join) {
-                    $('#permit_join_cancel_btn').show()
-                } else {
-                    $permitJoinBtn.show();
+            node.tabs = RED.tabs.create({
+                id: "node-z2m-tabs",
+                onchange: function (tab) {
+                    $("#node-z2m-tabs-content").children().hide();
+                    $("#" + tab.id).show();
                 }
-                $('.log_level_btn#log_level_'+data.log_level+'_btn').addClass('active');
+            });
+            node.tabs.addTab({
+                id: "node-z2m-tab-bridge",
+                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.bridge")
+            });
+            node.tabs.addTab({
+                id: "node-z2m-tab-devices",
+                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.devices")
+            });
+            node.tabs.addTab({
+                id: "node-z2m-tab-groups",
+                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.groups")
             });
 
-
-            //log level
-            $('.log_level_btn').on('click', function(){
-                $('.log_level_btn').each(function(){
-                    $(this).removeClass('active');
-                });
-                $(this).addClass('active');
-
-                $.getJSON('zigbee2mqtt/setLogLevel', {
-                    controllerID: node.server,
-                    log_level:  $(this).data('level')
-                }).done(function (data, textStatus, jqXHR) {
-                });
+            $('#refreshBtn').on("click", function(){
+                init(true);
             });
 
-            var timeout = null;
-            //permit join
-            $('#permit_join_cancel_btn').on('click', function(){
-                $permitJoinBtn.show();
-                $('#permit_join_cancel_btn').hide();
-                $.getJSON('zigbee2mqtt/setPermitJoin', {
-                    controllerID: node.server,
-                    permit_join: false
-                });
-            });
+            init(false);
 
-            $permitJoinBtn.on('click', function(){
-                clearTimeout(timeout);
-                $permitJoinBtn.hide();
-                $('#permit_join_cancel_btn').show();
-                $.getJSON('zigbee2mqtt/setPermitJoin', {
+
+
+            function init (force = false) {
+                var $permitJoinBtn = $('#permit_join_btn');
+
+                //get config
+                $.getJSON('zigbee2mqtt/getConfig', {
                     controllerID: node.server,
                     permit_join: true
                 }).done(function (data, textStatus, jqXHR) {
-                    timeout = setTimeout(function(){
+
+
+                    $('#config_wr').show();
+                    $('#config_version').text(data.version);
+
+                    $('.log_level_btn').each(function () {
+                        $(this).removeClass('active');
+                    });
+                    $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
+
+
+                    $('.permit_join_btn').each(function () {
+                        $(this).hide();
+                    });
+
+                    if (data.permit_join) {
+                        $('#permit_join_cancel_btn').show()
+                    } else {
                         $permitJoinBtn.show();
-                        $('#permit_join_cancel_btn').hide();
-                        $.getJSON('zigbee2mqtt/setPermitJoin', {
-                            controllerID: node.server,
-                            permit_join: false
-                        });
-                    }, 60000*3);
+                    }
+                    $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
                 });
-            });
 
 
-            $.getJSON('zigbee2mqtt/getDevices', {
-                controllerID: node.server,
-                forceRefresh: false
-            }).done(function (data, textStatus, jqXHR) {
-
-                var devices = data[0]; //devices
-                if (devices) {
-                    devices.forEach(function (device, index) {
-                        if ("Coordinator" === device.type) return;
-
-                        var input = '<input class="node-input-devices-friendly_name" type="text" value="'+device.friendly_name+'">';
-                        var info = '<div class="device_wr"><span><b>'+device.ieeeAddr+'</b>: '+device.modelID+'</span><div class="help-tips">'+device.description+'</div></div>';
-                        var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button"><i class="fa fa-remove"></i></a>'
-                        var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-ieeeaddr="'+device.ieeeAddr+'"><i class="fa fa-check"></i>&nbsp;'+RED._("node-red-contrib-zigbee2mqtt/bridge:devices.set")+'</a>'
-
-                        $('#node-z2m-devices_table tbody').append('<tr><td>'+input+'</td><td>'+info+'</td><td>'+saveBtn+'</td></tr>');
+                //log level
+                $('.log_level_btn').off('click').on('click', function () {
+                    $('.log_level_btn').each(function () {
+                        $(this).removeClass('active');
                     });
+                    $(this).addClass('active');
 
-                    $('#node-z2m-devices_table .red-ui-item-save').on('click', function(){
-                        var ieeeAddr = $(this).attr('data-ieeeaddr');
-                        var newName = $(this).closest('tr').find('.node-input-devices-friendly_name').val();
+                    $.getJSON('zigbee2mqtt/setLogLevel', {
+                        controllerID: node.server,
+                        log_level: $(this).data('level')
+                    }).done(function (data, textStatus, jqXHR) {
+                    });
+                });
 
-                        $.getJSON('zigbee2mqtt/renameDevice', {
-                            controllerID: node.server,
-                            ieeeAddr: ieeeAddr,
-                            newName: newName
-                        }).done(function (data, textStatus, jqXHR) {
-                            if ("error" in data) alert(data.description);
+                var timeout = null;
+                //permit join
+                $('#permit_join_cancel_btn').off('click').on('click', function () {
+                    $permitJoinBtn.show();
+                    $('#permit_join_cancel_btn').hide();
+                    $.getJSON('zigbee2mqtt/setPermitJoin', {
+                        controllerID: node.server,
+                        permit_join: false
+                    });
+                });
+
+                $permitJoinBtn.off('click').on('click', function () {
+                    clearTimeout(timeout);
+                    $permitJoinBtn.hide();
+                    $('#permit_join_cancel_btn').show();
+                    $.getJSON('zigbee2mqtt/setPermitJoin', {
+                        controllerID: node.server,
+                        permit_join: true
+                    }).done(function (data, textStatus, jqXHR) {
+                        timeout = setTimeout(function () {
+                            $permitJoinBtn.show();
+                            $('#permit_join_cancel_btn').hide();
+                            $.getJSON('zigbee2mqtt/setPermitJoin', {
+                                controllerID: node.server,
+                                permit_join: false
+                            });
+                        }, 60000 * 3);
+                    });
+                });
+
+
+                $.getJSON('zigbee2mqtt/getDevices', {
+                    controllerID: node.server,
+                    forceRefresh: force
+                }).done(function (data, textStatus, jqXHR) {
+
+                    var devices = data[0]; //devices
+                    if (devices) {
+                        $('#node-z2m-devices_table tbody tr').remove();
+                        devices.forEach(function (device, index) {
+                            if ("Coordinator" === device.type) return;
+
+                            var input = '<input class="node-input-devices-friendly_name" type="text" value="' + device.friendly_name + '">';
+                            var info = '<div class="device_wr"><span><b>' + device.ieeeAddr + '</b>: ' + device.modelID + '</span><div class="help-tips">' + device.description + '</div></div>';
+                            var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + device.ieeeAddr + '"><i class="fa fa-remove"></i></a>'
+                            var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-ieeeaddr="' + device.ieeeAddr + '"><i class="fa fa-check"></i>&nbsp;' + RED._("node-red-contrib-zigbee2mqtt/bridge:devices.set") + '</a>'
+
+                            $('#node-z2m-devices_table tbody').append('<tr><td>' + input + '</td><td>' + info + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td><</tr>');
                         });
-                    });
-                }
 
-                var groups = data[1]; //groups
-                if (groups) {
-                    groups.forEach(function (group, index) {
+                        $('#node-z2m-devices_table .red-ui-item-save').on('click', function () {
+                            var ieeeAddr = $(this).attr('data-ieeeaddr');
+                            var newName = $(this).closest('tr').find('.node-input-devices-friendly_name').val();
 
-                        var id = group.ID;
-                        var input = '<input class="node-input-groups-friendly_name" type="text" value="'+group.friendly_name+'">';
-
-                        // var info = '<div class="device_wr"><span><b>'+device.ieeeAddr+'</b>: '+device.modelID+'</span><div class="help-tips">'+device.description+'</div></div>';
-                        var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="'+group.ID+'"><i class="fa fa-remove"></i>&nbsp;'+RED._("node-red-contrib-zigbee2mqtt/bridge:groups.remove")+'</a>'
-                        var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-id="'+group.ID+'"><i class="fa fa-check"></i>&nbsp;'+RED._("node-red-contrib-zigbee2mqtt/bridge:groups.set")+'</a>'
-
-                        $('#node-z2m-groups_table tbody').append('<tr class="group_row_'+group.ID+'"><td>'+id+'</td><td>'+input+'</td><td>'+saveBtn+'</td><td>'+removeBtn+'</td></tr><tr class="group_row_'+group.ID+'><td colspan="4">...</td></tr>');
-                    });
-
-                    $('#node-z2m-groups_table .red-ui-item-save').on('click', function(){
-                        var id = $(this).attr('data-id');
-                        var newName = $(this).closest('tr').find('.node-input-groups-friendly_name').val();
-
-                        $.getJSON('zigbee2mqtt/renameGroup', {
-                            controllerID: node.server,
-                            id: id,
-                            newName: newName
-                        }).done(function (data, textStatus, jqXHR) {
-                            if ("error" in data) alert(data.description);
+                            $.getJSON('zigbee2mqtt/renameDevice', {
+                                controllerID: node.server,
+                                ieeeAddr: ieeeAddr,
+                                newName: newName
+                            }).done(function (data, textStatus, jqXHR) {
+                                if ("error" in data) alert(data.description);
+                            });
                         });
-                    });
-                    $('#node-z2m-groups_table .red-ui-item-remove').on('click', function(){
-                        if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.sure_remove"))) {
+                        $('#node-z2m-devices_table .red-ui-item-remove').on('click', function () {
+                            if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:devices.sure_remove"))) {
+                                var id = $(this).attr('data-id');
+                                $(this).closest('tr').remove();
+
+                                $.getJSON('zigbee2mqtt/removeDevice', {
+                                    controllerID: node.server,
+                                    id: id
+                                }).done(function (data, textStatus, jqXHR) {
+                                    if ("error" in data) alert(data.description);
+                                });
+                            }
+                        });
+                    }
+
+                    var groups = data[1]; //groups
+                    if (groups) {
+                        $('#node-z2m-groups_table tbody tr').remove();
+                        groups.forEach(function (group, index) {
+
+                            var id = group.ID;
+                            var input = '<input class="node-input-groups-friendly_name" type="text" value="' + group.friendly_name + '">';
+
+                            // var info = '<div class="device_wr"><span><b>'+device.ieeeAddr+'</b>: '+device.modelID+'</span><div class="help-tips">'+device.description+'</div></div>';
+                            var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + group.ID + '"><i class="fa fa-remove"></i></a>'
+                            var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-id="' + group.ID + '"><i class="fa fa-check"></i>&nbsp;' + RED._("node-red-contrib-zigbee2mqtt/bridge:groups.set") + '</a>'
+
+                            $('#node-z2m-groups_table tbody').append('<tr class="group_row_' + group.ID + '"><td>' + input + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td></tr><tr class="group_row_' + group.ID + '><td colspan="4">...</td></tr>');
+                        });
+
+                        $('#node-z2m-groups_table .red-ui-item-save').on('click', function () {
                             var id = $(this).attr('data-id');
-                            $('.group_row_'+id).remove();
+                            var newName = $(this).closest('tr').find('.node-input-groups-friendly_name').val();
 
-                            $.getJSON('zigbee2mqtt/removeGroup', {
+                            $.getJSON('zigbee2mqtt/renameGroup', {
                                 controllerID: node.server,
-                                id: id
+                                id: id,
+                                newName: newName
                             }).done(function (data, textStatus, jqXHR) {
                                 if ("error" in data) alert(data.description);
                             });
-                        }
-                    });
-                    $('#node-z2m-tab-groups .red-ui-item-add').on('click', function() {
-                        var name = prompt(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.enter_group_name"), "");
-                        if (name) {
-                            $.getJSON('zigbee2mqtt/addGroup', {
-                                controllerID: node.server,
-                                name: name
-                            }).done(function (data, textStatus, jqXHR) {
-                                if ("error" in data) alert(data.description);
-                            });
-                        }
-                    });
-                }
+                        });
+                        $('#node-z2m-groups_table .red-ui-item-remove').on('click', function () {
+                            if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.sure_remove"))) {
+                                var id = $(this).attr('data-id');
+                                $('.group_row_' + id).remove();
 
-            });
+                                $.getJSON('zigbee2mqtt/removeGroup', {
+                                    controllerID: node.server,
+                                    id: id
+                                }).done(function (data, textStatus, jqXHR) {
+                                    if ("error" in data) alert(data.description);
+                                });
+                            }
+                        });
+                        $('#node-z2m-tab-groups .red-ui-item-add').on('click', function () {
+                            var name = prompt(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.enter_group_name"), "");
+                            if (name) {
+                                $.getJSON('zigbee2mqtt/addGroup', {
+                                    controllerID: node.server,
+                                    name: name
+                                }).done(function (data, textStatus, jqXHR) {
+                                    if ("error" in data) alert(data.description);
 
+
+                                    setTimeout(function(){
+                                        init();
+                                    }, 1000);
+                                });
+                            }
+                        });
+                    }
+
+                });
+            }
 
         },
         oneditsave: function () {

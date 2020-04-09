@@ -271,6 +271,40 @@ module.exports = function (RED) {
             return {"success":true,"description":"command sent"};
         }
 
+        removeDevice(ieeeAddr) {
+            var node = this;
+
+            var device = node.getDeviceById(ieeeAddr);
+            if (!device) {
+                return {"error":true,"description":"no such device"};
+            }
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/force_remove", device.friendly_name);
+            node.log('Remove device: '+device.friendly_name);
+
+            return {"success":true,"description":"command sent"};
+        }
+
+        setDeviceOptions(friendly_name, options) {
+            var node = this;
+            //
+            // var device = node.getDeviceById(ieeeAddr);
+            // if (!device) {
+            //     return {"error":true,"description":"no such device"};
+            // }
+
+            var payload = {};
+            payload['friendly_name'] = friendly_name;
+            payload['options'] = options;
+
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/config/device_options", JSON.stringify(payload));
+            node.log('Set device options: '+JSON.stringify(payload));
+
+            return {"success":true,"description":"command sent"};
+        }
+
+
         renameGroup(id, newName) {
             var node = this;
 
@@ -403,9 +437,19 @@ module.exports = function (RED) {
                                 case "device_announced":
                                 case "device_removed":
                                 case "group_renamed":
-                                case "group_added":
                                 case "group_removed":
                                     node.getDevices(null, true);
+                                break;
+
+                                case "group_added":
+                                    node.setDeviceOptions(payload.message, {"retain": true});
+                                    node.getDevices(null, true);
+                                    break;
+
+                                case "pairing":
+                                    if ("interview_successful" == payload.message) {
+                                        node.setDeviceOptions(payload.meta.friendly_name, {"retain": true})
+                                    }
                                 break;
                             }
                         }

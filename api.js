@@ -104,6 +104,17 @@ module.exports = function(RED) {
         }
     });
 
+    RED.httpAdmin.get(NODE_PATH + 'removeDevice', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var response = controller.removeDevice(config.id, config.newName);
+            res.json(response);
+        } else {
+            res.status(404).end();
+        }
+    });
+
     RED.httpAdmin.get(NODE_PATH + 'renameGroup', function (req, res) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
