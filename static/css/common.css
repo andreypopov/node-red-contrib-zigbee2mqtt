@@ -28,3 +28,24 @@ button.active {
     font-style: italic;
     font-size: 12px;
 }
+
+.red-ui-editor .form-horizontal li.token-input-input-token-facebook input {
+    height:23px !important;
+    width: 50px;
+    padding: 1px 4px;
+    background-color: #fafafa;
+    border: 1px dashed #91bacf;
+    margin: 3px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    font-size: 12px;
+}
+li.token-input-token-facebook {
+    height:19px !important;
+}
+.tokeninput-label {
+    float:left;
+    line-height: 23px;
+    padding: 3px 5px 0 0;
+}

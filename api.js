@@ -147,4 +147,26 @@ module.exports = function(RED) {
             res.status(404).end();
         }
     });
+
+    RED.httpAdmin.get(NODE_PATH + 'removeDeviceFromGroup', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var response = controller.removeDeviceFromGroup(config.deviceId, config.groupId);
+            res.json(response);
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'addDeviceToGroup', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var response = controller.addDeviceToGroup(config.deviceId, config.groupId);
+            res.json(response);
+        } else {
+            res.status(404).end();
+        }
+    });
 }

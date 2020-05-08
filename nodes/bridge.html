@@ -14,9 +14,16 @@
         vertical-align: top;
     }
 </style>
+<script type='text/javascript'>
+    $.getScript('zigbee2mqtt/static/tokeninput/jquery.tokeninput.js');
+</script>
+
+
+
 <script type="text/x-red" data-template-name="zigbee2mqtt-bridge">
     <link rel="stylesheet" href="zigbee2mqtt/static/css/multiple-select.css" type="text/css" />
     <link rel="stylesheet" href="zigbee2mqtt/static/css/common.css" type="text/css" />
+    <link rel="stylesheet" href="zigbee2mqtt/static/tokeninput/token-input-facebook.css" type="text/css" />
 
     <div class="form-row">
         <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
@@ -234,12 +241,15 @@
                     forceRefresh: force
                 }).done(function (data, textStatus, jqXHR) {
 
+                    var tokeninputArr = [];
+                    var tokeninputArrPrePopulate = [];
                     var devices = data[0]; //devices
                     if (devices) {
                         $('#node-z2m-devices_table tbody tr').remove();
                         devices.forEach(function (device, index) {
                             if ("Coordinator" === device.type) return;
 
+                            tokeninputArr.push({'id':device.ieeeAddr, 'name':device.friendly_name, 'model': device.modelID});
                             var input = '<input class="node-input-devices-friendly_name" type="text" value="' + device.friendly_name + '">';
                             var info = '<div class="device_wr"><span><b>' + device.ieeeAddr + '</b>: ' + device.modelID + '</span><div class="help-tips">' + device.description + '</div></div>';
                             var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + device.ieeeAddr + '"><i class="fa fa-remove"></i></a>'
@@ -279,16 +289,65 @@
                     if (groups) {
                         $('#node-z2m-groups_table tbody tr').remove();
                         groups.forEach(function (group, index) {
-
-                            var id = group.ID;
                             var input = '<input class="node-input-groups-friendly_name" type="text" value="' + group.friendly_name + '">';
 
                             // var info = '<div class="device_wr"><span><b>'+device.ieeeAddr+'</b>: '+device.modelID+'</span><div class="help-tips">'+device.description+'</div></div>';
                             var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + group.ID + '"><i class="fa fa-remove"></i></a>'
                             var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-id="' + group.ID + '"><i class="fa fa-check"></i>&nbsp;' + RED._("node-red-contrib-zigbee2mqtt/bridge:groups.set") + '</a>'
 
-                            $('#node-z2m-groups_table tbody').append('<tr class="group_row_' + group.ID + '"><td>' + input + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td></tr><tr class="group_row_' + group.ID + '><td colspan="4">...</td></tr>');
+                            $('#node-z2m-groups_table tbody').append('<tr class="group_row_' + group.ID + '"><td>' + input + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td></tr><tr class="group_row_' + group.ID + '"><td colspan="4" style="padding-bottom:25px;"><input type="hidden" data-group_id="' + group.ID + '" id="tokeninput_'+group.ID+'" class="tokeninput"/></td></tr>');
+
+                            tokeninputArrPrePopulate  = [];
+                            group.devices.forEach(function (key, value) {
+                                tokeninputArrPrePopulate.push({"id":key, "name":key});
+                            });
+                            $("#tokeninput_"+group.ID).tokenInput(tokeninputArr, {
+                                theme:'facebook',
+                                prePopulate:tokeninputArrPrePopulate,
+                                processPrePopulate:true,
+                                hintText:RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.type_to_search"),
+                                noResultsText:RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.no_results"),
+                                searchingText:RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.searching"),
+                                deleteText:'&times;',
+                                animateDropdown:true,
+                                resultsFormatter:function (item) {
+                                    if(item.id!=0){
+                                        return '<li>' + item.name + ' : '+item.model+'</li>'
+                                    }
+                                },
+                                onAdd:function (item) {
+                                    var groupId = this.attr('data-group_id');
+                                    var deviceId = item.id;
+
+                                    $.getJSON('zigbee2mqtt/addDeviceToGroup', {
+                                        controllerID: node.server,
+                                        groupId: groupId,
+                                        deviceId: deviceId,
+                                    }).done(function (data, textStatus, jqXHR) {
+                                        if ("error" in data) alert(data.description);
+                                    });
+                                },
+                                onDelete:function (item) {
+                                    var groupId = this.attr('data-group_id');
+                                    var deviceId = item.id;
+
+                                    $.getJSON('zigbee2mqtt/removeDeviceFromGroup', {
+                                        controllerID: node.server,
+                                        groupId: groupId,
+                                        deviceId: deviceId,
+                                    }).done(function (data, textStatus, jqXHR) {
+                                        if ("error" in data) alert(data.description);
+                                    });
+                                },
+                            });
                         });
+
+
+
+
+
+
+
 
                         $('#node-z2m-groups_table .red-ui-item-save').on('click', function () {
                             var id = $(this).attr('data-id');

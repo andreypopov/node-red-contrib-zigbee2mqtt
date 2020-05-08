@@ -351,6 +351,47 @@ module.exports = function (RED) {
             return {"success":true,"description":"command sent"};
         }
 
+
+        removeDeviceFromGroup(deviceId, groupId) {
+            var node = this;
+            
+            var device = node.getDeviceById(deviceId);
+            if (!device) {
+                device = {"friendly_name":deviceId};
+            }
+
+            var group = node.getGroupById(groupId);
+            if (!group) {
+                return {"error":true,"description":"no such group"};
+            }
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/group/"+group.friendly_name+"/remove", device.friendly_name);
+            node.log('Removing device: '+device.friendly_name  + ' from group: '+group.friendly_name);
+
+            return {"success":true,"description":"command sent"};
+        }
+
+
+        addDeviceToGroup(deviceId, groupId) {
+            var node = this;
+
+
+            var device = node.getDeviceById(deviceId);
+            if (!device) {
+                return {"error":true,"description":"no such device"};
+            }
+
+            var group = node.getGroupById(groupId);
+            if (!group) {
+                return {"error":true,"description":"no such group"};
+            }
+
+            node.mqtt.publish(node.getBaseTopic() + "/bridge/group/"+group.friendly_name+"/add", device.friendly_name);
+            node.log('Adding device: '+device.friendly_name+ ' to group: '+group.friendly_name);
+
+            return {"success":true,"description":"command sent"};
+        }
+
         onMQTTConnect() {
             var node = this;
             node.connection = true;

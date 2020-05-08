@@ -51,5 +51,10 @@
         "add": "Add group",
         "enter_group_name": "Enter group name",
         "sure_remove": "Are you sure you want to remove group?"
+    },
+    "tokeninput": {
+        "searching": "Searching...",
+        "type_to_search": "Type to search device",
+        "no_results": "No results"
     }
 }
