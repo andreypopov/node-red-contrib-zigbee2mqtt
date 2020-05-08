@@ -1,5 +1,7 @@
 const Zigbee2mqttHelper = require('../lib/Zigbee2mqttHelper.js');
 var mqtt = require('mqtt');
+var Viz = require('viz.js');
+var { Module, render } = require('viz.js/full.render.js');
 
 module.exports = function (RED) {
     class ServerNode{
@@ -16,6 +18,7 @@ module.exports = function (RED) {
             node.devices_values = [];
             node.bridge_config = null;
             node.bridge_state = null;
+            node.map = null;
             node.on('close', () => this.onClose());
             node.setMaxListeners(0);
 
@@ -392,6 +395,90 @@ module.exports = function (RED) {
             return {"success":true,"description":"command sent"};
         }
 
+        refreshMap(wait = false) {
+            var node = this;
+
+            return new Promise(function (resolve, reject) {
+                if (wait) {
+                    var timeout = null;
+                    var timeout_ms = 60000 * 5;
+
+                    var options = {
+                        port: node.config.mqtt_port || 1883,
+                        username: node.config.mqtt_username || null,
+                        password: node.config.mqtt_password || null,
+                        clientId: "NodeRed-tmp2-" + node.id
+                    };
+                    var client = mqtt.connect('mqtt://' + node.config.host, options);
+
+                    client.on('connect', function () {
+
+                        //end function after timeout, if now response
+                        timeout = setTimeout(function () {
+                            client.end(true);
+                        }, timeout_ms);
+                        client.subscribe(node.getBaseTopic() + "/bridge/networkmap/graphviz", function (err) {
+                            if (!err) {
+                                client.publish(node.getBaseTopic() + "/bridge/networkmap", 'graphviz');
+                                node.log('Refreshing map and waiting...');
+                            } else {
+                                RED.log.error("zigbee2mqtt: error code #0023: " + err);
+                                client.end(true);
+                                reject({'success':false, 'description':'zigbee2mqtt: error code #0023'});
+                            }
+                        })
+                    });
+
+                    client.on('error', function (error) {
+                        RED.log.error("zigbee2mqtt: error code #0024: " + error);
+                        client.end(true);
+                        reject({'success':false, 'description':'zigbee2mqtt: error code #0024'});
+                    });
+
+                    client.on('end', function (error, s) {
+                        clearTimeout(timeout);
+                    });
+
+                    client.on('message', function (topic, message) {
+                        if (node.getBaseTopic() + "/bridge/networkmap/graphviz" == topic) {
+
+                            var messageString = message.toString();
+                            node.graphviz(messageString).then(function (data) {
+                                resolve({"success": true, "svg": node.map});
+                            }).catch(error => {
+                                reject({'success':false, 'description':'graphviz failed'});
+                            });
+                            client.end(true);
+                        }
+                    })
+                } else {
+                    node.mqtt.publish(node.getBaseTopic() + "/bridge/networkmap", 'graphviz');
+                    node.log('Refreshing map...');
+
+                    resolve({"success": true, "svg": node.map});
+                }
+            });
+        }
+
+        graphviz(payload) {
+            var node = this;
+
+            return new Promise(function (resolve, reject) {
+                var options = {
+                    format:  'svg',
+                    engine: 'circo'
+                };
+                var viz = new Viz({ Module, render });
+                viz.renderString(payload,options).then(result => {
+                    node.map = result;
+                    resolve(result);
+                }).catch(error => {
+                    console.error(error);
+                    reject(error);
+                });
+            });
+        }
+
         onMQTTConnect() {
             var node = this;
             node.connection = true;
@@ -495,6 +582,8 @@ module.exports = function (RED) {
                             }
                         }
                     }
+                } else if (node.getBaseTopic() + '/bridge/networkmap/graphviz' == topic) {
+                    node.graphviz(messageString);
                 }
 
 

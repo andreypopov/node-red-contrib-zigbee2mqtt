@@ -169,4 +169,29 @@ module.exports = function(RED) {
             res.status(404).end();
         }
     });
+
+    RED.httpAdmin.get(NODE_PATH + 'refreshMap', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            controller.refreshMap(true).then(function(response){
+                res.json(response);
+            }).catch(error => {
+                res.status(404).end();
+            });
+        } else {
+            res.status(404).end();
+        }
+    });
+    RED.httpAdmin.get(NODE_PATH + 'showMap', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            var response = controller.map;
+            res.writeHead(200, {'Content-Type': 'image/svg+xml'});
+            res.end(response); // Send the file data to the browser.
+        } else {
+            res.status(404).end();
+        }
+    });
 }

@@ -31,7 +31,8 @@
     "tabs": {
         "bridge": "Bridge",
         "devices":  "Devices",
-        "groups":  "Groups"
+        "groups":  "Groups",
+        "map":  "Map"
     },
     "devices": {
         "ieee_addr": "IeeeAddr",
@@ -51,6 +52,11 @@
         "add": "Add group",
         "enter_group_name": "Enter group name",
         "sure_remove": "Are you sure you want to remove group?"
+    },
+    "map": {
+        "refresh": "Refresh map",
+        "fullscreen": "Open in full screen",
+        "loading": "Loading..."
     },
     "tokeninput": {
         "searching": "Searching...",

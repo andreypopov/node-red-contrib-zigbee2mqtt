@@ -95,6 +95,13 @@
                     <ol id="node-input-groups-container"></ol>
                 </div>
             </div>
+
+
+            <div id="node-z2m-tab-map" class="node-z2m-tab-map" style="position: relative; margin-top: 30px;">
+                <a href="#" id="z2m_map_refresh_btn" class="red-ui-item-add red-ui-button"><i class="fa fa-refresh"></i>&nbsp;<span data-i18n="map.refresh"></span></a>
+                <a href="#" id="z2m_map_fullscreen_btn" style="display:none;" class="red-ui-item-add red-ui-button"><i class="fa fa-external-link"></i>&nbsp;<span data-i18n="map.fullscreen"></span></a>
+                <div id="z2m_map_img"></div>
+            </div>
         </div>
     </div>
 </script>
@@ -149,6 +156,10 @@
             node.tabs.addTab({
                 id: "node-z2m-tab-groups",
                 label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.groups")
+            });
+            node.tabs.addTab({
+                id: "node-z2m-tab-map",
+                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.map")
             });
 
             $('#refreshBtn').on("click", function(){
@@ -235,6 +246,33 @@
                     });
                 });
 
+                $('#z2m_map_refresh_btn').off('click').on('click', function () {
+                    var $btn = $(this);
+                    $('#z2m_map_img').html('');
+                    $btn.find('.fa-refresh').addClass('fa-spin');
+                    $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.loading"));
+                    $('#z2m_map_fullscreen_btn').hide();
+                    $.getJSON('zigbee2mqtt/refreshMap', {
+                        controllerID: node.server
+                    }).done(function (data, textStatus, jqXHR) {
+                        $btn.find('.fa-refresh').removeClass('fa-spin');
+                        $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.refresh"));
+                        $('#z2m_map_fullscreen_btn').show();
+                        $('#z2m_map_img').html(data.svg).find('svg').attr('width','100%').attr('height','100%');
+                    });
+                });
+                $('#z2m_map_fullscreen_btn').off('click').on('click', function () {
+                    var url = '/zigbee2mqtt/showMap?controllerID='+node.server;
+
+                    var win = window.open(url, '_blank');
+                    if (win) {
+                        //Browser has allowed it to be opened
+                        win.focus();
+                    } else {
+                        //Browser has blocked it
+                        alert('Please allow popups for this website');
+                    }
+                });
 
                 $.getJSON('zigbee2mqtt/getDevices', {
                     controllerID: node.server,
