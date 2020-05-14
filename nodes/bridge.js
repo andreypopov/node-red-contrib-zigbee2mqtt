@@ -56,8 +56,19 @@ module.exports = function(RED) {
             }
 
 
-            // if (node.server)  {
-            //     node.on('input', function (message_in) {
+            if (node.server) {
+                node.on('input', function (message_in) {
+                    node.log('Published to mqtt topic: ' + message_in.topic + ' Payload: ' + message_in.payload);
+                    node.server.mqtt.publish(message_in.topic, JSON.stringify(message_in.payload));
+                });
+
+            } else {
+                node.status({
+                    fill: "red",
+                    shape: "dot",
+                    text: "node-red-contrib-zigbee2mqtt/bridge:status.no_server"
+                });
+            }
             //         clearTimeout(node.cleanTimer);
             //
             //         var channels = [];

@@ -174,7 +174,10 @@ module.exports = function(RED) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
         if (controller && controller.constructor.name === "ServerNode") {
-            controller.refreshMap(true).then(function(response){
+
+            // res.json( controller.refreshMap(true));
+
+            controller.refreshMap(true, config.engine).then(function(response){
                 res.json(response);
             }).catch(error => {
                 res.status(404).end();

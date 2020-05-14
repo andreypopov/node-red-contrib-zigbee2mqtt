@@ -98,6 +98,17 @@
 
 
             <div id="node-z2m-tab-map" class="node-z2m-tab-map" style="position: relative; margin-top: 30px;">
+
+
+                <select id="node-input-engine" style="width:100px;display:none;">
+                    <option value="circo" selected>circo</option>
+                    <option value="dot">dot</option>
+                    <option value="fdp">fdp</option>
+                    <option value="neato">neato</option>
+                    <option value="osage">osage</option>
+                    <option value="twopi">twopi</option>
+                 </select>
+
                 <a href="#" id="z2m_map_refresh_btn" class="red-ui-item-add red-ui-button"><i class="fa fa-refresh"></i>&nbsp;<span data-i18n="map.refresh"></span></a>
                 <a href="#" id="z2m_map_fullscreen_btn" style="display:none;" class="red-ui-item-add red-ui-button"><i class="fa fa-external-link"></i>&nbsp;<span data-i18n="map.fullscreen"></span></a>
                 <div id="z2m_map_img"></div>
@@ -253,7 +264,8 @@
                     $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.loading"));
                     $('#z2m_map_fullscreen_btn').hide();
                     $.getJSON('zigbee2mqtt/refreshMap', {
-                        controllerID: node.server
+                        controllerID: node.server,
+                        engine: $('#node-input-engine').val()
                     }).done(function (data, textStatus, jqXHR) {
                         $btn.find('.fa-refresh').removeClass('fa-spin');
                         $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.refresh"));

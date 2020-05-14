@@ -37,16 +37,17 @@ module.exports = function (RED) {
             // console.log(node.config._users);
         }
 
-        connectMQTT() {
+        connectMQTT(clientId = null) {
             var node = this;
             var options = {
                 port: node.config.mqtt_port||1883,
                 username: node.config.mqtt_username||null,
                 password: node.config.mqtt_password||null,
-                clientId:"NodeRed-"+node.id
+                clientId:"NodeRed-"+node.id+(clientId?"-"+clientId:"")
             };
             return mqtt.connect('mqtt://' + node.config.host, options);
         }
+
 
         subscribeMQTT() {
             var node = this;
@@ -78,14 +79,8 @@ module.exports = function (RED) {
                 var timeout = null;
                 var timeout_ms = 5000;
 
-                var options = {
-                    port: node.config.mqtt_port || 1883,
-                    username: node.config.mqtt_username || null,
-                    password: node.config.mqtt_password || null,
-                    clientId: "NodeRed-tmp-" + node.id
-                };
-                var client = mqtt.connect('mqtt://' + node.config.host, options);
 
+                var client = node.connectMQTT('tmp');
                 client.on('connect', function () {
 
                     //end function after timeout, if now response
@@ -357,7 +352,7 @@ module.exports = function (RED) {
 
         removeDeviceFromGroup(deviceId, groupId) {
             var node = this;
-            
+
             var device = node.getDeviceById(deviceId);
             if (!device) {
                 device = {"friendly_name":deviceId};
@@ -395,22 +390,18 @@ module.exports = function (RED) {
             return {"success":true,"description":"command sent"};
         }
 
-        refreshMap(wait = false) {
+
+
+         refreshMap(wait = false, engine = null) {
             var node = this;
+
 
             return new Promise(function (resolve, reject) {
                 if (wait) {
                     var timeout = null;
                     var timeout_ms = 60000 * 5;
 
-                    var options = {
-                        port: node.config.mqtt_port || 1883,
-                        username: node.config.mqtt_username || null,
-                        password: node.config.mqtt_password || null,
-                        clientId: "NodeRed-tmp2-" + node.id
-                    };
-                    var client = mqtt.connect('mqtt://' + node.config.host, options);
-
+                    var client = node.connectMQTT('tmp');
                     client.on('connect', function () {
 
                         //end function after timeout, if now response
@@ -443,7 +434,7 @@ module.exports = function (RED) {
                         if (node.getBaseTopic() + "/bridge/networkmap/graphviz" == topic) {
 
                             var messageString = message.toString();
-                            node.graphviz(messageString).then(function (data) {
+                            node.graphviz(messageString, engine).then(function (data) {
                                 resolve({"success": true, "svg": node.map});
                             }).catch(error => {
                                 reject({'success':false, 'description':'graphviz failed'});
@@ -460,23 +451,14 @@ module.exports = function (RED) {
             });
         }
 
-        graphviz(payload) {
+        async graphviz(payload, engine = null) {
             var node = this;
-
-            return new Promise(function (resolve, reject) {
-                var options = {
-                    format:  'svg',
-                    engine: 'circo'
-                };
-                var viz = new Viz({ Module, render });
-                viz.renderString(payload,options).then(result => {
-                    node.map = result;
-                    resolve(result);
-                }).catch(error => {
-                    console.error(error);
-                    reject(error);
-                });
-            });
+            var options = {
+                format:  'svg',
+                engine: engine?engine:'circo'
+            };
+            var viz = new Viz({ Module, render });
+            return node.map = await viz.renderString(payload,options);
         }
 
         onMQTTConnect() {
