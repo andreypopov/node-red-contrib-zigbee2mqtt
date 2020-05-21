@@ -274,6 +274,9 @@ module.exports = function(RED) {
             if (payload.LockTargetState !== undefined) {
                 msg['state'] = payload.LockTargetState?"LOCK":"UNLOCK";
             }
+            if (payload.TargetPosition !== undefined) {
+                msg['position'] = payload.TargetPosition;
+            }
 
             return msg;
         }
