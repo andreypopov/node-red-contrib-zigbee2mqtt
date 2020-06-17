@@ -1,6 +1,11 @@
 const Zigbee2mqttHelper = require('../lib/Zigbee2mqttHelper.js');
-
 var mqtt = require('mqtt');
+var TimeAgo = require('javascript-time-ago');
+var TimeAgoEn = require('javascript-time-ago/locale/en');
+TimeAgo.addLocale(TimeAgoEn);
+
+
+
 
 module.exports = function(RED) {
     class Zigbee2mqttNodeIn {
@@ -34,6 +39,10 @@ module.exports = function(RED) {
                 if (typeof(node.server.mqtt) === 'object') {
                     node.onMQTTConnect();
                 }
+
+                node.refreshStatusTimer = setInterval(function () {
+                    node.updateTextStatus('ring');
+                }, 60000);
             } else {
                 node.status({
                     fill: "red",
@@ -54,6 +63,8 @@ module.exports = function(RED) {
 
         onMQTTClose() {
             var node = this;
+
+            clearInterval(node.refreshStatusTimer);
 
             //remove listeners
             if (node.listener_onMQTTConnect) {
@@ -88,16 +99,14 @@ module.exports = function(RED) {
         onMQTTMessage(data) {
             var node = this;
 
-            // console.log(data.group);
-            // console.log(node.config.device_id);
+
             if ( (data.device && "ieeeAddr" in data.device && data.device.ieeeAddr == node.config.device_id)
             || (data.group && "ID" in data.group && data.group.ID == node.config.device_id) ) {
                 //ignore /set
                 if (data.topic.search(new RegExp(node.server.getBaseTopic()+'\/'+node.config.friendly_name+'\/set')) === 0) {
                     return;
                 }
-// console.log(data.topic);
-// console.log(data.payload);
+
                 clearTimeout(node.cleanTimer);
                 if (node.firstMsg && !node.config.outputAtStartup) {
                     node.firstMsg = false;
@@ -116,19 +125,14 @@ module.exports = function(RED) {
                     var format_payload = null;
                 }
 
-                //text
+
                 var payload = data.payload;
-                var text = RED._("node-red-contrib-zigbee2mqtt/in:status.received");
                 if (parseInt(node.config.state) != 0) {
                     if (node.config.state in data.payload) {
-                        text = data.payload[node.config.state];
                         payload = data.payload[node.config.state];
                     } else if (homekit_payload && node.config.state.split("homekit_").join('') in homekit_payload) {
                         payload = homekit_payload[node.config.state.split("homekit_").join('')];
                     }
-                }
-                if (data.device && "powerSource" in data.device && 'Battery' == data.device.powerSource && "battery" in data.payload && parseInt(data.payload.battery)>0) {
-                    text += ' ⚡'+data.payload.battery+'%';
                 }
 
                 node.send({
@@ -140,19 +144,60 @@ module.exports = function(RED) {
                     format: format_payload
                 });
 
-                node.status({
-                    fill: "green",
-                    shape: "dot",
-                    text: text
-                });
+                node.updateTextStatus('dot');
 
                 node.cleanTimer = setTimeout(function () {
-                    node.status({
-                        fill: "green",
-                        shape: "ring",
-                        text: text
-                    });
+                    node.updateTextStatus('ring');
                 }, 3000);
+            }
+        }
+
+        updateTextStatus(shape = 'dot') {
+            var node = this;
+
+            var payload = null;
+            var text = RED._("node-red-contrib-zigbee2mqtt/in:status.received");
+            var fill = 'green';
+            var timeSign = '';
+
+            var device = node.server.getDeviceById(node.config.device_id);
+            var group = node.server.getGroupById(node.config.device_id);
+            if (device && "lastPayload" in device) {
+                payload = device.lastPayload;
+            }
+
+            if (payload) {
+                if (parseInt(node.config.state) != 0) {
+                    if (payload && node.config.state in payload) {
+                        text = payload[node.config.state];
+                    }
+                }
+
+                if ("last_seen" in payload && parseInt(payload.last_seen) > 0) {
+                    if (Date.now() - payload.last_seen > 60 * 60 * 24 * 1000) {
+                        timeSign = '❗';
+                        fill = 'red';
+                    } else {
+                        timeSign = '🕑';
+                    }
+
+                    var ago = new TimeAgo('en-EN').format(payload.last_seen, 'twitter');
+                    if (ago) {
+                        text += ' ' + timeSign + ago;
+                    }
+                }
+
+                if (device && "powerSource" in device && 'Battery' == device.powerSource && "battery" in payload && parseInt(payload.battery) > 0) {
+                    text += ' ⚡' + payload.battery + '%';
+                }
+            }
+
+            if (text) {
+                node.status({
+                    fill: fill,
+                    shape: shape,
+                    text: text
+                });
             }
         }
 

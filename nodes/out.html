@@ -240,6 +240,7 @@
                 var payload = $('#node-input-payloadType').val(); //msg
                 var payloadType = $('#node-input-payload').val(); //payload
                 if (command == '{}') command = 'json';
+                if (commandType == 'str') command = 'custom';
 
                 $('.help_block').hide();
                 $('.help_block__'+commandType+'_'+command).show();

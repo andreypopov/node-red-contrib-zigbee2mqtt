@@ -12,7 +12,8 @@
     "mqtt": "^2.18.8",
     "multiple-select": "^1.4.1",
     "request": "^2.81.0",
-    "viz.js": "^2.1.2"
+    "viz.js": "^2.1.2",
+    "javascript-time-ago": "^2.0.7"
   },
   "deprecated": false,
   "description": "Zigbee2mqtt connectivity nodes for node-red",
@@ -39,5 +40,5 @@
     "type": "git",
     "url": "git+https://github.com/andreypopov/node-red-contrib-zigbee2mqtt.git"
   },
-  "version": "0.4.2"
+  "version": "0.5.0"
 }
