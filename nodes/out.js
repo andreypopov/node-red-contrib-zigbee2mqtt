@@ -234,7 +234,8 @@ module.exports = function(RED) {
 
             if (payload.On !== undefined) {
                 if ("lastPayload" in device) {
-                    if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                    // console.log(device.lastPayload);
+                    // if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
                 }
                 msg['state'] = payload.On?"on":"off";
             }

@@ -173,15 +173,21 @@ module.exports = function(RED) {
                     }
                 }
 
+                 var lastSeen = 0;
                 if ("last_seen" in payload && parseInt(payload.last_seen) > 0) {
-                    if (Date.now() - payload.last_seen > 60 * 60 * 24 * 1000) {
+                    lastSeen = parseInt(payload.last_seen);
+                }
+                if ("lastSeen" in payload && parseInt(payload.lastSeen) > 0) {
+                    lastSeen = parseInt(payload.lastSeen);
+                }
+                if (lastSeen > 0) {
+                    if (Date.now() - lastSeen > 60 * 60 * 24 * 1000) {
                         timeSign = '❗';
                         fill = 'red';
                     } else {
                         timeSign = '🕑';
                     }
-
-                    var ago = new TimeAgo('en-EN').format(payload.last_seen, 'twitter');
+                    var ago = new TimeAgo('en-EN').format(lastSeen, 'twitter');
                     if (ago) {
                         text += ' ' + timeSign + ago;
                     }
