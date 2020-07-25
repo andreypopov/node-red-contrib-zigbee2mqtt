@@ -26,6 +26,13 @@
         <label for="node-config-input-mqtt_password" class="l-width"><i class="fa fa-lock"></i> <span data-i18n="label.mqtt_password"></span></label>
         <input type="password" id="node-config-input-mqtt_password" autocomplete="new-password">
     </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-config-input-usetls" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-config-input-usetls" style="width: auto" data-i18n="label.use-tls"></label>
+        <div id="node-config-row-tls" >
+            <label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-tls"><span data-i18n="label.tls-config"></span></label><input style="width: 300px;" type="text" id="node-config-input-tls">
+        </div>
+    </div>
     <div class="form-tips" data-i18n="[html]tip.deploy"></div>
 
 </script>
@@ -54,6 +61,8 @@
                 value: null,
                 required: false
             },
+            tls: {type:"tls-config",required: false},
+            usetls: {value: false},
             base_topic: {
                 value: 'zigbee2mqtt',
                 required: true
