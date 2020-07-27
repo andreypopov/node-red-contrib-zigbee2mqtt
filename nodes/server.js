@@ -45,7 +45,16 @@ module.exports = function (RED) {
                 password: node.config.mqtt_password||null,
                 clientId:"NodeRed-"+node.id+(clientId?"-"+clientId:"")
             };
-            return mqtt.connect('mqtt://' + node.config.host, options);
+
+            let baseUrl='mqtt://';
+
+            var tlsNode = RED.nodes.getNode(node.config.tls);
+            if (tlsNode) {
+                tlsNode.addTLSOptions(options);
+                baseUrl='mqtts://';
+            }
+
+            return mqtt.connect( baseUrl + node.config.host, options);
         }
 
 
