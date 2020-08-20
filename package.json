@@ -40,5 +40,5 @@
     "type": "git",
     "url": "git+https://github.com/andreypopov/node-red-contrib-zigbee2mqtt.git"
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }
