@@ -47,9 +47,9 @@ module.exports = function (RED) {
             };
 
             let baseUrl='mqtt://';
-
+            
             var tlsNode = RED.nodes.getNode(node.config.tls);
-            if (tlsNode) {
+            if (node.config.usetls && tlsNode) {
                 tlsNode.addTLSOptions(options);
                 baseUrl='mqtts://';
             }
