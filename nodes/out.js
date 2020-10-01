@@ -142,12 +142,12 @@ module.exports = function(RED) {
 
                             case 'homekit':
                                 let device = node.server.getDeviceById(node.config.device_id)
-                                
+
                                 if (device === null) {
                                     // Fallback to check for group
                                     device = node.server.getGroupById(node.config.device_id)
                                 }
-                                
+
                                 payload = node.formatHomeKit(message, device);
                                 options['transition'] = 0; //doesnt work well
                                 break;

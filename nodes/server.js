@@ -47,7 +47,7 @@ module.exports = function (RED) {
             };
 
             let baseUrl='mqtt://';
-            
+
             var tlsNode = RED.nodes.getNode(node.config.tls);
             if (node.config.usetls && tlsNode) {
                 tlsNode.addTLSOptions(options);
@@ -82,7 +82,6 @@ module.exports = function (RED) {
 
             if (forceRefresh || node.devices === undefined) {
                 node.log('Refreshing devices');
-                node.devices = [];
                 node.groups = [];
 
                 var timeout = null;
@@ -151,6 +150,7 @@ module.exports = function (RED) {
                     }
                 })
             } else {
+                // console.log(node.devices);
                 node.log('Using cached devices');
                 if (typeof (callback) === "function") {
                     callback(withGroups?[node.devices, node.groups]:node.devices);
@@ -533,8 +533,7 @@ module.exports = function (RED) {
             var node = this;
             var messageString = message.toString();
 
-            // console.log(topic);
-            // console.log(messageString);
+
             //bridge
             if (topic.search(new RegExp(node.getBaseTopic()+'\/bridge\/')) === 0) {
                 if (node.getBaseTopic() + '/bridge/config/devices' == topic) {
@@ -544,6 +543,9 @@ module.exports = function (RED) {
                         topic: topic,
                         payload: message.toString() == "online"
                     });
+                    if (message.toString() == "online") {
+                        node.getDevices(null, true, true);
+                    }
                 } else if (node.getBaseTopic()+'/bridge/config' == topic) {
                     node.bridge_config = JSON.parse(message.toString());
 

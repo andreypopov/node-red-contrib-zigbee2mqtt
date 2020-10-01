@@ -102,8 +102,6 @@ module.exports = function(RED) {
                     }
                 });
 
-
-
             } else {
                 node.status({
                     fill: "red",
