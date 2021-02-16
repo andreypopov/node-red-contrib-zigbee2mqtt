@@ -9,7 +9,7 @@
   "bundleDependencies": false,
   "dependencies": {
     "eventsource": "^0.2.1",
-    "mqtt": "^2.18.8",
+    "mqtt": "^4.2.6",
     "multiple-select": "^1.4.1",
     "request": "^2.81.0",
     "viz.js": "^2.1.2",
@@ -40,5 +40,5 @@
     "type": "git",
     "url": "git+https://github.com/andreypopov/node-red-contrib-zigbee2mqtt.git"
   },
-  "version": "0.6.1"
+  "version": "0.6.3"
 }
