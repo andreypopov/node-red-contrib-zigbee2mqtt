@@ -133,6 +133,7 @@ module.exports = function(RED) {
                                         break;
 
                                     case 'brightness_move':
+                                    case 'brightness_step':
                                     case 'alert':
                                     default: {
                                         break;

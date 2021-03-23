@@ -24,6 +24,7 @@
         "options": "Options:",
         "command_homekit": "This is experimental feature, works only with Lightbulb, Lock Services for now. ",
         "command_brightness_move": "Instead of setting a brightness by value, you can also move it and stop it after a certain time. Example: -5 payload will start moving the brightness down at 5 units per second.",
+        "command_brightness_step": "Instead of setting a brightness by value, you can also change current value up or down.",
         "option_transition": "Specifies the number of seconds the transition to this state takes. Doesn't work for brightness=0, state=toggle."
     }
 }
