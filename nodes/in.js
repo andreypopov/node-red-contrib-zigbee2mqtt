@@ -173,14 +173,14 @@ module.exports = function(RED) {
                     }
                 }
 
-                 var lastSeen = 0;
-                if ("last_seen" in payload && parseInt(payload.last_seen) > 0) {
-                    lastSeen = parseInt(payload.last_seen);
+                var lastSeen = 0;
+                if ("last_seen" in payload) {
+                    lastSeen = new Date(payload.last_seen).getTime();
                 }
                 if ("lastSeen" in payload && parseInt(payload.lastSeen) > 0) {
-                    lastSeen = parseInt(payload.lastSeen);
+                    lastSeen = new Date(payload.lastSeen).getTime();
                 }
-                if (lastSeen > 0) {
+                if (!Number.isNaN(lastSeen)) {
                     if (Date.now() - lastSeen > 60 * 60 * 24 * 1000) {
                         timeSign = '❗';
                         fill = 'red';
