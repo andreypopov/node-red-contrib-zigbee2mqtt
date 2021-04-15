@@ -180,7 +180,7 @@ module.exports = function(RED) {
                 if ("lastSeen" in payload && parseInt(payload.lastSeen) > 0) {
                     lastSeen = new Date(payload.lastSeen).getTime();
                 }
-                if (!Number.isNaN(lastSeen)) {
+                if (!Number.isNaN(lastSeen) && lastSeen > 0) {
                     if (Date.now() - lastSeen > 60 * 60 * 24 * 1000) {
                         timeSign = '❗';
                         fill = 'red';
