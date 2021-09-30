@@ -18,6 +18,9 @@
 .ms-drop li label {
     width:20px !important;
 }
+.ms-drop li span {
+    padding-left:5px !important;
+}
 button.active {
     background-color: #ddd;
 }
