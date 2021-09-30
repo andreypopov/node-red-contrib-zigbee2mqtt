@@ -120,6 +120,12 @@
             } else if (typeof(this.device_id) == 'string') {
                 label = this.device_id;
             }
+
+            if (!this.name && this.command) {
+                let suffix = this.command
+                label = `${label} (${suffix})`;
+            }
+
             return label;
         },
         oneditprepare: function() {

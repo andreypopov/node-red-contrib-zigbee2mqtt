@@ -68,6 +68,11 @@
                 label = this.device_id;
             }
 
+            if (!this.name && this.state) {
+                let suffix = this.state == 0 ? 'complete state' : this.state.replace('homekit_', '')
+                label = `${label} (${suffix})`;
+            }
+
             return label;
         },
         oneditprepare: function () {
