@@ -89,10 +89,16 @@ module.exports = function(RED) {
                                 command = node.config.command;
                                 switch (command) {
                                     case 'state':
+                                        if ("transition" in node.config && (node.config.transition).length > 0) {
+                                            options['transition'] = parseInt(node.config.transition);
+                                        }
                                         break;
                                     case 'brightness':
                                         payload = parseInt(payload);
                                         options["state"] = payload>0?"on":"Off";
+                                        if ("transition" in node.config && (node.config.transition).length > 0) {
+                                            options['transition'] = parseInt(node.config.transition);
+                                        }
                                         break;
 
                                     case 'position':
