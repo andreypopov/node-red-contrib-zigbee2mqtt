@@ -210,8 +210,6 @@
                 } else {
                     $('#node-input-payload').closest('.form-row').show();
                 }
-
-                showHelpBlock();
             });
 
 
@@ -237,7 +235,6 @@
                 var $deviceInput = $('#node-input-device_id');
 
                 z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:false});
-                showHelpBlock();
                 // $deviceInput.on('change', function(){
                 //     z2m_getItemStateList(0, '#node-input-state');
                 // });
@@ -245,6 +242,9 @@
                 //     z2m_getItemStateList(node.state, '#node-input-state');
                 // },100);
             }, 100); //we need small timeout, too fire change event for server select
+
+            let previousCommand = ''
+            let previousCommandType = ''
 
             function showHelpBlock() {
                 var command = $('#node-input-command').val(); //state
@@ -254,10 +254,24 @@
                 if (command == '{}') command = 'json';
                 if (commandType == 'str') command = 'custom';
 
-                $('.help_block').hide();
-                $('.help_block__'+commandType+'_'+command).show();
+                if (previousCommand !== command || previousCommandType !== commandType) {
+                    previousCommand = command
+                    previousCommandType = commandType
+
+                    $('.help_block').hide(() => {
+                        $('.help_block__'+commandType+'_'+command).show();
+                    });
+                }
             }
 
+            showHelpBlock();
+
+            $('#node-input-command').on('change', function(type, value) {
+                showHelpBlock();
+            });
+            $('#node-input-commandType').on('change', function(type, value) {
+                showHelpBlock();
+            });
         }
     });
 </script>
