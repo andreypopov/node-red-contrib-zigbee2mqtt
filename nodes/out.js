@@ -78,6 +78,8 @@ module.exports = function(RED) {
                             }
                         }
 
+                        // Default 0. Might be set to empty which will resolve as NaN.
+                        const transition = parseInt(node.config.transition)
 
                         var command;
                         switch (node.config.commandType) {
@@ -127,8 +129,8 @@ module.exports = function(RED) {
                                         break;
 
                                     case 'color_temp':
-                                        if ("transition" in node.config && (node.config.transition).length > 0) {
-                                            options['transition'] = parseInt(node.config.transition);
+                                        if (!isNaN(transition)) {
+                                            options['transition'] = transition;
                                         }
                                         break;
 
@@ -150,7 +152,11 @@ module.exports = function(RED) {
                                 }
 
                                 payload = node.formatHomeKit(message, device);
-                                options['transition'] = 0; //doesnt work well
+
+                                if (!isNaN(transition)) {
+                                    options['transition'] = transition;
+                                }
+
                                 break;
 
                             case 'json':
