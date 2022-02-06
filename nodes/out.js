@@ -78,8 +78,6 @@ module.exports = function(RED) {
                             }
                         }
 
-                        // Default 0. Might be set to empty which will resolve as NaN.
-                        const transition = parseInt(node.config.transition)
 
                         var command;
                         switch (node.config.commandType) {
@@ -91,16 +89,10 @@ module.exports = function(RED) {
                                 command = node.config.command;
                                 switch (command) {
                                     case 'state':
-                                        if ("transition" in node.config && (node.config.transition).length > 0) {
-                                            options['transition'] = parseInt(node.config.transition);
-                                        }
                                         break;
                                     case 'brightness':
                                         payload = parseInt(payload);
                                         options["state"] = payload>0?"on":"Off";
-                                        if ("transition" in node.config && (node.config.transition).length > 0) {
-                                            options['transition'] = parseInt(node.config.transition);
-                                        }
                                         break;
 
                                     case 'position':
@@ -135,8 +127,8 @@ module.exports = function(RED) {
                                         break;
 
                                     case 'color_temp':
-                                        if (!isNaN(transition)) {
-                                            options['transition'] = transition;
+                                        if ("transition" in node.config && (node.config.transition).length > 0) {
+                                            options['transition'] = parseInt(node.config.transition);
                                         }
                                         break;
 
@@ -150,19 +142,15 @@ module.exports = function(RED) {
                                 break;
 
                             case 'homekit':
-                                let device = node.server.getDeviceById(node.config.device_id)
+                                let device = node.server.getDeviceByKey(node.config.device_id)
 
                                 if (device === null) {
                                     // Fallback to check for group
-                                    device = node.server.getGroupById(node.config.device_id)
+                                    device = node.server.getGroupByKey(node.config.device_id)
                                 }
 
                                 payload = node.formatHomeKit(message, device);
-
-                                if (!isNaN(transition)) {
-                                    options['transition'] = transition;
-                                }
-
+                                options['transition'] = 0; //doesnt work well
                                 break;
 
                             case 'json':
@@ -211,13 +199,18 @@ module.exports = function(RED) {
                             node.log('Published to mqtt topic: ' + node.server.getBaseTopic()+'/'+node.config.friendly_name + '/set : ' + JSON.stringify(toSend));
                             node.server.mqtt.publish(node.server.getBaseTopic()+'/'+node.config.friendly_name + '/set', JSON.stringify(toSend));
 
+                            let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/'+node.config.friendly_name));
                             node.status({
-                                fill: "green",
+                                fill: fill,
                                 shape: "dot",
                                 text: text
                             });
                             node.cleanTimer = setTimeout(function(){
-                                node.status({}); //clean
+                                node.status({
+                                    fill: fill,
+                                    shape: "ring",
+                                    text: text + ' ' + Zigbee2mqttHelper.statusUpdatedAt()
+                                });
                             }, 3000);
                         } else {
                             node.status({
@@ -253,42 +246,42 @@ module.exports = function(RED) {
             var msg = {};
 
             if (payload.On !== undefined) {
-                if ("lastPayload" in device) {
-                    // console.log(device.lastPayload);
-                    // if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
+                if ("current_values" in device) {
+                    // console.log(device.current_values);
+                    // if ("brightness" in device.current_values) msg['brightness'] = device.current_values.brightness;
                 }
                 msg['state'] = payload.On?"on":"off";
             }
             if (payload.Brightness !== undefined) {
                 msg['brightness'] =  Zigbee2mqttHelper.convertRange(payload.Brightness, [0,100], [0,255]);
-                if ("lastPayload" in device) {
-                    if ("lastPayload" in device) device.lastPayload.brightness = msg['brightness'];
+                if ("current_values" in device) {
+                    if ("current_values" in device) device.current_values.brightness = msg['brightness'];
                 }
                 if (payload.Brightness >= 254) payload.Brightness = 255;
                 msg['state'] = payload.Brightness > 0?"on":"off"
             }
             if (payload.Hue !== undefined) {
                 msg['color'] = {"hue":payload.Hue};
-                if ("lastPayload" in device) {
-                    if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
-                    if ("color" in device.lastPayload && "saturation" in device.lastPayload.color) msg['color']['saturation'] = device.lastPayload.color.saturation;
-                    if ("color" in device.lastPayload && "hue" in device.lastPayload.color) device.lastPayload.color.hue = payload.Hue;
+                if ("current_values" in device) {
+                    if ("brightness" in device.current_values) msg['brightness'] = device.current_values.brightness;
+                    if ("color" in device.current_values && "saturation" in device.current_values.color) msg['color']['saturation'] = device.current_values.color.saturation;
+                    if ("color" in device.current_values && "hue" in device.current_values.color) device.current_values.color.hue = payload.Hue;
                 }
                 msg['state'] = "on";
             }
             if (payload.Saturation !== undefined) {
                 msg['color'] = {"saturation":payload.Saturation};
-                if ("lastPayload" in device) {
-                    if ("brightness" in device.lastPayload) msg['brightness'] = device.lastPayload.brightness;
-                    if ("color" in device.lastPayload && "hue" in device.lastPayload.color) msg['color']['hue'] = device.lastPayload.color.hue;
-                    if ("color" in device.lastPayload && "saturation" in device.lastPayload.color) msg['color']['saturation'] = payload.Saturation;
+                if ("current_values" in device) {
+                    if ("brightness" in device.current_values) msg['brightness'] = device.current_values.brightness;
+                    if ("color" in device.current_values && "hue" in device.current_values.color) msg['color']['hue'] = device.current_values.color.hue;
+                    if ("color" in device.current_values && "saturation" in device.current_values.color) msg['color']['saturation'] = payload.Saturation;
                 }
                 msg['state'] = "on";
             }
             if (payload.ColorTemperature !== undefined) {
                 msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [140,500], [50,400]);
-                if ("lastPayload" in device) {
-                    if ("color_temp" in device.lastPayload)  device.lastPayload.color_temp = msg['color_temp'];
+                if ("current_values" in device) {
+                    if ("color_temp" in device.current_values)  device.current_values.color_temp = msg['color_temp'];
                 }
                 msg['state'] = "on";
             }

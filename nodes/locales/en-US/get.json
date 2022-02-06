@@ -5,17 +5,11 @@
         "topic": "Device",
         "state": "Payload output",
         "refresh": "Refresh",
+        "legacy_api": "Legacy API",
         "refresh_devices_list": "Refresh Devices List"
     },
     "placeholder": {
         "name": "Name"
-    },
-    "status": {
-        "no_server": "no server",
-        "no_device": "no device",
-        "no_value": "no value",
-        "no_connection": "no connection",
-        "received": "ok"
     },
     "multiselect": {
         "devices": "Devices",

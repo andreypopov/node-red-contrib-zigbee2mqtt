@@ -15,7 +15,9 @@
     "status": {
         "no_server": "no server",
         "no_device": "no device",
-        "no_connection": "no connection"
+        "no_connection": "no connection",
+        "no_value": "no value",
+        "received": "ok"
     },
     "tip": {
         "deploy": "<b>Important:</b> deploy server node to get devices list"

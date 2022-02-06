@@ -46,7 +46,7 @@
             },
             device_id: {
                 value: null,
-                required: true
+                required: false
             },
             state: {
                 value: ""
@@ -66,11 +66,6 @@
                 label = this.friendly_name;
             } else if (typeof(this.device_id) == 'string') {
                 label = this.device_id;
-            }
-
-            if (!this.name && this.state) {
-                let suffix = this.state == 0 ? 'complete state' : this.state.replace('homekit_', '')
-                label = `${label} (${suffix})`;
             }
 
             return label;
@@ -99,7 +94,7 @@
 
 
             setTimeout(function(){
-                z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:false});
+                z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:true});
 
                 var $deviceInput = $('#node-input-device_id');
                 $deviceInput.on("change", function(){

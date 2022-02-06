@@ -8,12 +8,12 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "eventsource": "^0.2.1",
-    "mqtt": "^4.2.6",
-    "multiple-select": "^1.4.1",
-    "request": "^2.81.0",
+    "eventsource": "^1.1.0",
+    "mqtt": "^4.3.4",
+    "multiple-select": "^1.5.2",
+    "request": "^2.88.2",
     "viz.js": "^2.1.2",
-    "javascript-time-ago": "^2.0.7"
+    "javascript-time-ago": "^2.3.11"
   },
   "deprecated": false,
   "description": "Zigbee2mqtt connectivity nodes for node-red",
@@ -40,5 +40,5 @@
     "type": "git",
     "url": "git+https://github.com/andreypopov/node-red-contrib-zigbee2mqtt.git"
   },
-  "version": "0.6.11"
+  "version": "2.0.0"
 }

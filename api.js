@@ -36,7 +36,7 @@ module.exports = function(RED) {
         if (controller && controller.constructor.name === "ServerNode") {
             var item = controller.getLastStateById(config.device_id);
             if (item) {
-                res.json([item.lastPayload, item.homekit]);
+                res.json([item.current_values, item.homekit]);
             } else {
                 res.status(404).end();
             }
@@ -49,9 +49,9 @@ module.exports = function(RED) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
         if (controller && controller.constructor.name === "ServerNode") {
-            var item = controller.getDeviceById(config.device_id);
+            var item = controller.getDeviceByKey(config.device_id);
             if (item) {
-                res.json([item.lastPayload, item.homekit]);
+                res.json([item.current_values, item.homekit]);
             } else {
                 res.status(404).end();
             }
@@ -60,12 +60,22 @@ module.exports = function(RED) {
         }
     });
 
+    RED.httpAdmin.get(NODE_PATH + 'restart', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.constructor.name === "ServerNode") {
+            controller.restart();
+            res.json({"result":"ok"});
+        } else {
+            res.status(404).end();
+        }
+    });
 
     RED.httpAdmin.get(NODE_PATH + 'setPermitJoin', function (req, res) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
         if (controller && controller.constructor.name === "ServerNode") {
-            controller.setPermitJoin(config.permit_join=='true'?true:false);
+            controller.setPermitJoin(config.permit_join==='true'?true:false);
             res.json({"result":"ok"});
         } else {
             res.status(404).end();
@@ -87,7 +97,7 @@ module.exports = function(RED) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
         if (controller && controller.constructor.name === "ServerNode") {
-            res.json(controller.bridge_config);
+            res.json(controller.bridge_info);
         } else {
             res.status(404).end();
         }
@@ -97,7 +107,7 @@ module.exports = function(RED) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
         if (controller && controller.constructor.name === "ServerNode") {
-            var response = controller.renameDevice(config.ieeeAddr, config.newName);
+            var response = controller.renameDevice(config.ieee_address, config.newName);
             res.json(response);
         } else {
             res.status(404).end();
