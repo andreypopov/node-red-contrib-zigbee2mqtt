@@ -150,7 +150,7 @@ module.exports = function(RED) {
                                 }
 
                                 payload = node.formatHomeKit(message, device);
-                                options['transition'] = 0; //doesnt work well
+                                // options['transition'] = 0; //doesnt work well
                                 break;
 
                             case 'json':

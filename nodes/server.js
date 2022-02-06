@@ -544,8 +544,8 @@ module.exports = function(RED) {
             if ('last_value' in node) {
                 msg.changed = {
                     'old': node.last_value,
-                    'new': payload,
-                    'diff': Zigbee2mqttHelper.objectsDiff(node.last_value, payload)
+                    'new': payload//,
+                    // 'diff': Zigbee2mqttHelper.objectsDiff(node.last_value, payload)
                 };
             }
             msg.payload = payload;
