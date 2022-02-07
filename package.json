@@ -34,11 +34,15 @@
       "bridge": "nodes/bridge.js",
       "server": "nodes/server.js",
       "api": "api.js"
+    },
+    "version": ">=2.0.0",
+    "engines": {
+      "node": ">=12.0.0"
     }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/andreypopov/node-red-contrib-zigbee2mqtt.git"
   },
-  "version": "2.0.2"
+  "version": "2.0.3"
 }
