@@ -20,7 +20,7 @@ module.exports = function(RED) {
                 node.listener_onMQTTMessageBridge = function(data) { node.onMQTTMessageBridge(data); }
                 node.server.on('onMQTTMessageBridge', node.listener_onMQTTMessageBridge);
 
-                node.on('close', () => node.onMQTTClose());
+                node.on('close', () => node.onClose());
 
                 if (typeof(node.server.mqtt) === 'object') {
                     node.onMQTTConnect();
@@ -48,7 +48,7 @@ module.exports = function(RED) {
             }
         }
 
-        onMQTTClose() {
+        onClose() {
             let node = this;
             node.setNodeStatus();
 

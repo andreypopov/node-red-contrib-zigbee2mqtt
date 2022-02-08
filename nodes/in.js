@@ -13,11 +13,19 @@ module.exports = function(RED) {
             node.status({});
 
             if (node.server) {
-                node.server.on('onConnectError', (data) => node.onConnectError(data));
-                node.server.on('onMQTTMessage', (data) => node.onMQTTMessage(data));
-                node.server.on('onMQTTAvailability', (data) => node.onMQTTAvailability(data));
-                node.server.on('onMQTTBridgeState', (data) => node.onMQTTBridgeState(data));
-                node.on('close', () => node.onConnectError());
+                node.listener_onMQTTAvailability = function(data) { node.onMQTTAvailability(data); }
+                node.server.on('onMQTTAvailability', node.listener_onMQTTAvailability);
+
+                node.listener_onConnectError = function(data) { node.onConnectError(); }
+                node.server.on('onConnectError', node.listener_onConnectError);
+
+                node.listener_onMQTTMessage = function(data) { node.onMQTTMessage(data); }
+                node.server.on('onMQTTMessage', node.listener_onMQTTMessage);
+
+                node.listener_onMQTTBridgeState = function(data) { node.onMQTTBridgeState(data); }
+                node.server.on('onMQTTBridgeState', node.listener_onMQTTBridgeState);
+
+                node.on('close', () => node.onClose());
 
             } else {
                 node.status({
@@ -66,6 +74,26 @@ module.exports = function(RED) {
                 shape: "dot",
                 text: "node-red-contrib-zigbee2mqtt/in:status.no_connection"
             });
+        }
+
+
+        onClose() {
+            let node = this;
+
+            if (node.listener_onMQTTAvailability) {
+                node.server.removeListener("onMQTTAvailability", node.listener_onMQTTAvailability);
+            }
+            if (node.listener_onConnectError) {
+                node.server.removeListener("onConnectError", node.listener_onConnectError);
+            }
+            if (node.listener_onMQTTMessage) {
+                node.server.removeListener("onMQTTMessage", node.listener_onMQTTMessage);
+            }
+            if (node.listener_onMQTTBridgeState) {
+                node.server.removeListener("onMQTTBridgeState", node.listener_onMQTTBridgeState);
+            }
+
+            node.onConnectError();
         }
 
         setSuccessfulStatus(obj) {
