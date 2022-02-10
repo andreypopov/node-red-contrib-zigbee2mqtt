@@ -28,3 +28,6 @@ Extra features:
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/3.png?raw=true">
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/4.png?raw=true">
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/5.png?raw=true">
+
+# Support
+Developing and supporting this plugin needs time and efforts. Appreciate your support on [Patreon](https://www.patreon.com/bePatron?u=12661781). Here, you can sign up to be a member and help support my project.

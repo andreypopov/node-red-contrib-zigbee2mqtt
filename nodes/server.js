@@ -85,13 +85,14 @@ module.exports = function(RED) {
                 node.groups = [];
 
                 var timeout = null;
-                var timeout_ms = 5000;
+                var timeout_ms = 60000;
 
                 var client = node.connectMQTT('tmp');
                 client.on('connect', function() {
 
                     //end function after timeout, if now response
                     timeout = setTimeout(function() {
+                        RED.log.error('zigbee2mqtt: getDevices timeout, close connection')
                         client.end(true);
                     }, timeout_ms);
 
