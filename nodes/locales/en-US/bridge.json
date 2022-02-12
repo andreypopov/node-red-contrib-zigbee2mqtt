@@ -20,6 +20,8 @@
         "advanced_output": "Output json",
         "should_be_json": "Should be 'json'",
         "restart_zigbee2mqtt": "Restart zigbee2mqtt",
+        "retain_disabled_error": "force_disable_retain should be FALSE",
+        "mqtt_disable_retain": "Retain mqtt",
         "restart": "Restart",
         "disabled": "disabled",
         "last_seen": "Last seen",

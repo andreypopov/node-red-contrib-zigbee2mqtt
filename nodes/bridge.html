@@ -80,6 +80,10 @@
 <!--                    <span id="config_last_seen"> - </span>-->
 <!--                </div>-->
                 <div class="form-row">
+                    <label for="config_mqtt_disable_retain" class="l-width"><span data-i18n="label.mqtt_disable_retain"></span></label>
+                    <span id="config_mqtt_disable_retain"> - </span>
+                </div>
+                <div class="form-row">
                     <label for="config_availability" class="l-width"><span data-i18n="label.availability"></span></label>
                     <span id="config_availability"> - </span>
                 </div>
@@ -228,6 +232,7 @@
                     // $('#config_last_seen').html(data.config.advanced.last_seen!=='disabled'?'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b> ' + data.config.advanced.last_seen:'<b>'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled")+'</b>');
                     $('#config_availability').html(data.availability!==false?'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>':'<b>'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled")+'</b>');
                     $('#config_restart_required').html(data.restart_required?'<b style="color:#c10000;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.restart_needed")+'</b>':'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>');
+                    $('#config_mqtt_disable_retain').html(data.config.mqtt.force_disable_retain?'<b style="color:#c10000;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.retain_disabled_error")+'</b>':'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>');
 
                     $('.log_level_btn').each(function () {
                         $(this).removeClass('active');
