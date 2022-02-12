@@ -509,12 +509,26 @@ module.exports = function(RED) {
                 return;
             }
 
+            let useProperty = null;
             if (node.config.state && node.config.state !== '0' && payload_all && node.config.state in payload_all) {
                 payload = text = payload_all[node.config.state];
+                useProperty = node.config.state;
             } else if (item.homekit && node.config.state.split("homekit_").join('') in item.homekit) {
                 payload = item.homekit[node.config.state.split("homekit_").join('')];
+                useProperty = node.config.state.split("homekit_").join('');
             } else {
                 payload = payload_all;
+            }
+
+            //add unit
+            if (useProperty) {
+                try {
+                    for (let ind in item.definition.exposes) {
+                        if (item.definition.exposes[ind]['property'] == useProperty) {
+                            text += ' ' + item.definition.exposes[ind]['unit'];
+                        }
+                    }
+                } catch (e) {}
             }
 
             if ('firstMsg' in node && node.firstMsg) {
