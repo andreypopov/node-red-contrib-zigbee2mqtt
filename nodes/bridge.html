@@ -222,34 +222,57 @@
                     controllerID: node.server,
                     permit_join: true
                 }).done(function (data, textStatus, jqXHR) {
+                    if (data) {
+                        $('#config_wr').show();
+                        $('#config_version').text(data.version);
+                        $('#config_coordinator')
+                            .text(data.coordinator.type + ' (' + data.coordinator.meta.revision + ')');
+                        $('#config_legacy_api')
+                            .html(data.config.advanced.legacy_api
+                                ? '<b style="color:#c10000;">' +
+                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.turn_off_legacy_api") + '</b>'
+                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
+                                '</b>');
+                        $('#config_advanced_output')
+                            .html(data.config.advanced.output !== 'json'
+                                ? '<b style="color:#c10000;">' +
+                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.should_be_json") + '</b>'
+                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
+                                '</b>');
+                        // $('#config_last_seen').html(data.config.advanced.last_seen!=='disabled'?'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b> ' + data.config.advanced.last_seen:'<b>'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled")+'</b>');
+                        $('#config_availability')
+                            .html(data.availability !== false ? '<b style="color:green;">' +
+                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") + '</b>' : '<b>' +
+                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled") + '</b>');
+                        $('#config_restart_required')
+                            .html(data.restart_required
+                                ? '<b style="color:#c10000;">' +
+                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.restart_needed") + '</b>'
+                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
+                                '</b>');
+                        $('#config_mqtt_disable_retain')
+                            .html(data.config.mqtt.force_disable_retain
+                                ? '<b style="color:#c10000;">' +
+                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.retain_disabled_error") + '</b>'
+                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
+                                '</b>');
 
+                        $('.log_level_btn').each(function() {
+                            $(this).removeClass('active');
+                        });
+                        $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
 
-                    $('#config_wr').show();
-                    $('#config_version').text(data.version);
-                    $('#config_coordinator').text(data.coordinator.type + ' ('+data.coordinator.meta.revision+')');
-                    $('#config_legacy_api').html(data.config.advanced.legacy_api?'<b style="color:#c10000;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.turn_off_legacy_api")+'</b>':'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>');
-                    $('#config_advanced_output').html(data.config.advanced.output!=='json'?'<b style="color:#c10000;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.should_be_json")+'</b>':'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>');
-                    // $('#config_last_seen').html(data.config.advanced.last_seen!=='disabled'?'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b> ' + data.config.advanced.last_seen:'<b>'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled")+'</b>');
-                    $('#config_availability').html(data.availability!==false?'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>':'<b>'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled")+'</b>');
-                    $('#config_restart_required').html(data.restart_required?'<b style="color:#c10000;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.restart_needed")+'</b>':'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>');
-                    $('#config_mqtt_disable_retain').html(data.config.mqtt.force_disable_retain?'<b style="color:#c10000;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.retain_disabled_error")+'</b>':'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b>');
+                        $('.permit_join_btn').each(function() {
+                            $(this).hide();
+                        });
 
-                    $('.log_level_btn').each(function () {
-                        $(this).removeClass('active');
-                    });
-                    $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
-
-
-                    $('.permit_join_btn').each(function () {
-                        $(this).hide();
-                    });
-
-                    if (data.permit_join) {
-                        $('#permit_join_cancel_btn').show()
-                    } else {
-                        $permitJoinBtn.show();
+                        if (data.permit_join) {
+                            $('#permit_join_cancel_btn').show()
+                        } else {
+                            $permitJoinBtn.show();
+                        }
+                        $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
                     }
-                    $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
                 });
 
                 //restart

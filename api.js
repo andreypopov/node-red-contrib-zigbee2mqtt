@@ -34,9 +34,13 @@ module.exports = function(RED) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
         if (controller && controller.constructor.name === "ServerNode") {
-            var item = controller.getLastStateById(config.device_id);
+            var item = controller.getDeviceOrGroupByKey(config.device_id);
             if (item) {
-                res.json([item.current_values, item.homekit]);
+                let opts = [];
+                if ('definition' in item && 'exposes' in item.definition) {
+                    opts = item.definition.exposes;
+                }
+                res.json([opts, item.homekit]);
             } else {
                 res.status(404).end();
             }
