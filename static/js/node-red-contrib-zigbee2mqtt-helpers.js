@@ -168,9 +168,10 @@ function z2m_getItemStateList(nodeItem, selectedItemElementName, options = {}) {
                             groupHtml.appendTo(selectedItemElement);
 
                             $.each(data[0], function (index, value) {
-                                var text = index;
-                                if (typeof (value) != 'object') text += ' (' + value + ')';
-                                $('<option  value="' + index + '">' + text + '</option>').appendTo(groupHtml);
+                                if ('property' in value) {
+                                    $('<option  value="' + value.property + '">' + value.name + (value.unit ? ', ' + value.unit : '') + '</option>')
+                                        .appendTo(groupHtml);
+                                }
                             });
                         }
 
