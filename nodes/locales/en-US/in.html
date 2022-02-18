@@ -7,6 +7,7 @@
         <dt>Device <span class="property-type">string</span></dt><dd>Select device to listen to</dd>
         <dt class="optional">Payload output <span class="property-type">string</span></dt><dd>Choose option which you want to send to payload</dd>
         <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Output state at startup.<br>
+        <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Send only if value changes. Uncheck it for buttons.<br>
         <b><i>notice #1:</i></b> set <code>retain: true</code> in zigbee2mqtt configuration.yaml for every device (z2m plugin sets it automatically on device add)<br>
         <b><i>notice #2:</i></b> does not output on "Deploy only modified nodes" while there are no changes in current node
         </dd>

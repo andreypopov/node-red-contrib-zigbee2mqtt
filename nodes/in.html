@@ -26,17 +26,13 @@
         <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
         <select id="node-input-state" class="s-width"  data-i18n="[placeholder]multiselect.complete_payload"></select>
     </div>
-<!--    <div class="form-row">-->
-<!--        <label for="node-input-output" class="l-width"><i class="fa fa-sign-out"></i> <span data-i18n="label.output"></span></label>-->
-<!--        <select id="node-input-output" class="s-width">-->
-<!--            <option value="always" data-i18n="label.always">Always</option>-->
-<!--            <option value="onchange" data-i18n="label.on_state_change">On state change</option>-->
-<!--            <option value="onupdate" data-i18n="label.on_update">On update</option>-->
-<!--        </select>-->
-<!--    </div>-->
     <div class="form-row">
         <label for='node-input-outputAtStartup' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.start_output"></span></label>
         <input type="checkbox" id="node-input-outputAtStartup" checked="checked" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.start_output_help"></span></input>
+    </div>
+        <div class="form-row">
+        <label for='node-input-filterChanges' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.filter_changes"></span></label>
+        <input type="checkbox" id="node-input-filterChanges" checked="checked" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.filter_changes_help"></span></input>
     </div>
 </script>
 
@@ -65,6 +61,10 @@
             },
             outputAtStartup: {
                 value: true,
+                required: true
+            },
+            filterChanges: {
+                value: false,
                 required: true
             }
         },

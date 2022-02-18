@@ -54,7 +54,7 @@ module.exports = function(RED) {
             ||  ("id" in data.item && parseInt(data.item.id) === parseInt(node.config.device_id)))
             ) {
                 node.server.nodeSend(node, {
-                    'filter':  true
+                    'filter':  node.config.filterChanges
                 });
             }
         }

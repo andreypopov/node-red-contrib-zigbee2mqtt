@@ -524,7 +524,7 @@ module.exports = function(RED) {
             if (useProperty) {
                 try {
                     for (let ind in item.definition.exposes) {
-                        if (item.definition.exposes[ind]['property'] == useProperty) {
+                        if (item.definition.exposes[ind]['property'] == useProperty && 'unit' in item.definition.exposes[ind]) {
                             text += ' ' + item.definition.exposes[ind]['unit'];
                         }
                     }

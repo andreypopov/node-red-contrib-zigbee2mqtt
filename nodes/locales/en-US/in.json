@@ -11,6 +11,8 @@
         "always": "Always",
         "on_state_change": "On state change",
         "on_update": "On update",
+        "filter_changes": "Filter",
+        "filter_changes_help": "Send only if value changes",
         "output": "Output"
     },
     "placeholder": {
