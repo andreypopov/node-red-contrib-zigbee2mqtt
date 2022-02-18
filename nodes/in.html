@@ -57,7 +57,7 @@
                 required: true
             },
             state: {
-                value: ""
+                value: null
             },
             outputAtStartup: {
                 value: true,
@@ -88,38 +88,6 @@
         },
         oneditprepare: function () {
             var node = this;
-
-            // var $outputSelect = $("#node-input-output");
-            //
-            // // Initialize bootstrap multiselect form
-            // $outputSelect.multipleSelect({
-            //     maxHeight: 300,
-            //     dropWidth: 320,
-            //     single: !(typeof $(this).attr('multiple') !== typeof undefined && $(this).attr('multiple') !== false),
-            //     placeholder: "Always"
-            // });
-
-
-            var updateOutput = function () {
-                var selectedState = $('#node-input-state option:selected').val();
-                var selectedDevice = $('#node-input-device_id option:selected').val();
-
-                // if ( (selectedState != 0 && selectedState != null && selectedDevice.match(/^\d/)) || (node.state != 0 && node.state != null)) {
-                //     $outputSelect.closest('.form-row').show();
-                // } else {
-                //     $outputSelect.closest('.form-row').hide();
-                // }
-                // $outputSelect.multipleSelect('refresh');
-            }
-
-            $('#node-input-state').on("change", function() {
-                var state = $('#node-input-state option:selected').val();
-                if (state) { node.state = state; }
-                // if (parseInt(state) === 0) {$outputSelect.val('always').multipleSelect('refresh');}
-                updateOutput();
-            });
-
-
             setTimeout(function(){
                 var $deviceInput = $('#node-input-device_id');
 
@@ -127,8 +95,6 @@
 
                 $deviceInput.on("change", function(){
                     z2m_getItemStateList(0, '#node-input-state');
-                    var device = $('#node-input-device_id option:selected').val();
-                    updateOutput();
 
                     $('#node-input-friendly_name').val($('#node-input-device_id option:selected').attr('data-friendly_name'));
                 });
@@ -136,8 +102,6 @@
                 setTimeout(function () {
                     z2m_getItemStateList(node.state, '#node-input-state');
                 },100);
-
-                // if (!node.output) { $outputSelect.val('always').multipleSelect('refresh'); }
 
             }, 100); //we need small timeout, too fire change event for server select
         },
@@ -150,6 +114,9 @@
             } else {
                 this.topic = null;
             }
+
+            let $property = $('#node-input-state');
+            this.state = $property.val()!='0'?$property.val():null;
         }
     });
 
