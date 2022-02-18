@@ -676,8 +676,6 @@ module.exports = function(RED) {
                     }
                 } else if (node.getTopic('/bridge/info') === topic) {
                     node.bridge_info = JSON.parse(messageString);
-                // } else if (node.getTopic('/bridge/config') === topic) {
-                    //console.log(JSON.parse(messageString));
                 }
 
                 node.emit('onMQTTMessageBridge', {

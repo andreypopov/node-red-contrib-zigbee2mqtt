@@ -90,91 +90,41 @@ module.exports = function(RED) {
 
         onMQTTMessageBridge(data) {
             let node = this;
-
-            clearTimeout(node.cleanTimer);
+            let payload = Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload;
 
             if (node.server.getTopic('/bridge/state') === data.topic) {
                 node.server.bridge_state = data.payload;
                 node.setNodeStatus();
 
-                node.send({
-                    payload: Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload,
-                    topic: data.topic
-                });
-            } else if (node.server.getTopic('/bridge/logging') == data.topic) {
-
-                if (Zigbee2mqttHelper.isJson(data.payload)) {
-                    let parsedData = JSON.parse(data.payload);
-
-                    if ("type" in parsedData) {
-                        if ("device_connected" === parsedData.type) {
-                            node.status({
-                                fill: "green",
-                                shape: "ring",
-                                text: "node-red-contrib-zigbee2mqtt/bridge:status.connected"
-                            });
-                            node.cleanTimer = setTimeout(function(){
-                                node.setNodeStatus();
-                            }, 3000);
-                        } else if ("pairing" === parsedData.type) {
-                            if ("interview_started" === parsedData.message) {
-                                node.status({
-                                    fill: "yellow",
-                                    shape: "ring",
-                                    text: "node-red-contrib-zigbee2mqtt/bridge:status.pairing"
-                                });
-                                node.cleanTimer = setTimeout(function(){
-                                    node.setNodeStatus();
-                                }, 10000);
-                            } else if ("interview_successful" === parsedData.message) {
-                                node.status({
-                                    fill: "green",
-                                    shape: "dot",
-                                    text: "node-red-contrib-zigbee2mqtt/bridge:status.paired"
-                                });
-                                node.cleanTimer = setTimeout(function(){
-                                    node.setNodeStatus();
-                                }, 3000);
-                            } else if ("interview_failed" === parsedData.message) {
-                                node.status({
-                                    fill: "red",
-                                    shape: "dot",
-                                    text: "node-red-contrib-zigbee2mqtt/bridge:status.failed"
-                                });
-                                node.cleanTimer = setTimeout(function(){
-                                    node.setNodeStatus();
-                                }, 3000);
-                            }
-
-                        } else if ("device_announced" === parsedData.type) {
-
-                        }
-                    }
-
-                    node.send({
-                        payload: parsedData,
-                        topic: data.topic
-                    });
-                } else {
-                    node.send({
-                        payload: data.payload,
-                        topic: data.topic
-                    });
+            } else if (node.server.getTopic('/bridge/info') === data.topic) {
+                if (payload.permit_join && node.status.fill !== 'yellow') {
+                    node.setNodeStatus();
+                } else if (!payload.permit_join && node.status.fill !== 'green') {
+                    node.setNodeStatus();
                 }
-            } else if (node.server.getTopic('/bridge/info') == data.topic) {
-                node.setNodeStatus();
-
-                node.send({
-                    payload: Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload,
-                    topic: data.topic
+            // } else if (node.server.getTopic('/bridge/logging') === data.topic) {
+            } else if (node.server.getTopic('/bridge/response/device/remove') === data.topic) {
+                node.server.getDevices(null, true, true);
+            } else if (node.server.getTopic('/bridge/event') === data.topic) {
+                if (payload && 'type' in payload
+                    && (payload.type === 'device_interview' || payload.type === 'device_leave')) {
+                    node.server.getDevices(null, true, true);
+                }
+                node.status({
+                    fill: "yellow",
+                    shape: "ring",
+                    text: payload.type
                 });
-
-            } else {
-                node.send({
-                    payload: Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload,
-                    topic: data.topic
-                });
+                clearTimeout(node.cleanTimer);
+                node.cleanTimer = setTimeout(function(){
+                    node.setNodeStatus();
+                }, 10000);
             }
+
+            node.send({
+                payload: Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload,
+                topic: data.topic
+            });
         }
     }
     RED.nodes.registerType('zigbee2mqtt-bridge', Zigbee2mqttNodeBridge);
