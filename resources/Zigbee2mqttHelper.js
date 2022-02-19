@@ -295,7 +295,7 @@ class Zigbee2mqttHelper {
     }
 
     static statusUpdatedAt() {
-        return ' [' + new Date().toLocaleDateString('ru-RU') + ' ' + new Date().toLocaleTimeString('ru-RU') + ']'
+        return ' [' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() + ']'
     }
 
     // static objectsDiff(obj1, obj2) {

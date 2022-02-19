@@ -3,13 +3,6 @@ var NODE_PATH = '/zigbee2mqtt/';
 
 module.exports = function(RED) {
 
-    RED.httpAdmin.get(NODE_PATH + 'static/*', function (req, res) {
-        var options = {
-            root: __dirname + '/static/',
-            dotfiles: 'deny'
-        };
-        res.sendFile(req.params[0], options);
-    });
 
 
     RED.httpAdmin.get(NODE_PATH + 'getDevices', function (req, res) {

@@ -1,4 +1,4 @@
-const Zigbee2mqttHelper = require('../lib/Zigbee2mqttHelper.js');
+const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
 
 module.exports = function(RED) {
 

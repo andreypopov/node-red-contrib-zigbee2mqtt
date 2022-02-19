@@ -1,4 +1,4 @@
-const Zigbee2mqttHelper = require('../lib/Zigbee2mqttHelper.js');
+const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
 var mqtt = require('mqtt');
 var Viz = require('viz.js');
 var {Module, render} = require('viz.js/full.render.js');
