@@ -1,256 +1,257 @@
-function z2m_getItemList(nodeItem, selectedItemElementName, options = {}) {
+class Zigbee2MqttEditor {
+    constructor(node, config = {}) {
+        this.node = node;
+        this.devices = null;
+        this.config = Object.assign( {
+            allow_empty:false
+        }, config);
+        this.device_id = node.device_id||null;
+        this.property = node.state||null;
+        this.optionsValue = node.optionsValue||null;
+        this.optionsType = node.optionsType||null;
+        this.refresh = false;
 
-    options = $.extend({
-        filterType:'',
-        disableReadonly:false,
-        refresh:false,
-        allowEmpty:false
-    }, options);
+        return this;
+    }
 
-    function z2m_updateItemList(controller, selectedItemElement, itemName, refresh = false) {
-        // Remove all previous and/or static (if any) elements from 'select' input element
-        selectedItemElement.children().remove();
-
-
-        if (controller) {
-            selectedItemElement.multipleSelect('disable');
-
-            $.getJSON('zigbee2mqtt/getDevices', {
-                controllerID: controller.id,
-                forceRefresh: refresh
-            })
-                .done(function (data, textStatus, jqXHR) {
-                    try {
-
-                        if (options.allowEmpty) {
-                            selectedItemElement.html('<option value="">msg.topic</option>');
-                        }
-
-
-                        var optgroup = '';
-                        var disabled = '';
-                        var nameSuffix = '';
-                        // var selected = false;
-                        var groupHtml = '';
-                        var names = {};
-
-                        var devices = data[0];
-                        var groups = data[1];
-
-                        //groups
-                        groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.groups")});
-                        groupHtml.appendTo(selectedItemElement);
-                        $.each(groups, function(index, value) {
-                            names[value.id] = value.friendly_name;
-                            var text = '';
-                            if ("devices" in value && typeof(value.devices) != 'undefined' && value.devices.length > 0) {
-                                text = ' ('+value.devices.length+')';
-                            }
-                            $('<option value="' + value.id + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + text + '</option>').appendTo(groupHtml);
-                        });
-
-                        //devices
-                        groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.devices")});
-                        groupHtml.appendTo(selectedItemElement);
-                        $.each(devices, function(index, value) {
-                            names[value.ieee_address] = value.friendly_name;
-                            var model = '';
-                            if ("definition" in value && value.definition && "model" in value.definition && typeof(value.definition.model) !== undefined) {
-                                model = ' (' + value.definition.model + ')';
-                            }
-                            $('<option value="' + value.ieee_address + '" data-friendly_name="'+value.friendly_name+'">' + value.friendly_name + model + '</option>').appendTo(groupHtml);
-                        });
-
-                        // Enable item selection
-                        selectedItemElement.multipleSelect('enable');
-                        // Finally, set the value of the input select to the selected value
-                        selectedItemElement.val(itemName);
-                        // Rebuild bootstrap multiselect form
-                        selectedItemElement.multipleSelect('refresh');
-
-                        // // Trim selected item string length with elipsis
-                        var selectItemSpanElement = $(`span.multiselect-selected-text:contains("${itemName}")`);
-                        var sHTML = selectItemSpanElement.html();
-                        selectItemSpanElement.html(z2m_truncateWithEllipses(sHTML, 35));
-
-                        $('#node-input-friendly_name').val(names[itemName]);
-                    } catch (error) {
-                        console.error('Error #4534');
-                        console.log(error);
-                    }
-                })
-                .fail(function (jqXHR, textStatus, errorThrown) {
-                    // Disable item selection if no items were retrieved
-                    selectedItemElement.multipleSelect('disable');
-                    selectedItemElement.multipleSelect('refresh');
-                    //console.error(`Error: ${errorThrown}`);
-                });
-
-        } else {
-            // Disable item selection if no (valid) controller was selected
-            selectedItemElement.multipleSelect('disable');
-            selectedItemElement.multipleSelect('refresh');
+    bind() {
+        let that = this;
+        that.getRefreshBtn().off('click').on('click', () => {
+            that.refresh = true;
+            that.build();
+        });
+        that.getServerInput().off('change').on('change', () => {
+            that.device_id = null;
+            that.property = null;
+            that.refresh = true;
+            that.build();
+        });
+        that.getDeviceIdInput().off('change').on('change', () => {
+            that.device_id = that.getDeviceIdInput().val();
+            that.build();
+        });
+        if (that.getDeviceOptionsTypeInput()) {
+            that.getDeviceOptionsTypeInput().off('change').on('change', (event, type, value) => {
+                that.optionsValue = value;
+                that.optionsType = type;
+            });
         }
     }
 
-
-    var ServerElement = $('#node-input-server');
-    var refreshListElement = $('#force-refresh');
-    var selectedItemElement = $(selectedItemElementName);
-
-
-    // Initialize  multiselect
-    selectedItemElement.multipleSelect({
-        maxHeight: 300,
-        dropWidth: 320,
-        width: 320,
-        filter: true,
-        minimumCountSelected:1
-    });
-
-    var values = [];
-    var isMultiple = selectedItemElement.attr('multiple')!==undefined;
-    if (isMultiple) {
-        values = selectedItemElement.val().length ? selectedItemElement.val() : nodeItem;
-    } else {
-        values = selectedItemElement.val() || nodeItem;
+    async build() {
+        let that = this;
+        // console.log('build : '+(this.refresh?'true':false));
+        await that.buildDeviceIdInput().then(()=>{
+            that.buildDevicePropertyInput();
+            that.buildDeviceOptionsInput();
+        });
+        that.bind();
     }
 
-    // Initial call to populate item list
-    z2m_updateItemList(RED.nodes.node(ServerElement.val()), selectedItemElement, values, false);
+    async buildDeviceIdInput() {
+        let that = this;
+        // console.log('BUILD buildDeviceIdInput');
 
-    // onChange event handler in case a new controller gets selected
-    ServerElement.change(function (event) {
-        z2m_updateItemList(RED.nodes.node(ServerElement.val()), selectedItemElement, values, true);
-    });
-    refreshListElement.click(function (event) {
-        // Force a refresh of the item list
-        z2m_updateItemList(RED.nodes.node(ServerElement.val()), selectedItemElement, values, true);
-    });
-}
+        that.getDeviceIdInput().children().remove();
+        that.getDeviceIdInput().multipleSelect('destroy').multipleSelect({
+            maxHeight: 300,
+            dropWidth: 320,
+            width: 320,
+            filter: true,
+            minimumCountSelected:1
+        }).multipleSelect('disable');
 
-function z2m_truncateWithEllipses(text, max = 30) {
-    if (text) {
-        return text.substr(0, max - 1) + (text.length > max ? '&hellip;' : '');
-    } else {
-        return text;
+        let data = await that.getDevices();
+
+        if (that.config.allow_empty) {
+            that.getDeviceIdInput().html('<option value="">msg.topic</option>');
+        }
+
+        var names = {};
+        let html = '';
+
+        //groups
+        let groups = data[1];
+        if (groups.length) {
+            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.groups")});
+            html.appendTo(that.getDeviceIdInput());
+            $.each(groups, function(index, value) {
+                names[value.id] = value.friendly_name;
+                let text = '';
+                if ("devices" in value && typeof (value.devices) != 'undefined' && value.devices.length > 0) {
+                    text = ' (' + value.devices.length + ')';
+                }
+                $('<option value="' + value.id + '" data-friendly_name="' + value.friendly_name + '">' + value.friendly_name + text + '</option>')
+                    .appendTo(html);
+            });
+        }
+
+        //devices
+        let devices = data[0];
+        if (devices.length) {
+            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.devices")});
+            html.appendTo(that.getDeviceIdInput());
+            $.each(devices, function(index, value) {
+                names[value.ieee_address] = value.friendly_name;
+                var model = '';
+                if ("definition" in value && value.definition && "model" in value.definition && typeof (value.definition.model) !== undefined) {
+                    model = ' (' + value.definition.model + ')';
+                }
+                $('<option value="' + value.ieee_address + '" data-friendly_name="' + value.friendly_name + '">' + value.friendly_name + model + '</option>')
+                    .appendTo(html);
+            });
+        }
+
+        that.getDeviceIdInput().multipleSelect('enable');
+        that.getDeviceIdInput().val(that.device_id);
+        that.getDeviceIdInput().multipleSelect('refresh');
+        that.getDeviceFriendlyNameInput().val(names[that.device_id]);
+
+        return this;
     }
-}
+
+    async buildDevicePropertyInput() {
+        let that = this;
+        if (!that.getDevicePropertyInput()) return;
+        //console.log('BUILD buildDevicePropertyInput');
+
+        that.getDevicePropertyInput().children().remove();
+        that.getDevicePropertyInput().multipleSelect('destroy').multipleSelect({
+            numberDisplayed: 1,
+            dropWidth: 320,
+            width: 320,
+            single: !(typeof $(this).attr('multiple') !== typeof undefined && $(this).attr('multiple') !== false)
+        }).multipleSelect('disable');
 
 
+        let data = await that.getDevices();
 
-function z2m_getItemStateList(nodeItem, selectedItemElementName, options = {}) {
+        that.getDevicePropertyInput().html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/server:editor.complete_payload")+'</option>');
 
-    options = $.extend({
-        filterType:'',
-        disableReadonly:false,
-        refresh:false
-    }, options);
+        let html = '';
 
-    function z2m_updateItemStateList(controller, selectedItemElement, itemName) {
-        // Remove all previous and/or static (if any) elements from 'select' input element
-        selectedItemElement.children().remove();
+        let device = that.getDevice();
 
-        var uniqueId = $('#node-input-device_id').val();
-        if (controller && uniqueId) {
-            $.getJSON('zigbee2mqtt/getLastStateById', {
-                controllerID: controller.id,
-                device_id:uniqueId
-            })
-                .done(function (data, textStatus, jqXHR) {
-                    try {
-                        selectedItemElement.html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/in:multiselect.complete_payload")+'</option>');
+        if (device && 'definition' in device && device.definition && 'exposes' in device.definition) {
+            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.zigbee2mqtt")});
+            html.appendTo(that.getDevicePropertyInput());
 
-                        var groupHtml = '';
+            $.each(device.definition.exposes, function(index, value) {
+                if ('property' in value) {
+                    $('<option  value="' + value.property + '">' + value.name + (value.unit ? ', ' + value.unit : '') + '</option>')
+                        .appendTo(html);
+                }
+            });
+        }
 
-                        if (data[0] && Object.keys(data[0]).length) {
-                            groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.zigbee2mqtt")});
-                            groupHtml.appendTo(selectedItemElement);
+        if (device && 'homekit' in device && Object.keys(device.homekit).length) {
+            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.homekit")});
+            html.appendTo(that.getDevicePropertyInput());
 
-                            $.each(data[0], function (index, value) {
-                                if ('property' in value) {
-                                    $('<option  value="' + value.property + '">' + value.name + (value.unit ? ', ' + value.unit : '') + '</option>')
-                                        .appendTo(groupHtml);
-                                }
-                            });
-                        }
+            $.each(device.homekit, function (index, value) {
+                $('<option  value="homekit_' + index + '">' + index + '</option>').appendTo(html);
+            });
+        }
 
-
-                        //homekit formats
-                        if (data[1] && Object.keys(data[1]).length) {
-                            // if (options.groups && groupsByName) {
-                            groupHtml = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/in:multiselect.homekit")});
-                            groupHtml.appendTo(selectedItemElement);
-
-                            $.each(data[1], function (index, value) {
-                                $('<option  value="homekit_' + index + '">' + index + '</option>').appendTo(groupHtml);
-                            });
-                        }
-
-
-                        // Enable item selection
-                        selectedItemElement.multipleSelect('enable');
-
-                        // console.log('=======>');console.log(itemName);
-                        // Finally, set the value of the input select to the selected value
-                        if (selectedItemElement.find('option[value='+itemName+']').length) {
-                            selectedItemElement.val(itemName);
-                        } else {
-                            selectedItemElement.val(selectedItemElement.find('option').eq(0).attr('value'));
-                        }
-
-                        selectedItemElement.multipleSelect('destroy');
-
-                        // Trim selected item string length with elipsis
-                        var selectItemSpanElement = $(`span.multiselect-selected-text:contains("${itemName}")`);
-                        var sHTML = selectItemSpanElement.html();
-                        selectItemSpanElement.html(z2m_truncateWithEllipses(sHTML, 35));
-
-                    } catch (error) {
-                        console.error('Error #4534');
-                        console.log(error);
-                    }
-
-                })
-                .fail(function (jqXHR, textStatus, errorThrown) {
-                    // Disable item selection if no items were retrieved
-                    selectedItemElement.multipleSelect('disable');
-                    selectedItemElement.multipleSelect('refresh');
-                    //console.error(`Error: ${errorThrown}`);
-                });
-
+        that.getDevicePropertyInput().multipleSelect('enable');
+        if (that.getDevicePropertyInput().find('option[value='+that.property+']').length) {
+            that.getDevicePropertyInput().val(that.property);
         } else {
-            selectedItemElement.html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/in:multiselect.complete_payload")+'</option>');
+            that.getDevicePropertyInput().val(that.getDevicePropertyInput().find('option').eq(0).attr('value'));
+        }
+        that.getDevicePropertyInput().multipleSelect('refresh');
+    }
 
-            // Disable item selection if no (valid) controller was selected
-            // selectedItemElement.multipleSelect('disable');
-            selectedItemElement.multipleSelect('refresh');
+    buildDeviceOptionsInput() {
+        let that = this;
+        if (!that.getDeviceOptionsInput()) return;
+        //console.log('BUILD buildDeviceOptionsInput');
+        let device = that.getDevice();
+        let options = [];
+        options.push({'value': 'nothing', 'label': RED._("node-red-contrib-zigbee2mqtt/server:editor.nothing"), options:['']});
+        options.push('msg');
+        options.push('json');
+        if (device && 'definition' in device && device.definition && 'options' in device.definition) {
+            $.each(device.definition.options, function(k, v) {
+                options.push({'value': v.property, 'label': v.name});
+            });
+        }
+        that.getDeviceOptionsInput().typedInput({
+            default: null,
+            value: that.optionsType,
+            typeField: that.getDeviceOptionsTypeInput(),
+        });
+        that.getDeviceOptionsInput().typedInput('types', options);
+        that.getDeviceOptionsInput().typedInput('type', that.optionsType);
+        that.getDeviceOptionsInput().typedInput('value', that.optionsValue);
+    }
+
+    async getDevices() {
+        let that = this;
+        if (that.devices === null || that.refresh) {
+            const response = await fetch('zigbee2mqtt/getDevices?' + new URLSearchParams({
+                controllerID: that.getServerInput().val(),
+                forceRefresh: that.refresh
+            }).toString(), {
+                method: 'GET',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            that.refresh = false;
+            that.devices = await response.json();
+            return that.devices;
+        } else {
+            return await new Promise(function(resolve, reject) {
+                resolve(that.devices);
+            });
         }
     }
 
+     getDevice() {
+        let that = this;
+        let devices = that.devices[0];
+        let device = null;
+        if (devices.length) {
+            $.each(devices, function (index, item) {
+                if (item.ieee_address === that.device_id) {
+                    device = item;
+                    return false;
+                }
+            });
+        }
+        return device;
+    }
 
-    var deServerElement = $('#node-input-server');
-    var selectedItemElement = $(selectedItemElementName);
+    getDeviceIdInput() {
+        return $('#node-input-device_id');
+    }
 
+    getDevicePropertyInput() {
+        let $elem = $('#node-input-state');
+        return $elem.length?$elem:null;
+    }
 
+    getDeviceOptionsInput() {
+        let $elem = $('#node-input-optionsValue');
+        return $elem.length?$elem:null;
+    }
 
+    getDeviceOptionsTypeInput() {
+        let $elem = $('#node-input-optionsType');
+        return $elem.length?$elem:null;
+    }
 
-    // Initialize bootstrap multiselect form
-    selectedItemElement.multipleSelect('destroy');
-    selectedItemElement.multipleSelect({
-        numberDisplayed: 1,
-        dropWidth: 320,
-        width: 320,
-        single: !(typeof $(this).attr('multiple') !== typeof undefined && $(this).attr('multiple') !== false)
-    });
+    getDeviceFriendlyNameInput() {
+        return $('#node-input-friendly_name');
+    }
 
+    getServerInput() {
+        return $('#node-input-server');
+    }
 
-    // Initial call to populate item list
-    z2m_updateItemStateList(RED.nodes.node(deServerElement.val()), selectedItemElement, selectedItemElement.val() || nodeItem);
-
-    // onChange event handler in case a new controller gets selected
-    deServerElement.change(function (event) {
-        z2m_updateItemStateList(RED.nodes.node(deServerElement.val()), selectedItemElement, selectedItemElement.val() || nodeItem);
-    });
+    getRefreshBtn() {
+        return $('#force-refresh');
+    }
 }
-

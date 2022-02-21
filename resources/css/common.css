@@ -52,3 +52,5 @@ li.token-input-token-facebook {
     line-height: 23px;
     padding: 3px 5px 0 0;
 }
+
+.ms-drop ul > li .disabled  {color: #2a2a2a !important;font-weight: bold!important;opacity: 1!important;}

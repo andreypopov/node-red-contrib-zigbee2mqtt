@@ -5,6 +5,7 @@
         "topic": "Device",
         "command": "Command",
         "payload": "Payload",
+        "options": "Options",
         "transition": "Transition, sec",
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List"

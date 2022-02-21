@@ -21,5 +21,13 @@
     },
     "tip": {
         "deploy": "<b>Important:</b> deploy server node to get devices list"
+    },
+    "editor": {
+        "groups": "Groups",
+        "devices": "Devices",
+        "nothing": "Nothing",
+        "complete_payload": "Complete payload",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "homekit": "Apple Homekit"
     }
 }

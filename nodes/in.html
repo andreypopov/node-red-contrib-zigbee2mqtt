@@ -19,18 +19,18 @@
         <select id="node-input-device_id" class="s-width" data-single="true"></select>
     </div>
     <div class="form-row">
-        <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
-        <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
-    </div>
-    <div class="form-row">
         <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
         <select id="node-input-state" class="s-width"  data-i18n="[placeholder]multiselect.complete_payload"></select>
+    </div>
+    <div class="form-row">
+        <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
+        <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
     </div>
     <div class="form-row">
         <label for='node-input-outputAtStartup' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.start_output"></span></label>
         <input type="checkbox" id="node-input-outputAtStartup" checked="checked" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.start_output_help"></span></input>
     </div>
-        <div class="form-row">
+    <div class="form-row">
         <label for='node-input-filterChanges' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.filter_changes"></span></label>
         <input type="checkbox" id="node-input-filterChanges" checked="checked" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.filter_changes_help"></span></input>
     </div>
@@ -87,23 +87,8 @@
             return label;
         },
         oneditprepare: function () {
-            var node = this;
-            setTimeout(function(){
-                var $deviceInput = $('#node-input-device_id');
-
-                z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:false});
-
-                $deviceInput.on("change", function(){
-                    z2m_getItemStateList(0, '#node-input-state');
-
-                    $('#node-input-friendly_name').val($('#node-input-device_id option:selected').attr('data-friendly_name'));
-                });
-
-                setTimeout(function () {
-                    z2m_getItemStateList(node.state, '#node-input-state');
-                },100);
-
-            }, 100); //we need small timeout, too fire change event for server select
+            let node = this;
+            new Zigbee2MqttEditor(node).build();
         },
         oneditsave: function () {
             var selectedOptions = $('#node-input-device_id option:selected');

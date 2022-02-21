@@ -1,5 +1,4 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
-var mqtt = require('mqtt');
 
 module.exports = function(RED) {
     class Zigbee2mqttNodeOut {
@@ -17,10 +16,22 @@ module.exports = function(RED) {
                 node.on('input', function(message) {
                     clearTimeout(node.cleanTimer);
 
-                    if (node.config.device_id) {
-                        var payload;
-                        var options = {};
+                    let key = node.config.device_id;
+                    if (!key && message.topic) {
+                        key = message.topic;
+                    }
+                    let device = node.server.getDeviceOrGroupByKey(key);
+
+                    if (device) {
+                        let payload;
+                        let options = {};
                         switch (node.config.payloadType) {
+                            case '':
+                            case null:
+                            case 'nothing':
+                                payload = null;
+                                break;
+
                             case 'flow':
                             case 'global': {
                                 RED.util.evaluateNodeProperty(node.config.payload, node.config.payloadType, this, message, function (error, result) {
@@ -32,10 +43,6 @@ module.exports = function(RED) {
                                 });
                                 break;
                             }
-                            // case 'date': {
-                            //     payload = Date.now();
-                            //     break;
-                            // }
                             case 'z2m_payload':
                                 payload = node.config.payload;
                                 break;
@@ -81,6 +88,12 @@ module.exports = function(RED) {
 
                         var command;
                         switch (node.config.commandType) {
+                            case '':
+                            case null:
+                            case 'nothing':
+                                payload = null;
+                                break;
+
                             case 'msg': {
                                 command = message[node.config.command];
                                 break;
@@ -127,9 +140,7 @@ module.exports = function(RED) {
                                         break;
 
                                     case 'color_temp':
-                                        if ("transition" in node.config && (node.config.transition).length > 0) {
-                                            options['transition'] = parseInt(node.config.transition);
-                                        }
+
                                         break;
 
                                     case 'brightness_move':
@@ -142,15 +153,7 @@ module.exports = function(RED) {
                                 break;
 
                             case 'homekit':
-                                let device = node.server.getDeviceByKey(node.config.device_id)
-
-                                if (device === null) {
-                                    // Fallback to check for group
-                                    device = node.server.getGroupByKey(node.config.device_id)
-                                }
-
-                                payload = node.formatHomeKit(message, device);
-                                // options['transition'] = 0; //doesnt work well
+                                payload = node.fromHomeKitFormat(message, device);
                                 break;
 
                             case 'json':
@@ -163,23 +166,45 @@ module.exports = function(RED) {
                             }
                         }
 
+                        let optionsToSend = {};
+                        switch (node.config.optionsType) {
+                            case '':
+                            case null:
+                            case 'nothing':
+                                break;
+
+                            case 'msg':
+                                if (node.config.optionsValue in message && typeof(message[node.config.optionsValue]) == 'object') {
+                                    optionsToSend = message[node.config.optionsValue];
+                                } else {
+                                    node.warn('Options value has invalid format');
+                                }
+                                break;
+
+                            case 'json':
+                                if (Zigbee2mqttHelper.isJson(node.config.optionsValue)) {
+                                    optionsToSend = JSON.parse(node.config.optionsValue);
+                                } else {
+                                    node.warn('Options value is not valid JSON, ignore: '+node.config.optionsValue);
+                                }
+                                break;
+
+                            default:
+                                optionsToSend[node.config.optionsType] = node.config.optionsValue;
+                                break;
+                        }
+
+                        //apply options
+                        if (Object.keys(optionsToSend).length) {
+                            node.server.setDeviceOptions(device.friendly_name, optionsToSend);
+                        }
+
                         //empty payload, stop
                         if (payload === null) {
                             return false;
                         }
 
                         if (payload !== undefined) {
-
-                            node.status({
-                                fill: "green",
-                                shape: "dot",
-                                text: payload.toString()
-                            });
-
-                            node.cleanTimer = setTimeout(function(){
-                                node.status({}); //clean
-                            }, 3000);
-
                             var toSend = {};
                             var text = '';
                             if (typeof(payload) == 'object') {
@@ -189,27 +214,22 @@ module.exports = function(RED) {
                                 toSend[command] = payload;
                                 text = command+': '+payload;
                             }
-                            //add options
-                            if (Object.keys(options).length) {
-                                for (var key in options) {
-                                    toSend[key] = options[key];
-                                }
-                            }
 
-                            node.log('Published to mqtt topic: ' + node.server.getBaseTopic()+'/'+node.config.friendly_name + '/set : ' + JSON.stringify(toSend));
-                            node.server.mqtt.publish(node.server.getBaseTopic()+'/'+node.config.friendly_name + '/set', JSON.stringify(toSend));
+                            node.log('Published to mqtt topic: ' + node.server.getTopic('/'+device.friendly_name + '/set') + ' : ' + JSON.stringify(toSend));
+                            node.server.mqtt.publish(node.server.getTopic('/'+device.friendly_name + '/set'), JSON.stringify(toSend));
 
-                            let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/'+node.config.friendly_name));
+                            let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/'+device.friendly_name));
                             node.status({
                                 fill: fill,
                                 shape: "dot",
                                 text: text
                             });
+                            let time = Zigbee2mqttHelper.statusUpdatedAt();
                             node.cleanTimer = setTimeout(function(){
                                 node.status({
                                     fill: fill,
                                     shape: "ring",
-                                    text: text + ' ' + Zigbee2mqttHelper.statusUpdatedAt()
+                                    text: text + ' ' + time
                                 });
                             }, 3000);
                         } else {
@@ -237,7 +257,7 @@ module.exports = function(RED) {
             }
         }
 
-        formatHomeKit(message, device) {
+        fromHomeKitFormat(message, device) {
             if ("hap" in message && message.hap.context === undefined) {
                 return null;
             }

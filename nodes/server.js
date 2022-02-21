@@ -205,19 +205,6 @@ module.exports = function(RED) {
             return this._getItemByKey(key, 'groups');
         }
 
-        getLastStateById(id) {
-            var node = this;
-            var device = node.getDeviceByKey(id);
-            if (device) {
-                return device;
-            }
-            var group = node.getGroupByKey(id);
-            if (group) {
-                return group;
-            }
-            return {};
-        }
-
         getDeviceAvailabilityColor(topic) {
             let color = 'blue';
             if (topic in this.avaialability) {
@@ -295,7 +282,8 @@ module.exports = function(RED) {
                 return {'error': true, 'description': 'no such device'};
             }
             let payload = {
-                'id': ieee_address, 'force': true,
+                'id': ieee_address,
+                'force': true
             };
 
             node.mqtt.publish(node.getTopic('/bridge/device/remove'), JSON.stringify(payload));
@@ -304,23 +292,23 @@ module.exports = function(RED) {
             return {'success': true, 'description': 'command sent'};
         }
 
-        // setDeviceOptions(friendly_name, options) {
-        //     var node = this;
-        //     //
-        //     // var device = node.getDeviceByKey(ieee_address);
-        //     // if (!device) {
-        //     //     return {"error":true,"description":"no such device"};
-        //     // }
-        //
-        //     var payload = {};
-        //     payload['friendly_name'] = friendly_name;
-        //     payload['options'] = options;
-        //
-        //     node.mqtt.publish(node.getBaseTopic() + "/bridge/request/device/options", JSON.stringify(payload));
-        //     node.log('Set device options: '+JSON.stringify(payload));
-        //
-        //     return {"success":true,"description":"command sent"};
-        // }
+        setDeviceOptions(ieee_address, options) {
+            let node = this;
+            let device = node.getDeviceByKey(ieee_address);
+            if (!device) {
+                return {'error': true, 'description': 'no such device'};
+            }
+
+            let payload = {
+                'id': ieee_address,
+                'options': options
+            };
+
+            node.mqtt.publish(node.getTopic('/bridge/request/device/options'), JSON.stringify(payload));
+            node.log('Set device options for "'+device.friendly_name+'" : '+JSON.stringify(payload));
+
+            return {"success":true,"description":"command sent"};
+        }
 
         renameGroup(id, newName) {
             let node = this;

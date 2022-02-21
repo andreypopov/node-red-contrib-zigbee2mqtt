@@ -1,10 +1,6 @@
-var request = require('request');
 var NODE_PATH = '/zigbee2mqtt/';
 
 module.exports = function(RED) {
-
-
-
     RED.httpAdmin.get(NODE_PATH + 'getDevices', function (req, res) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
@@ -19,41 +15,7 @@ module.exports = function(RED) {
                 }
             }, forceRefresh, true);
         } else {
-            res.status(404).end();
-        }
-    });
-
-    RED.httpAdmin.get(NODE_PATH + 'getLastStateById', function (req, res) {
-        var config = req.query;
-        var controller = RED.nodes.getNode(config.controllerID);
-        if (controller && controller.constructor.name === "ServerNode") {
-            var item = controller.getDeviceOrGroupByKey(config.device_id);
-            if (item) {
-                let opts = [];
-                if ('definition' in item && 'exposes' in item.definition) {
-                    opts = item.definition.exposes;
-                }
-                res.json([opts, item.homekit]);
-            } else {
-                res.status(404).end();
-            }
-        } else {
-            res.status(404).end();
-        }
-    });
-
-    RED.httpAdmin.get(NODE_PATH + 'getStatesByDevice', function (req, res) {
-        var config = req.query;
-        var controller = RED.nodes.getNode(config.controllerID);
-        if (controller && controller.constructor.name === "ServerNode") {
-            var item = controller.getDeviceByKey(config.device_id);
-            if (item) {
-                res.json([item.current_values, item.homekit]);
-            } else {
-                res.status(404).end();
-            }
-        } else {
-            res.status(404).end();
+            res.json([{},{}]);
         }
     });
 
@@ -181,9 +143,6 @@ module.exports = function(RED) {
         var config = req.query;
         var controller = RED.nodes.getNode(config.controllerID);
         if (controller && controller.constructor.name === "ServerNode") {
-
-            // res.json( controller.refreshMap(true));
-
             controller.refreshMap(true, config.engine).then(function(response){
                 res.json(response);
             }).catch(error => {

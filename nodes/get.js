@@ -8,6 +8,7 @@ module.exports = function(RED) {
             node.cleanTimer = null;
             node.last_successful_status = {};
             node.server = RED.nodes.getNode(node.config.server);
+            node.status({});
             if (node.server) {
                 node.on('input', function(message_in) {
 
