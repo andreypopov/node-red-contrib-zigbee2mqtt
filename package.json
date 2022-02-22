@@ -8,7 +8,7 @@
   "version": "2.1.1",
   "dependencies": {
     "eventsource": "^1.1.0",
-    "mqtt": "^4.3.5",
+    "mqtt": "^4.3.6",
     "multiple-select": "^1.5.2",
     "request": "^2.88.2",
     "viz.js": "^2.1.2"

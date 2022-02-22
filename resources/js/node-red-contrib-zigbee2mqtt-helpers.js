@@ -30,10 +30,11 @@ class Zigbee2MqttEditor {
             that.device_id = that.getDeviceIdInput().val();
             that.build();
         });
-        if (that.getDeviceOptionsTypeInput()) {
-            that.getDeviceOptionsTypeInput().off('change').on('change', (event, type, value) => {
+        if (that.getDeviceOptionsInput()) {
+            that.getDeviceOptionsInput().off('change').on('change', (event, type, value) => {
                 that.optionsValue = value;
                 that.optionsType = type;
+                that.buildDeviceOptionsHelpBlock();
             });
         }
     }
@@ -165,7 +166,8 @@ class Zigbee2MqttEditor {
     buildDeviceOptionsInput() {
         let that = this;
         if (!that.getDeviceOptionsInput()) return;
-        //console.log('BUILD buildDeviceOptionsInput');
+
+        // console.log('BUILD buildDeviceOptionsInput');
         let device = that.getDevice();
         let options = [];
         options.push({'value': 'nothing', 'label': RED._("node-red-contrib-zigbee2mqtt/server:editor.nothing"), options:['']});
@@ -182,8 +184,54 @@ class Zigbee2MqttEditor {
             typeField: that.getDeviceOptionsTypeInput(),
         });
         that.getDeviceOptionsInput().typedInput('types', options);
-        that.getDeviceOptionsInput().typedInput('type', that.optionsType||'nothing');
-        that.getDeviceOptionsInput().typedInput('value', that.optionsValue||'');
+        that.getDeviceOptionsInput().typedInput('type', that.optionsType || 'nothing');
+        that.getDeviceOptionsInput().typedInput('value', that.optionsValue || '');
+        that.buildDeviceOptionsHelpBlock();
+    }
+
+    buildDeviceOptionsHelpBlock() {
+        let that = this;
+        if (!that.getDeviceOptionsTypeHelpBlock()) return;
+
+        // console.log('BUILD buildDeviceOptionsHelpBlock');
+
+        that.getDeviceOptionsTypeHelpBlock().hide().find('div').text('').closest('.form-tips').find('span').text('');
+
+        let device = that.getDevice();
+        let selectedOption = null;
+        if (device && 'definition' in device && device.definition && 'options' in device.definition) {
+            $.each(device.definition.options, function(k, v) {
+                if ('json' === that.optionsType) {
+                    let json = {};
+                    $.each(device.definition.options, function(k, v2) {
+                        if ('property' in v2) {
+                            let defaultVal = '';
+                            if ('type' in v2) {
+                                if (v2.type==='numeric') {
+                                    defaultVal = 0;
+                                    if ('value_min' in v2) {
+                                        defaultVal = v2.value_min;
+                                    }
+                                } else if (v2.type==='binary') {
+                                    defaultVal = false;
+                                }
+                            }
+                            json[v2.property] = defaultVal;
+                        }
+                    });
+                    selectedOption = {'name':'JSON', 'description':JSON.stringify(json, null, 4)};
+                    return false;
+                }
+                if (v.property === that.optionsType) {
+                    selectedOption = v;
+                    return false;
+                }
+            });
+        }
+
+        if (selectedOption && 'description' in selectedOption && selectedOption.description) {
+            that.getDeviceOptionsTypeHelpBlock().show().find('div').text(selectedOption.name).closest('.form-tips').find('span').text(selectedOption.description);
+        }
     }
 
     async getDevices() {
@@ -241,6 +289,10 @@ class Zigbee2MqttEditor {
     getDeviceOptionsTypeInput() {
         let $elem = $('#node-input-optionsType');
         return $elem.length?$elem:null;
+    }
+
+    getDeviceOptionsTypeHelpBlock() {
+        return $('.optionsType_description');
     }
 
     getDeviceFriendlyNameInput() {

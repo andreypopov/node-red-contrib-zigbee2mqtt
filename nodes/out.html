@@ -33,10 +33,23 @@
         <input type="hidden" id="node-input-payloadType">
     </div>
 
+    <!--homekit-->
+    <div class="form-row help_block help_block__homekit_homekit">
+        <div class="form-tips">
+            <strong><span data-i18n="help.important"></span></strong><br>
+            <span data-i18n="help.command_homekit"></span>
+        </div>
+    </div>
+
 	<div class="form-row">
         <label for="node-input-optionsValue" class="l-width"><i class="fa fa-gears"></i> <span data-i18n="label.options"></span></label>
         <input type="text" id="node-input-optionsValue" style="width:70%">
         <input type="hidden" id="node-input-optionsType">
+    </div>
+    <!--option description-->
+    <div class="form-tips optionsType_description">
+        <strong><div data-i18n="help.description"></div></strong>
+        <span></span>
     </div>
 
     <div class="form-row node-input-rule-container-row">
@@ -44,11 +57,7 @@
     </div>
     <hr>
 
-    <!--homekit-->
-    <div class="form-tips help_block help_block__homekit_homekit">
-        <strong><span data-i18n="help.important"></span></strong><br>
-        <span data-i18n="help.command_homekit"></span>
-    </div>
+
     <!--brightness_move-->
     <div class="form-tips help_block help_block__z2m_cmd_brightness_move">
         <strong><span data-i18n="help.description"></span></strong><br>
@@ -59,6 +68,7 @@
         <strong><span data-i18n="help.description"></span></strong><br>
         <span data-i18n="help.command_brightness_step"></span>
     </div>
+
 </script>
 
 <script type='text/javascript'>
@@ -225,7 +235,9 @@
                             {'value':'state', 'label':'State (on|off|toggle)'},
                             {'value':'brightness', 'label':'Brightness (0..255)'},
                             {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
+                            {'value':'brightness_move_onoff', 'label':'Brightness Move On/Off (-255...255|stop)'},
                             {'value':'brightness_step', 'label':'Brightness Step (-255...255)'},
+                            {'value':'brightness_step_onoff', 'label':'Brightness Step On/Off (-255...255)'},
                             {'value':'color', 'label':'Color: {}'},
                             {'value':'color_rgb', 'label':'Color: r,g,b'},
                             {'value':'color_hex', 'label':'Color: #hex'},
@@ -234,6 +246,8 @@
                             {'value':'color_hue', 'label':'Color: hue'},
                             {'value':'color_saturation', 'label':'Color: saturation'},
                             {'value':'color_temp', 'label':'Color Temperature (50..400)'},
+                            {'value':'color_temp_move', 'label':'Color Temperature Move (50..400|stop)'},
+                            {'value':'color_temp_step', 'label':'Color Temperature Step (50..400)'},
                             {'value':'position', 'label':'Position'},
                             {'value':'alert', 'label':'Alert'}
                         ]
