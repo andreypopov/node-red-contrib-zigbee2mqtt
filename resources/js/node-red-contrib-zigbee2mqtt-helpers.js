@@ -177,13 +177,13 @@ class Zigbee2MqttEditor {
             });
         }
         that.getDeviceOptionsInput().typedInput({
-            default: null,
+            default: 'nothing',
             value: that.optionsType,
             typeField: that.getDeviceOptionsTypeInput(),
         });
         that.getDeviceOptionsInput().typedInput('types', options);
-        that.getDeviceOptionsInput().typedInput('type', that.optionsType);
-        that.getDeviceOptionsInput().typedInput('value', that.optionsValue);
+        that.getDeviceOptionsInput().typedInput('type', that.optionsType||'nothing');
+        that.getDeviceOptionsInput().typedInput('value', that.optionsValue||'');
     }
 
     async getDevices() {
