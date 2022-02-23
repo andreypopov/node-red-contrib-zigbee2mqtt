@@ -27,6 +27,14 @@
         <input type="password" id="node-config-input-mqtt_password" autocomplete="new-password">
     </div>
     <div class="form-row">
+        <label for="node-config-input-mqtt_qos" class="l-width"><i class="fa fa-empire"></i> <span data-i18n="node-red:mqtt.label.qos">QoS</span></label>
+        <select id="node-config-input-mqtt_qos" style="width:125px !important">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </select>
+    </div>
+    <div class="form-row">
         <input type="checkbox" id="node-config-input-usetls" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-config-input-usetls" style="width: auto" data-i18n="label.use-tls"></label>
         <div id="node-config-row-tls" >
@@ -51,7 +59,8 @@
             },
             mqtt_port: {
                 value: 1883,
-                required: false
+                required: false,
+                validate:RED.validators.number()
             },
             mqtt_username: {
                 value: null,
@@ -61,6 +70,10 @@
                 value: null,
                 required: false
             },
+            mqtt_qos: {
+                value: 0,
+                validate:RED.validators.number()
+            },
             tls: {type:"tls-config",required: false},
             usetls: {value: false},
             base_topic: {
@@ -69,7 +82,7 @@
             },
         },
         label: function() {
-            return this.name ||  this.host;
+            return this.name || this.host;
         }
     });
 </script>

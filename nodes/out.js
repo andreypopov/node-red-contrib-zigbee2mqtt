@@ -216,7 +216,13 @@ module.exports = function(RED) {
                             }
 
                             node.log('Published to mqtt topic: ' + node.server.getTopic('/'+device.friendly_name + '/set') + ' : ' + JSON.stringify(toSend));
-                            node.server.mqtt.publish(node.server.getTopic('/'+device.friendly_name + '/set'), JSON.stringify(toSend));
+                            node.server.mqtt.publish(node.server.getTopic('/'+device.friendly_name + '/set'), JSON.stringify(toSend),
+                                {'qos':parseInt(node.server.config.mqtt_qos||0)},
+                                function(err) {
+                                    if (err) {
+                                        node.error(err);
+                                    }
+                            });
 
                             let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/'+device.friendly_name));
                             node.status({

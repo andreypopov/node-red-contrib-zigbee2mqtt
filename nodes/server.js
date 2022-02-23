@@ -11,7 +11,6 @@ module.exports = function(RED) {
             var node = this;
             node.config = n;
             node.connection = false;
-            node.topic = node.config.base_topic + '/#';
             node.items = undefined;
             node.groups = undefined;
             node.devices = undefined;
@@ -60,20 +59,20 @@ module.exports = function(RED) {
 
         subscribeMQTT() {
             var node = this;
-            node.mqtt.subscribe(node.topic, function(err) {
+            node.mqtt.subscribe(node.getTopic('/#'), {'qos':parseInt(node.config.mqtt_qos||0)}, function(err) {
                 if (err) {
-                    node.warn('MQTT Error: Subscribe to "' + node.topic);
+                    node.warn('MQTT Error: Subscribe to "' + node.getTopic('/#'));
                     node.emit('onConnectError', err);
                 } else {
-                    node.log('MQTT Subscribed to: "' + node.topic);
+                    node.log('MQTT Subscribed to: "' + node.getTopic('/#'));
                 }
             });
         }
 
         unsubscribeMQTT() {
             var node = this;
-            node.log('MQTT Unsubscribe from mqtt topic: ' + node.topic);
-            node.mqtt.unsubscribe(node.topic, function(err) {});
+            node.log('MQTT Unsubscribe from mqtt topic: ' + node.getTopic('/#'));
+            node.mqtt.unsubscribe(node.getTopic('/#'), function(err) {});
             node.devices_values = {};
         }
 
@@ -92,23 +91,20 @@ module.exports = function(RED) {
 
                     //end function after timeout, if now response
                     timeout = setTimeout(function() {
-                        RED.log.error('zigbee2mqtt: getDevices timeout, close connection')
+                        node.error('Error: getDevices timeout, close connection')
                         client.end(true);
                     }, timeout_ms);
 
-                    client.subscribe(node.topic, function(err) {
-                        if (!err) {
-                            // client.publish(node.getBaseTopic() + "/bridge/groups/get");
-                            // client.publish(node.getBaseTopic() + "/bridge/devices/get");
-                        } else {
-                            RED.log.error('zigbee2mqtt: error code #0023: ' + err);
+                    client.subscribe(node.getTopic('/#'), {'qos':parseInt(node.config.mqtt_qos||0)}, function(err) {
+                        if (err) {
+                            node.error('Error code #0023: ' + err);
                             client.end(true);
                         }
                     });
                 });
 
                 client.on('error', function(error) {
-                    RED.log.error('zigbee2mqtt: error code #0024: ' + error);
+                    node.error('Error code #0024: ' + error);
                     client.end(true);
                 });
 
@@ -608,11 +604,9 @@ module.exports = function(RED) {
         }
 
         onMQTTOffline() {
-            var node = this;
+            let node = this;
             // node.connection = true;
-            node.log('MQTT Offline');
-            console.log('MQTT OFFLINE');
-
+            node.warn('MQTT Offline');
         }
 
         onMQTTEnd() {

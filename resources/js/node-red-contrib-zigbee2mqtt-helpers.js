@@ -20,8 +20,7 @@ class Zigbee2MqttEditor {
             that.refresh = true;
             that.build();
         });
-        that.getServerInput().off('change').on('change', () => {
-            that.device_id = null;
+        that.getServerInput().off('change').on('change', (e) => {
             that.property = null;
             that.refresh = true;
             that.build();
@@ -53,14 +52,20 @@ class Zigbee2MqttEditor {
         let that = this;
         // console.log('BUILD buildDeviceIdInput');
 
-        that.getDeviceIdInput().children().remove();
-        that.getDeviceIdInput().multipleSelect('destroy').multipleSelect({
+        let params = {
             maxHeight: 300,
             dropWidth: 320,
             width: 320,
             filter: true,
-            minimumCountSelected:1
-        }).multipleSelect('disable');
+            minimumCountSelected:1,
+            formatAllSelected:function(){return RED._("node-red-contrib-zigbee2mqtt/server:editor.select_device")}
+        };
+        if (that.config.allow_empty) {
+            params.formatAllSelected = function(){return RED._("node-red-contrib-zigbee2mqtt/server:editor.msg_topic")};
+        }
+
+        that.getDeviceIdInput().children().remove();
+        that.getDeviceIdInput().multipleSelect('destroy').multipleSelect(params).multipleSelect('disable');
 
         let data = await that.getDevices();
 
@@ -104,9 +109,13 @@ class Zigbee2MqttEditor {
         }
 
         that.getDeviceIdInput().multipleSelect('enable');
-        that.getDeviceIdInput().val(that.device_id);
+        if (that.device_id &&that.getDeviceIdInput().find('option[value='+that.device_id+']').length) {
+            that.getDeviceIdInput().val(that.device_id);
+        } else {
+            that.device_id = null;
+        }
         that.getDeviceIdInput().multipleSelect('refresh');
-        that.getDeviceFriendlyNameInput().val(names[that.device_id]);
+        that.getDeviceFriendlyNameInput().val(that.device_id in names ? names[that.device_id]: '');
 
         return this;
     }
@@ -124,13 +133,9 @@ class Zigbee2MqttEditor {
             single: !(typeof $(this).attr('multiple') !== typeof undefined && $(this).attr('multiple') !== false)
         }).multipleSelect('disable');
 
-
-        let data = await that.getDevices();
-
         that.getDevicePropertyInput().html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/server:editor.complete_payload")+'</option>');
 
         let html = '';
-
         let device = that.getDevice();
 
         if (device && 'definition' in device && device.definition && 'exposes' in device.definition) {
