@@ -7,7 +7,6 @@ module.exports = function(RED) {
     class ServerNode {
         constructor(n) {
             RED.nodes.createNode(this, n);
-
             var node = this;
             node.config = n;
             node.connection = false;
@@ -137,6 +136,20 @@ module.exports = function(RED) {
                     } else if (node.getTopic('/bridge/devices') === topic) {
                         if (Zigbee2mqttHelper.isJson(message.toString())) {
                             node.devices = JSON.parse(message.toString());
+
+                            //todo: getDevices() with homekit, move to better place
+                            for (let ind in node.devices) {
+                                node.devices[ind]['current_values'] = null;
+                                node.devices[ind]['homekit'] = null;
+                                node.devices[ind]['format'] = null;
+                                let topic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
+                                if (topic in node.devices_values) {
+                                    node.devices[ind]['current_values'] = node.devices_values[topic];
+                                    node.devices[ind]['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic]);
+                                    node.devices[ind]['format'] = Zigbee2mqttHelper.formatPayload(node.devices_values[topic], node.devices[ind]);
+                                }
+                            }
+
                         }
                         client.end(true);
                     }
