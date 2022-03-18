@@ -239,9 +239,9 @@ class Zigbee2mqttHelper {
             msg["MotionSensor"] = {
                 "MotionDetected": payload.occupancy
             };
-            // msg["OccupancySensor"] = {
-            //     "OccupancyDetected":payload.occupancy?1:0
-            // };
+            msg["OccupancySensor"] = {
+                "OccupancyDetected":payload.occupancy?1:0
+            };
         }
 
         //WaterLeak
