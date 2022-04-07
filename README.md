@@ -15,7 +15,7 @@ Node-Red Nodes for Zigbee2mqtt connectivity.
 
 Available nodes are:
 * zigbee2mqtt-in: listen to device
-* zigbee2mqtt-get: get current value of device
+* zigbee2mqtt-get: get current value of device (To use get node it is requiered to have "retain" option enabled in zigbee2mqtt)
 * zigbee2mqtt-out: send command to device
 * zigbee2mqtt-bridge: logs, options, other events
 
