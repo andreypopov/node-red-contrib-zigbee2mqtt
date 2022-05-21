@@ -480,6 +480,14 @@ module.exports = function(RED) {
         }
 
         nodeSend(node, opts) {
+            if (node.config.enableMultiple) {
+                this.nodeSendMultiple(node, opts)
+            } else {
+                this.nodeSendSingle(node, opts)
+            }
+        }
+
+        nodeSendSingle(node, opts) {
             clearTimeout(node.cleanTimer);
 
             opts = Object.assign({
@@ -588,6 +596,104 @@ module.exports = function(RED) {
                 node.setSuccessfulStatus(status);
             }, 3000);
         }
+
+        nodeSendMultiple(node, opts) {
+            let that = this;
+            clearTimeout(node.cleanTimer);
+
+            opts = Object.assign({
+                'node_send':true,
+                'key':node.config.device_id,
+                'msg': {},
+                'changed': null,
+                'filter': false //skip the same payload, send only changes
+            }, opts);
+
+            let msg = opts.msg;
+            let payload = {};
+            let math = [];
+            let text = RED._("node-red-contrib-zigbee2mqtt/server:status.received");
+
+            for (let index in node.config.device_id) {
+                let item = that.getDeviceOrGroupByKey(node.config.device_id[index]);
+                if (item) {
+                    let itemData = {};
+                    itemData.item = item;
+                    itemData.topic = this.getTopic('/' + item.friendly_name);
+                    itemData.selector = Zigbee2mqttHelper.generateSelector(itemData.topic);
+                    itemData.homekit = item.homekit;
+                    itemData.payload = item.current_values;
+                    itemData.format = item.format;
+
+                    payload[node.config.device_id[index]] = itemData;
+                    math.push(itemData.payload);
+                }
+            }
+
+            msg.payload_in = ("payload" in msg)?msg.payload:null;
+            msg.payload = payload;
+            msg.math = Zigbee2mqttHelper.formatMath(math);
+            if (opts.changed !== null) {
+                msg.changed = opts.changed;
+            }
+
+            if (!Object.keys(msg.payload).length) {
+                node.status({
+                    fill: "red",
+                    shape: "dot",
+                    text: "node-red-contrib-zigbee2mqtt/server:status.no_device"
+                });
+                return;
+            }
+
+            if ('firstMsg' in node && node.firstMsg) {
+                node.firstMsg = false;
+
+                if (opts.node_send && 'outputAtStartup' in node.config && !node.config.outputAtStartup) {
+                    // console.log('Skipped first value');
+                    node.last_value = payload;
+                    return;
+                }
+            }
+            //
+            // if (opts.filter) {
+            //     if (opts.node_send && JSON.stringify(node.last_value) === JSON.stringify(payload)) {
+            //         // console.log('Filtered the same value');
+            //         return;
+            //     }
+            // }
+
+
+            // if ('last_value' in node) {
+            //     msg.changed = {
+            //         'old': node.last_value,
+            //         'new': payload//,
+            //         // 'diff': Zigbee2mqttHelper.objectsDiff(node.last_value, payload)
+            //     };
+            // }
+
+            if (opts.node_send) {
+                // console.log('SEND:');
+                // console.log(payload);
+                node.send(msg);
+                node.last_value = payload;
+            }
+
+            let time = Zigbee2mqttHelper.statusUpdatedAt();
+            let status = {
+                fill: 'blue',
+                shape: 'dot',
+                text: text
+            };
+            node.setSuccessfulStatus(status);
+
+            node.cleanTimer = setTimeout(() => {
+                status.text += ' ' + time;
+                status.shape = 'ring';
+                node.setSuccessfulStatus(status);
+            }, 3000);
+        }
+
 
         onMQTTConnect() {
             var node = this;

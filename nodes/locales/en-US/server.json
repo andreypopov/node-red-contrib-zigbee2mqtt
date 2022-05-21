@@ -25,6 +25,7 @@
     "editor": {
         "groups": "Groups",
         "devices": "Devices",
+        "selected": "selected",
         "nothing": "Nothing",
         "select_device": "Select device",
         "msg_topic": "msg.topic",

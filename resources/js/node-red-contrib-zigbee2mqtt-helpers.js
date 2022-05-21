@@ -21,21 +21,34 @@ class Zigbee2MqttEditor {
             that.build();
         });
         that.getServerInput().off('change').on('change', (e) => {
+            // console.log('bind: getServerInput');
             that.property = null;
             that.refresh = true;
             that.build();
         });
         that.getDeviceIdInput().off('change').on('change', () => {
-            that.device_id = that.getDeviceIdInput().val();
-            that.build();
+            that.device_id = that.getDeviceIdInput().multipleSelect('getSelects', 'value');
+            if (!that.isMultiple()) { //no need to build for multiple
+                // console.log('bind: getDeviceIdInput');
+                that.build();
+            } else {
+                that.setFriendlyName();
+            }
         });
         if (that.getDeviceOptionsInput()) {
             that.getDeviceOptionsInput().off('change').on('change', (event, type, value) => {
+                // console.log('bind: getDeviceOptionsInput');
                 that.optionsValue = value;
                 that.optionsType = type;
                 that.buildDeviceOptionsHelpBlock();
             });
         }
+        that.getEnableMultipleCheckbox().off('change').on('change', (e) => {
+            // that.property = null;
+            // that.refresh = true;
+            // console.log('bind: getEnableMultipleCheckbox');
+            that.build();
+        });
     }
 
     async build() {
@@ -50,17 +63,20 @@ class Zigbee2MqttEditor {
 
     async buildDeviceIdInput() {
         let that = this;
+        that.getFilterChanges().closest('.form-row').toggle(!that.isMultiple());
         // console.log('BUILD buildDeviceIdInput');
 
         let params = {
+            single: !that.isMultiple(),
+            minimumCountSelected: !that.isMultiple()?1:0,
+            numberDisplayed: 1,
             maxHeight: 300,
             dropWidth: 320,
             width: 320,
             filter: true,
-            minimumCountSelected:1,
             formatAllSelected:function(){return RED._("node-red-contrib-zigbee2mqtt/server:editor.select_device")}
         };
-        if (that.config.allow_empty) {
+        if (that.config.allow_empty && !that.isMultiple()) {
             params.formatAllSelected = function(){return RED._("node-red-contrib-zigbee2mqtt/server:editor.msg_topic")};
         }
 
@@ -69,11 +85,10 @@ class Zigbee2MqttEditor {
 
         let data = await that.getDevices();
 
-        if (that.config.allow_empty) {
+        if (that.config.allow_empty && !that.isMultiple()) {
             that.getDeviceIdInput().html('<option value="">msg.topic</option>');
         }
 
-        var names = {};
         let html = '';
 
         //groups
@@ -82,7 +97,6 @@ class Zigbee2MqttEditor {
             html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.groups")});
             html.appendTo(that.getDeviceIdInput());
             $.each(groups, function(index, value) {
-                names[value.id] = value.friendly_name;
                 let text = '';
                 if ("devices" in value && typeof (value.devices) != 'undefined' && value.devices.length > 0) {
                     text = ' (' + value.devices.length + ')';
@@ -98,7 +112,6 @@ class Zigbee2MqttEditor {
             html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.devices")});
             html.appendTo(that.getDeviceIdInput());
             $.each(devices, function(index, value) {
-                names[value.ieee_address] = value.friendly_name;
                 var model = '';
                 if ("definition" in value && value.definition && "model" in value.definition && typeof (value.definition.model) !== undefined) {
                     model = ' (' + value.definition.model + ')';
@@ -109,21 +122,20 @@ class Zigbee2MqttEditor {
         }
 
         that.getDeviceIdInput().multipleSelect('enable');
-        if (that.device_id &&that.getDeviceIdInput().find('option[value='+that.device_id+']').length) {
-            that.getDeviceIdInput().val(that.device_id);
-        } else {
-            that.device_id = null;
-        }
         that.getDeviceIdInput().multipleSelect('refresh');
-        that.getDeviceFriendlyNameInput().val(that.device_id in names ? names[that.device_id]: '');
 
+        that.setDeviceValue();
+        that.setFriendlyName();
         return this;
     }
 
     async buildDevicePropertyInput() {
         let that = this;
         if (!that.getDevicePropertyInput()) return;
-        //console.log('BUILD buildDevicePropertyInput');
+        that.getDevicePropertyInput().closest('.form-row').toggle(!that.isMultiple());
+        if (that.isMultiple()) return;
+
+        // console.log('BUILD buildDevicePropertyInput');
 
         that.getDevicePropertyInput().children().remove();
         that.getDevicePropertyInput().multipleSelect('destroy').multipleSelect({
@@ -158,7 +170,6 @@ class Zigbee2MqttEditor {
                 $('<option  value="homekit_' + index + '">' + index + '</option>').appendTo(html);
             });
         }
-
         that.getDevicePropertyInput().multipleSelect('enable');
         if (that.getDevicePropertyInput().find('option[value='+that.property+']').length) {
             that.getDevicePropertyInput().val(that.property);
@@ -171,6 +182,9 @@ class Zigbee2MqttEditor {
     buildDeviceOptionsInput() {
         let that = this;
         if (!that.getDeviceOptionsInput()) return;
+        that.getDeviceOptionsTypeHelpBlock().hide().find('div').text('').closest('.form-tips').find('span').text('');
+        that.getDeviceOptionsInput().closest('.form-row').toggle(!that.isMultiple());
+        if (that.isMultiple()) return;
 
         // console.log('BUILD buildDeviceOptionsInput');
         let device = that.getDevice();
@@ -198,9 +212,10 @@ class Zigbee2MqttEditor {
         let that = this;
         if (!that.getDeviceOptionsTypeHelpBlock()) return;
 
-        // console.log('BUILD buildDeviceOptionsHelpBlock');
-
         that.getDeviceOptionsTypeHelpBlock().hide().find('div').text('').closest('.form-tips').find('span').text('');
+        if (that.isMultiple()) return;
+
+        // console.log('BUILD buildDeviceOptionsHelpBlock');
 
         let device = that.getDevice();
         let selectedOption = null;
@@ -266,9 +281,11 @@ class Zigbee2MqttEditor {
         let that = this;
         let devices = that.devices[0];
         let device = null;
-        if (devices.length) {
+
+        if (devices.length && that.device_id) {
+            let selectedDevice = typeof(that.device_id) === 'object' ? that.device_id[0] : that.device_id;
             $.each(devices, function (index, item) {
-                if (item.ieee_address === that.device_id) {
+                if (item.ieee_address === selectedDevice) {
                     device = item;
                     return false;
                 }
@@ -310,5 +327,62 @@ class Zigbee2MqttEditor {
 
     getRefreshBtn() {
         return $('#force-refresh');
+    }
+
+    getFilterChanges() {
+        return $('#node-input-filterChanges');
+    }
+
+    getEnableMultipleCheckbox() {
+        return $('#node-input-enableMultiple');
+    }
+
+    isMultiple() {
+        return this.getEnableMultipleCheckbox().is(':checked');
+    }
+
+    setDeviceValue() {
+        let that = this;
+        if (that.isMultiple()) {
+            if (typeof(that.device_id) == 'string') {
+                that.device_id = [that.device_id];
+            }
+            if (that.device_id) {
+                that.getDeviceIdInput().multipleSelect('setSelects', that.device_id);
+            }
+        } else if (that.device_id && that.device_id.length) {
+            if (typeof(that.device_id) == 'object') {
+                that.device_id = that.device_id[0]; //get the first device
+            }
+            if (that.getDeviceIdInput().find('option[value='+that.device_id+']').length) {
+                that.getDeviceIdInput().val(that.device_id);
+            }
+            // that.getDeviceIdInput().multipleSelect('check', that.device_id); //does not work
+            that.getDeviceIdInput().multipleSelect('refresh');
+        } else {
+            that.device_id = null;
+        }
+    }
+
+    setFriendlyName() {
+        let that = this;
+        if (that.isMultiple()) {
+            if (typeof(that.device_id) == 'string') {
+                that.device_id = [that.device_id];
+            }
+            if (!that.device_id) {
+                that.device_id = [];
+            }
+            that.getDeviceFriendlyNameInput().val(that.device_id.length + ' ' + RED._("node-red-contrib-zigbee2mqtt/server:editor.selected"));
+        } else if (that.device_id && that.device_id.length) {
+            if (typeof(that.device_id) == 'object') {
+                that.device_id = that.device_id[0]; //get the first device
+            }
+            if (that.getDeviceIdInput().find('option[value='+that.device_id+']').length) {
+                that.getDeviceFriendlyNameInput().val(that.getDeviceIdInput().multipleSelect('getSelects', 'text'));
+            }
+        } else {
+            that.getDeviceFriendlyNameInput().val('');
+        }
     }
 }

@@ -16,8 +16,12 @@
     </div>
     <div class="form-row">
         <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
-        <select id="node-input-device_id" class="s-width" data-single="true"></select>
+        <select id="node-input-device_id" class="s-width" multiple="multiple"></select>
     </div>
+<!--    <div class="form-row">-->
+<!--        <label for='node-input-enableMultiple' class="l-width"></label>-->
+<!--        <input type="checkbox" id="node-input-enableMultiple" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="node-red-contrib-spruthub/server:label.enable_multiple"></span></input>-->
+<!--    </div>-->
     <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
         <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
@@ -108,7 +112,11 @@
             },
             optionsType: {
                 value: null,
-            }
+            },
+            // enableMultiple: {
+            //     value: false,
+            //     required: true
+            // },
         },
         inputLabels: "value",
         paletteLabel: 'out',
@@ -132,142 +140,151 @@
             let $inputCommand = $('#node-input-command');
             let $inputCommandType = $('#node-input-commandType');
 
-            new Zigbee2MqttEditor(node, {
-                'allow_empty': true
-            }).build();
-            showHelpBlock();
-            buildTypesInput();
-
-
-            $inputCommand.on('change', function(event, type, value) {
-                let options = [];
-
-                if ('state' === value) {
-                    options =  [
-                        {'value':'on', 'label':'On'},
-                        {'value':'off', 'label':'Off'},
-                        {'value':'toggle', 'label':'Toggle'},
-                        {'value':'lock', 'label':'Lock'},
-                        {'value':'unlock', 'label':'Unlock'}
-                    ];
-                } else if ('color_temp' === value) {
-                    options =  [
-                        {'value':'50', 'label':'Cold'},
-                        {'value':'250', 'label':'White'},
-                        {'value':'400', 'label':'Warm'}
-                    ];
-                } else if ('alert' === value) {
-                    options =  [
-                        {'value':'none', 'label':'None'},
-                        {'value':'select', 'label':'Blink short'},
-                        {'value':'lselect', 'label':'Blink log'}
-                    ];
-                }
-
-                if (options.length) {
-                    var payloadTypes = {
-                        value: 'z2m_payload',
-                        label: 'zigbee2mqtt',
-                        icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                        options: options
-                    };
-                    $('#node-input-payload').typedInput('types', [payloadTypes, 'msg', 'flow', 'global', 'str', 'num', 'json']);
-                } else {
-                    $('#node-input-payload').typedInput('types', ['msg', 'flow', 'global', 'str', 'num', 'json']);
-                }
-
-                //show/hide
-                if ('homekit' === type || 'nothing' === type) {
-                    $('#node-input-payload').closest('.form-row').hide();
-                } else {
-                    $('#node-input-payload').closest('.form-row').show();
-                }
+            // setTimeout(()=>{
+                new Zigbee2MqttEditor(node, {
+                    'allow_empty': true
+                }).build();
 
                 showHelpBlock();
-            });
+                buildTypesInput();
 
+                $inputCommand.on('change', function(event, type, value) {
+                    let options = [];
 
-            //init typedInput
-            var payloadTypes = {
-                value: 'z2m_payload',
-                label: 'zigbee2mqtt',
-                icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                options: []
-            };
-            $('#node-input-payload').typedInput({
-                types: [payloadTypes, {value:'msg'},  {value:'flow'},  {value:'global'},  {value:'str'},  {value:'num'},  {value:'json'}],
-                default: 'msg',
-                value: 'payload',
-                typeField: $('#node-input-payloadType'),
-            });
-            $inputCommandType.val(node.commandType);
-            $('#node-input-payloadType').val(node.payloadType);
+                    if ('state' === value) {
+                        options =  [
+                            {'value':'on', 'label':'On'},
+                            {'value':'off', 'label':'Off'},
+                            {'value':'toggle', 'label':'Toggle'},
+                            {'value':'lock', 'label':'Lock'},
+                            {'value':'unlock', 'label':'Unlock'}
+                        ];
+                    } else if ('color_temp' === value) {
+                        options =  [
+                            {'value':'50', 'label':'Cold'},
+                            {'value':'250', 'label':'White'},
+                            {'value':'400', 'label':'Warm'}
+                        ];
+                    } else if ('alert' === value) {
+                        options =  [
+                            {'value':'none', 'label':'None'},
+                            {'value':'select', 'label':'Blink short'},
+                            {'value':'lselect', 'label':'Blink log'}
+                        ];
+                    }
 
+                    if (options.length) {
+                        var payloadTypes = {
+                            value: 'z2m_payload',
+                            label: 'zigbee2mqtt',
+                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                            options: options
+                        };
+                        $('#node-input-payload').typedInput('types', [payloadTypes, 'msg', 'flow', 'global', 'str', 'num', 'json']);
+                    } else {
+                        $('#node-input-payload').typedInput('types', ['msg', 'flow', 'global', 'str', 'num', 'json']);
+                    }
 
+                    //show/hide
+                    if ('homekit' === type || 'nothing' === type) {
+                        $('#node-input-payload').closest('.form-row').hide();
+                    } else {
+                        $('#node-input-payload').closest('.form-row').show();
+                    }
 
-            function showHelpBlock() {
-                var command = $('#node-input-command').val(); //state
-                var commandType = $('#node-input-commandType').val(); //z2m_cmd
-                if (command === '{}') command = 'json';
-                if (commandType === 'str') command = 'custom';
-                $('.help_block').hide();
-                $('.help_block__'+commandType+'_'+command).show();
-            }
-
-
-            function buildTypesInput(types = null) {
-                $('#node-input-command').typedInput({
-                    types: types||getTypes(),
-                    default: 'msg',
-                    value: 'topic',
-                    typeField: $('#node-input-commandType'),
+                    showHelpBlock();
                 });
-            }
 
-            function getTypes() {
-                return [
-                    //z2m commands
-                    {
-                        value: 'z2m_cmd',
-                        label: 'zigbee2mqtt',
-                        icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                        options: [
-                            {'value':'state', 'label':'State (on|off|toggle)'},
-                            {'value':'brightness', 'label':'Brightness (0..255)'},
-                            {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
-                            {'value':'brightness_move_onoff', 'label':'Brightness Move On/Off (-255...255|stop)'},
-                            {'value':'brightness_step', 'label':'Brightness Step (-255...255)'},
-                            {'value':'brightness_step_onoff', 'label':'Brightness Step On/Off (-255...255)'},
-                            {'value':'color', 'label':'Color: {}'},
-                            {'value':'color_rgb', 'label':'Color: r,g,b'},
-                            {'value':'color_hex', 'label':'Color: #hex'},
-                            {'value':'color_hsb', 'label':'Color: h,s,b'},
-                            {'value':'color_hsv', 'label':'Color: h,s,v'},
-                            {'value':'color_hue', 'label':'Color: hue'},
-                            {'value':'color_saturation', 'label':'Color: saturation'},
-                            {'value':'color_temp', 'label':'Color Temperature (50..400)'},
-                            {'value':'color_temp_move', 'label':'Color Temperature Move (50..400|stop)'},
-                            {'value':'color_temp_step', 'label':'Color Temperature Step (50..400)'},
-                            {'value':'position', 'label':'Position'},
-                            {'value':'alert', 'label':'Alert'}
-                        ]
-                    },
-                    //homekit
-                    {
-                        value:'homekit',
-                        label:'homekit',
-                        icon:'icons/node-red-contrib-zigbee2mqtt/homekit-logo.png',
-                        options:[{'value':'homekit', 'label':'Apple Homekit data format'}]
-                    },
-                    {
-                        value: 'nothing',
-                        label: RED._("node-red-contrib-zigbee2mqtt/server:editor.nothing"),
-                        options:['']
-                    },
-                    {value:'str', label: 'str'},
-                    {value:'msg', label: 'msg'},
-                    {value:'json',label:'JSON',options:['{}']}
-                ];
+
+                //init typedInput
+                var payloadTypes = {
+                    value: 'z2m_payload',
+                    label: 'zigbee2mqtt',
+                    icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                    options: []
+                };
+                $('#node-input-payload').typedInput({
+                    types: [payloadTypes, {value:'msg'},  {value:'flow'},  {value:'global'},  {value:'str'},  {value:'num'},  {value:'json'}],
+                    default: 'msg',
+                    value: 'payload',
+                    typeField: $('#node-input-payloadType'),
+                });
+                $inputCommandType.val(node.commandType);
+                $('#node-input-payloadType').val(node.payloadType);
+
+
+
+                function showHelpBlock() {
+                    var command = $('#node-input-command').val(); //state
+                    var commandType = $('#node-input-commandType').val(); //z2m_cmd
+                    if (command === '{}') command = 'json';
+                    if (commandType === 'str') command = 'custom';
+                    $('.help_block').hide();
+                    $('.help_block__'+commandType+'_'+command).show();
+                }
+
+
+                function buildTypesInput(types = null) {
+                    $('#node-input-command').typedInput({
+                        types: types||getTypes(),
+                        default: 'msg',
+                        value: 'topic',
+                        typeField: $('#node-input-commandType'),
+                    });
+                }
+
+                function getTypes() {
+                    return [
+                        //z2m commands
+                        {
+                            value: 'z2m_cmd',
+                            label: 'zigbee2mqtt',
+                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                            options: [
+                                {'value':'state', 'label':'State (on|off|toggle)'},
+                                {'value':'brightness', 'label':'Brightness (0..255)'},
+                                {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
+                                {'value':'brightness_move_onoff', 'label':'Brightness Move On/Off (-255...255|stop)'},
+                                {'value':'brightness_step', 'label':'Brightness Step (-255...255)'},
+                                {'value':'brightness_step_onoff', 'label':'Brightness Step On/Off (-255...255)'},
+                                {'value':'color', 'label':'Color: {}'},
+                                {'value':'color_rgb', 'label':'Color: r,g,b'},
+                                {'value':'color_hex', 'label':'Color: #hex'},
+                                {'value':'color_hsb', 'label':'Color: h,s,b'},
+                                {'value':'color_hsv', 'label':'Color: h,s,v'},
+                                {'value':'color_hue', 'label':'Color: hue'},
+                                {'value':'color_saturation', 'label':'Color: saturation'},
+                                {'value':'color_temp', 'label':'Color Temperature (50..400)'},
+                                {'value':'color_temp_move', 'label':'Color Temperature Move (50..400|stop)'},
+                                {'value':'color_temp_step', 'label':'Color Temperature Step (50..400)'},
+                                {'value':'position', 'label':'Position'},
+                                {'value':'alert', 'label':'Alert'}
+                            ]
+                        },
+                        //homekit
+                        {
+                            value:'homekit',
+                            label:'homekit',
+                            icon:'icons/node-red-contrib-zigbee2mqtt/homekit-logo.png',
+                            options:[{'value':'homekit', 'label':'Apple Homekit data format'}]
+                        },
+                        {
+                            value: 'nothing',
+                            label: RED._("node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                            options:['']
+                        },
+                        {value:'str', label: 'str'},
+                        {value:'msg', label: 'msg'},
+                        {value:'json',label:'JSON',options:['{}']}
+                    ];
+                }
+            // }, 100); //need timeout to load server node
+        },
+        oneditsave: function () {
+            //convert array for string if single mode
+            if (!$('#node-input-enableMultiple').is(':checked')) {
+                let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
+                this.device_id = device_id.length ? device_id[0] : null;
             }
         }
     });

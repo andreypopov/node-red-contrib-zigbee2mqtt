@@ -49,14 +49,28 @@ module.exports = function(RED) {
         onMQTTMessage(data) {
             let node = this;
 
-            if (data.item &&
-                (("ieee_address" in data.item && data.item.ieee_address === node.config.device_id)
-            ||  ("id" in data.item && parseInt(data.item.id) === parseInt(node.config.device_id)))
-            ) {
-                node.server.nodeSend(node, {
-                    'filter':  node.config.filterChanges
-                });
+            if (node.config.enableMultiple) {
+                if (data.item &&
+                    (("ieee_address" in data.item && (node.config.device_id).includes(data.item.ieee_address))
+                        ||  ("id" in data.item && (node.config.device_id).includes(data.item.id)))
+                ) {
+                    node.server.nodeSend(node, {
+                        'changed' : data
+                    });
+                }
+
+
+            } else {
+                if (data.item &&
+                    (("ieee_address" in data.item && data.item.ieee_address === node.config.device_id)
+                        ||  ("id" in data.item && parseInt(data.item.id) === parseInt(node.config.device_id)))
+                ) {
+                    node.server.nodeSend(node, {
+                        'filter':  node.config.filterChanges
+                    });
+                }
             }
+
         }
 
         onMQTTBridgeState(data) {

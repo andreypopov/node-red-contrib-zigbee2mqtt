@@ -16,15 +16,19 @@
     </div>
     <div class="form-row">
         <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
-        <select id="node-input-device_id" class="s-width" data-single="true"></select>
+        <select id="node-input-device_id" class="s-width" multiple="multiple"></select>
     </div>
     <div class="form-row">
         <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
-        <select id="node-input-state" class="s-width"  data-i18n="[placeholder]multiselect.complete_payload"></select>
+        <select id="node-input-state" class="s-width" data-i18n="[placeholder]multiselect.complete_payload"></select>
     </div>
     <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
         <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
+    </div>
+    <div class="form-row">
+        <label for='node-input-enableMultiple' class="l-width"></label>
+        <input type="checkbox" id="node-input-enableMultiple" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="node-red-contrib-spruthub/server:label.enable_multiple"></span></input>
     </div>
     <div class="form-row">
         <label for='node-input-outputAtStartup' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.start_output"></span></label>
@@ -66,7 +70,11 @@
             filterChanges: {
                 value: false,
                 required: true
-            }
+            },
+            enableMultiple: {
+                value: false,
+                required: true
+            },
         },
         inputs: 0,
         outputs: 1,
@@ -88,10 +96,19 @@
         },
         oneditprepare: function () {
             let node = this;
-            new Zigbee2MqttEditor(node).build();
+
+            setTimeout(()=>{
+                new Zigbee2MqttEditor(node).build();
+            }, 100); //need timeout to load server node
         },
         oneditsave: function () {
-            var selectedOptions = $('#node-input-device_id option:selected');
+            //convert array for string if single mode
+            if (!$('#node-input-enableMultiple').is(':checked')) {
+                let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
+                this.device_id = device_id.length ? device_id[0] : null;
+            }
+
+            let selectedOptions = $('#node-input-device_id option:selected');
             if (selectedOptions) {
                 this.topic = selectedOptions.map(function () {
                     return $(this).val();
@@ -101,7 +118,7 @@
             }
 
             let $property = $('#node-input-state');
-            this.state = $property.val()!='0'?$property.val():null;
+            this.state = $property.val()!=='0'?$property.val():null;
         }
     });
 

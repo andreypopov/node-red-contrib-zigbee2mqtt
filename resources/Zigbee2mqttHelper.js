@@ -294,8 +294,45 @@ class Zigbee2mqttHelper {
         return result;
     }
 
+    static formatMath(data) {
+        var result = {};
+
+        for (var i in data) {
+            for (var key in data[i]) {
+                var val = data[i][key];
+                if (Zigbee2mqttHelper.isNumber(val)) {
+                    if (!(key in result)) result[key] = {"count": 0, "avg": 0, "min": null, "max": null, "sum": 0};
+
+                    result[key]["count"] += 1;
+                    result[key]["sum"] =  Math.round((result[key]["sum"] + val) * 100) / 100;
+                    result[key]["min"] = result[key]["min"] == null || val < result[key]["min"] ? val : result[key]["min"];
+                    result[key]["max"] = result[key]["max"] == null || val > result[key]["max"] ? val : result[key]["max"];
+                    result[key]["avg"] = Math.round((result[key]["sum"] / result[key]["count"]) * 100) / 100;
+                }
+            }
+        }
+
+        return result;
+    }
+
     static statusUpdatedAt() {
         return ' [' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString() + ']'
+    }
+
+    static isNumber(n)
+    {
+        return Zigbee2mqttHelper.isInt(n) || Zigbee2mqttHelper.isFloat(n);
+    }
+
+    static isInt(n)
+    {
+        if (n === 'true' || n === true || n === 'false' || n === false) return false;
+        return n !== "" && !isNaN(n) && Math.round(n) === n;
+    }
+
+    static isFloat(n){
+        if (n === 'true' || n === true || n === 'false' || n === false) return false;
+        return n !== "" && !isNaN(n) && Math.round(n) !== n;
     }
 
     // static objectsDiff(obj1, obj2) {

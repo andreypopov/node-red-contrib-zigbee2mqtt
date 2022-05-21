@@ -21,7 +21,6 @@ module.exports = function(RED) {
                         key = message.topic;
                     }
                     let device = node.server.getDeviceOrGroupByKey(key);
-
                     if (device) {
                         let payload;
                         let options = {};

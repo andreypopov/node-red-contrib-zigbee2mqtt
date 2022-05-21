@@ -16,7 +16,11 @@
     </div>
     <div class="form-row">
         <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
-        <select id="node-input-device_id" class="s-width" data-single="true"></select>
+        <select id="node-input-device_id" class="s-width" multiple="multiple"></select>
+    </div>
+    <div class="form-row">
+        <label for='node-input-enableMultiple' class="l-width"></label>
+        <input type="checkbox" id="node-input-enableMultiple" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="node-red-contrib-spruthub/server:label.enable_multiple"></span></input>
     </div>
     <div class="form-row">
         <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
@@ -34,14 +38,14 @@
         color: '#FDBF48',
         defaults: {
             name: {
-                value: ""
+                value: ''
             },
             server: {
-                type: "zigbee2mqtt-server",
+                type: 'zigbee2mqtt-server',
                 required: true
             },
             friendly_name: {
-                value: "",
+                value: '',
                 required: false
             },
             device_id: {
@@ -49,8 +53,12 @@
                 required: false
             },
             state: {
-                value: ""
+                value: ''
             },
+            enableMultiple: {
+                value: false,
+                required: true
+            }
         },
         inputs: 1,
         outputs: 1,
@@ -73,45 +81,18 @@
         oneditprepare: function () {
             let node = this;
 
-            // setTimeout(()=> {
+            setTimeout(()=>{
                 new Zigbee2MqttEditor(node, {
                     'allow_empty': true
                 }).build();
-            // }, 100);
-            // var updateOutput = function () {
-            //     var selectedState = $('#node-input-state option:selected').val();
-            //     var selectedDevice = $('#node-input-device_id option:selected').val();
-            // }
-
-            // $('#node-input-state').on("change", function() {
-            //     var state = $('#node-input-state option:selected').val();
-            //     if (state) { node.state = state; }
-            //     // if (parseInt(state) === 0) {$outputSelect.val('always').multipleSelect('refresh');}
-            //     updateOutput();
-            // });
-
-            //
-            // setTimeout(function(){
-            //     z2m_getItemList(node.device_id, '#node-input-device_id', {allowEmpty:true});
-            //
-            //     var $deviceInput = $('#node-input-device_id');
-            //     $deviceInput.on("change", function(){
-            //         z2m_getItemStateList(0, '#node-input-state');
-            //         // var device = $('#node-input-device_id option:selected').val();
-            //         updateOutput();
-            //         $('#node-input-friendly_name').val($('#node-input-device_id option:selected').attr('data-friendly_name'));
-            //     });
-            //
-            //     setTimeout(function () {
-            //         z2m_getItemStateList(node.state, '#node-input-state');
-            //     },100);
-            //
-            //     // if (!node.output) { $outputSelect.val('always').multipleSelect('refresh'); }
-            //
-            // }, 100); //we need small timeout, too fire change event for server select
+            }, 100); //need timeout to load server node
         },
         oneditsave: function () {
-
+            //convert array for string if single mode
+            if (!$('#node-input-enableMultiple').is(':checked')) {
+                let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
+                this.device_id = device_id.length ? device_id[0] : null;
+            }
         }
     });
 </script>
