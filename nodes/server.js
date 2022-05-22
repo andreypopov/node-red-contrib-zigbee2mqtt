@@ -518,7 +518,7 @@ module.exports = function(RED) {
             if (node.config.state && node.config.state !== '0' && payload_all && node.config.state in payload_all) {
                 payload = text = payload_all[node.config.state];
                 useProperty = node.config.state;
-            } else if (item.homekit && node.config.state.split("homekit_").join('') in item.homekit) {
+            } else if (item.homekit && node.config.state && node.config.state.split("homekit_").join('') in item.homekit) {
                 payload = item.homekit[node.config.state.split("homekit_").join('')];
                 useProperty = node.config.state.split("homekit_").join('');
             } else {
