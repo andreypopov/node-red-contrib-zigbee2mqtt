@@ -86,7 +86,7 @@ class Zigbee2MqttEditor {
         let data = await that.getDevices();
 
         if (that.config.allow_empty && !that.isMultiple()) {
-            that.getDeviceIdInput().html('<option value="">msg.topic</option>');
+            that.getDeviceIdInput().html('<option value="msg.topic">msg.topic</option>');
         }
 
         let html = '';
@@ -354,7 +354,7 @@ class Zigbee2MqttEditor {
             if (typeof(that.device_id) == 'object') {
                 that.device_id = that.device_id[0]; //get the first device
             }
-            if (that.getDeviceIdInput().find('option[value='+that.device_id+']').length) {
+            if (that.getDeviceIdInput().find('option[value="'+that.device_id+'"]').length) {
                 that.getDeviceIdInput().val(that.device_id);
             }
             // that.getDeviceIdInput().multipleSelect('check', that.device_id); //does not work
@@ -378,7 +378,7 @@ class Zigbee2MqttEditor {
             if (typeof(that.device_id) == 'object') {
                 that.device_id = that.device_id[0]; //get the first device
             }
-            if (that.getDeviceIdInput().find('option[value='+that.device_id+']').length) {
+            if (that.getDeviceIdInput().find('option[value="'+that.device_id+'"]').length) {
                 that.getDeviceFriendlyNameInput().val(that.getDeviceIdInput().multipleSelect('getSelects', 'text'));
             }
         } else {
