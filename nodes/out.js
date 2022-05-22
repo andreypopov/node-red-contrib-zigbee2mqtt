@@ -17,7 +17,7 @@ module.exports = function(RED) {
                     clearTimeout(node.cleanTimer);
 
                     let key = node.config.device_id;
-                    if (!key && message.topic) {
+                    if ((!key || key === 'msg.topic') && message.topic) {
                         key = message.topic;
                     }
                     let device = node.server.getDeviceOrGroupByKey(key);

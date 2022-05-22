@@ -13,7 +13,7 @@ module.exports = function(RED) {
                 node.on('input', function(message_in) {
 
                     let key = node.config.device_id;
-                    if (!key && message_in.topic) {
+                    if ((!key || key === 'msg.topic') && message_in.topic) {
                         key = message_in.topic;
                     }
 
