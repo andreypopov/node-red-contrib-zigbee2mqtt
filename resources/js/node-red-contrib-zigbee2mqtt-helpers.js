@@ -162,7 +162,7 @@ class Zigbee2MqttEditor {
             });
         }
 
-        if (device && 'homekit' in device && Object.keys(device.homekit).length) {
+        if (device && 'homekit' in device && device.homekit && Object.keys(device.homekit).length) {
             html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.homekit")});
             html.appendTo(that.getDevicePropertyInput());
 

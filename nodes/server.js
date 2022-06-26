@@ -147,6 +147,11 @@ module.exports = function(RED) {
                                     node.devices[ind]['current_values'] = node.devices_values[topic];
                                     node.devices[ind]['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic]);
                                     node.devices[ind]['format'] = Zigbee2mqttHelper.formatPayload(node.devices_values[topic], node.devices[ind]);
+                                } else {
+                                    // node.warn('no retain option for: ' + topic)
+                                    //force get data
+                                    node.mqtt.publish(node.getTopic('/bridge/'+node.devices[ind]['ieee_address']+'/get'));
+
                                 }
                             }
 
@@ -700,7 +705,7 @@ module.exports = function(RED) {
             node.connection = true;
             node.log('MQTT Connected');
             node.emit('onMQTTConnect');
-            node.getDevices(function() {
+            node.getDevices(() => {
                 node.subscribeMQTT();
             });
 

@@ -224,7 +224,7 @@ class Zigbee2mqttHelper {
                     sat = hsv.s;
                 }
                 var bri = Zigbee2mqttHelper.convertRange(parseInt(payload.brightness), [0, 255], [0, 100]);
-                var ct = "color_temp" in payload ? Zigbee2mqttHelper.convertRange(parseInt(payload.color_temp), [50, 400], [140, 500]) : null;
+                var ct = "color_temp" in payload ? Zigbee2mqttHelper.convertRange(parseInt(payload.color_temp), [150, 500], [150, 500]) : null;
 
                 msg["Lightbulb"] = {
                     "On": true,
@@ -265,10 +265,36 @@ class Zigbee2mqttHelper {
             };
         }
 
-        //Window
-        //WindowCovering
-        //Door
-        if ('position' in payload) {
+
+
+        // 0: "stopped"
+        // 1: "opening"
+        // 2: "closing"
+        // public static readonly DECREASING = 0;
+        // public static readonly INCREASING = 1;
+        // public static readonly STOPPED = 2;
+        if ('position' in payload && 'motor_state' in payload) {
+            let motor_state = null;
+            switch (payload.motor_state) {
+                case 'closing':
+                    motor_state = 0;
+                    break;
+                case 'opening':
+                    motor_state = 1;
+                    break;
+                case 'stopped':
+                default:
+                    motor_state = 2;
+                    break;
+            }
+
+            msg["Window"] = msg["WindowCovering"] = msg["Door"] = {
+                "CurrentPosition": parseInt(payload.position),
+                "TargetPosition": parseInt(payload.position),
+                "PositionState": motor_state
+            };
+
+        } else if ('position' in payload && 'running' in payload) { //old??
             msg["Window"] = msg["WindowCovering"] = msg["Door"] = {
                 "CurrentPosition": parseInt(payload.position),
                 "TargetPosition": parseInt(payload.position),
@@ -341,9 +367,9 @@ class Zigbee2mqttHelper {
         }
 
         //Switch
-        if ("state" in payload && (payload.state == "ON" || payload.state == "OFF")) {
+        if ("state" in payload && (payload.state === "ON" || payload.state === "OFF")) {
             msg["Switch"] = {
-                "On": payload.state == "ON"
+                "On": payload.state === "ON"
             };
         }
 

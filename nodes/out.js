@@ -304,7 +304,7 @@ module.exports = function(RED) {
                 msg['state'] = "on";
             }
             if (payload.ColorTemperature !== undefined) {
-                msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [140,500], [50,400]);
+                msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [150,500], [150,500]);
                 if ("current_values" in device) {
                     if ("color_temp" in device.current_values)  device.current_values.color_temp = msg['color_temp'];
                 }
