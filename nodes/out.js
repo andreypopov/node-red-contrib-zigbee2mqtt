@@ -272,13 +272,13 @@ module.exports = function(RED) {
 
             if (payload.On !== undefined) {
                 if ("current_values" in device) {
-                    // console.log(device.current_values);
                     // if ("brightness" in device.current_values) msg['brightness'] = device.current_values.brightness;
                 }
                 msg['state'] = payload.On?"on":"off";
             }
             if (payload.Brightness !== undefined) {
                 msg['brightness'] =  Zigbee2mqttHelper.convertRange(payload.Brightness, [0,100], [0,255]);
+                device.current_values.brightness = msg['brightness'];
                 if ("current_values" in device) {
                     if ("current_values" in device) device.current_values.brightness = msg['brightness'];
                 }
@@ -287,6 +287,7 @@ module.exports = function(RED) {
             }
             if (payload.Hue !== undefined) {
                 msg['color'] = {"hue":payload.Hue};
+                device.current_values.color.hue = payload.Hue;
                 if ("current_values" in device) {
                     if ("brightness" in device.current_values) msg['brightness'] = device.current_values.brightness;
                     if ("color" in device.current_values && "saturation" in device.current_values.color) msg['color']['saturation'] = device.current_values.color.saturation;
@@ -296,6 +297,7 @@ module.exports = function(RED) {
             }
             if (payload.Saturation !== undefined) {
                 msg['color'] = {"saturation":payload.Saturation};
+                device.current_values.color.saturation = payload.Saturation;
                 if ("current_values" in device) {
                     if ("brightness" in device.current_values) msg['brightness'] = device.current_values.brightness;
                     if ("color" in device.current_values && "hue" in device.current_values.color) msg['color']['hue'] = device.current_values.color.hue;
@@ -305,6 +307,7 @@ module.exports = function(RED) {
             }
             if (payload.ColorTemperature !== undefined) {
                 msg['color_temp'] = Zigbee2mqttHelper.convertRange(payload.ColorTemperature, [150,500], [150,500]);
+                device.current_values.color_temp = msg['color_temp'];
                 if ("current_values" in device) {
                     if ("color_temp" in device.current_values)  device.current_values.color_temp = msg['color_temp'];
                 }
