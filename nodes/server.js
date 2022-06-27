@@ -534,8 +534,16 @@ module.exports = function(RED) {
             if (useProperty) {
                 try {
                     for (let ind in item.definition.exposes) {
-                        if (item.definition.exposes[ind]['property'] == useProperty && 'unit' in item.definition.exposes[ind]) {
-                            text += ' ' + item.definition.exposes[ind]['unit'];
+                        if ('features' in item.definition.exposes) { //why did they add it... what a crap!?
+                            for (let featureInd in item.definition.exposes.features) {
+                                if (item.definition.exposes[ind]['features'][featureInd]['property'] == useProperty && 'unit' in item.definition.exposes[ind]['features'][featureInd]) {
+                                    text += ' ' + item.definition.exposes[ind]['unit'];
+                                }
+                            }
+                        } else {
+                            if (item.definition.exposes[ind]['property'] == useProperty && 'unit' in item.definition.exposes[ind]) {
+                                text += ' ' + item.definition.exposes[ind]['unit'];
+                            }
                         }
                     }
                 } catch (e) {}

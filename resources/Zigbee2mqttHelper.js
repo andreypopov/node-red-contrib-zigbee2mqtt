@@ -275,22 +275,26 @@ class Zigbee2mqttHelper {
         // public static readonly STOPPED = 2;
         if ('position' in payload && 'motor_state' in payload) {
             let motor_state = null;
+            let position = 0; //closed
             switch (payload.motor_state) {
                 case 'closing':
                     motor_state = 0;
+                    position = 0;
                     break;
                 case 'opening':
                     motor_state = 1;
+                    position = 100;
                     break;
                 case 'stopped':
                 default:
                     motor_state = 2;
+                    position = parseInt(payload.position) || 0;
                     break;
             }
 
             msg["Window"] = msg["WindowCovering"] = msg["Door"] = {
                 "CurrentPosition": parseInt(payload.position),
-                "TargetPosition": parseInt(payload.position),
+                "TargetPosition": position,
                 "PositionState": motor_state
             };
 

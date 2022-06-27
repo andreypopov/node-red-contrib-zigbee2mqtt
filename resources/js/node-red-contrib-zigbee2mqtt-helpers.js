@@ -155,7 +155,14 @@ class Zigbee2MqttEditor {
             html.appendTo(that.getDevicePropertyInput());
 
             $.each(device.definition.exposes, function(index, value) {
-                if ('property' in value) {
+                if ('features' in value) {
+                    $.each(value.features, function(index2, value2) {
+                        if ('property' in value2) {
+                            $('<option  value="' + value2.property + '">' + value2.name + (value2.unit ? ', ' + value2.unit : '') + '</option>')
+                                .appendTo(html);
+                        }
+                    });
+                } else if ('property' in value) {
                     $('<option  value="' + value.property + '">' + value.name + (value.unit ? ', ' + value.unit : '') + '</option>')
                         .appendTo(html);
                 }
