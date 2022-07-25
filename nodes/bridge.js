@@ -97,7 +97,7 @@ module.exports = function(RED) {
                     let availabilityStatusObject = JSON.parse(data.payload);
                     node.server.bridge_state = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
                 } else {
-                    node.server.bridge_state = message.toString() === 'online';
+                    node.server.bridge_state = data.payload === 'online';
                 }
                 node.setNodeStatus();
 
