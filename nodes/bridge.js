@@ -96,7 +96,7 @@ module.exports = function(RED) {
                 if (Zigbee2mqttHelper.isJson(data.payload)) {
                     let availabilityStatusObject = JSON.parse(data.payload);
                     node.server.bridge_state = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
-                } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                } else {
                     node.server.bridge_state = message.toString() === 'online';
                 }
                 node.setNodeStatus();

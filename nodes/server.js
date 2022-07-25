@@ -123,7 +123,7 @@ module.exports = function(RED) {
                         if (Zigbee2mqttHelper.isJson(message.toString())) {
                             let availabilityStatusObject = JSON.parse(message.toString());
                             node.bridge_state = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
-                        } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                        } else {
                             node.bridge_state = message.toString() === 'online';
                         }
 
@@ -792,7 +792,7 @@ module.exports = function(RED) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         let availabilityStatusObject = JSON.parse(messageString);
                         availabilityStatus = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
-                    } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                    } else {
                         availabilityStatus = messageString === 'online';
                     }
                     node.emit('onMQTTBridgeState', {
@@ -825,7 +825,7 @@ module.exports = function(RED) {
                         let availabilityStatusObject = JSON.parse(messageString);
                         availabilityStatus = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
 
-                    } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                    } else {
                         availabilityStatus = messageString === 'online';
                     }
 
