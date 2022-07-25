@@ -69,19 +69,19 @@ module.exports = function(RED) {
         setNodeStatus() {
             let node = this;
 
-            if (node.server.bridge_info && node.server.bridge_info.permit_join && node.server.bridge_state === 'online') {
+            if (node.server.bridge_info && node.server.bridge_info.permit_join && node.server.bridge_state) {
                 node.status({
                     fill: "yellow",
                     shape: "ring",
                     text: "node-red-contrib-zigbee2mqtt/bridge:status.searching"
                 });
             } else {
-                let text = node.server.bridge_state?node.server.bridge_state:'offline';
+                let text = node.server.bridge_state?RED._("node-red-contrib-zigbee2mqtt/bridge:status.online"):RED._("node-red-contrib-zigbee2mqtt/bridge:status.offline");
                 if (node.server.bridge_info && "log_level" in node.server.bridge_info) {
                     text += ' (log: '+node.server.bridge_info.log_level+')';
                 }
                 node.status({
-                    fill: node.server.bridge_state==="online"?"green":"red",
+                    fill: node.server.bridge_state?"green":"red",
                     shape: "dot",
                     text: text
                 });
@@ -93,7 +93,12 @@ module.exports = function(RED) {
             let payload = Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload;
 
             if (node.server.getTopic('/bridge/state') === data.topic) {
-                node.server.bridge_state = data.payload;
+                if (Zigbee2mqttHelper.isJson(data.payload)) {
+                    let availabilityStatusObject = JSON.parse(data.payload);
+                    node.server.bridge_state = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
+                } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                    node.server.bridge_state = message.toString() === 'online';
+                }
                 node.setNodeStatus();
 
             } else if (node.server.getTopic('/bridge/info') === data.topic) {

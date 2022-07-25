@@ -119,9 +119,16 @@ module.exports = function(RED) {
 
                 client.on('message', function(topic, message) {
                     if (node.getTopic('/bridge/state') === topic) {
-                        node.bridge_state = message.toString();
-                        if (message.toString() !== 'online') {
-                            node.warn('Bridge status: ' + message.toString());
+
+                        if (Zigbee2mqttHelper.isJson(message.toString())) {
+                            let availabilityStatusObject = JSON.parse(message.toString());
+                            node.bridge_state = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
+                        } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                            node.bridge_state = message.toString() === 'online';
+                        }
+
+                        if (!node.bridge_state) {
+                            node.warn('Bridge status: offline');
                         }
 
                     } else if (node.getTopic('/bridge/groups') === topic) {
@@ -781,11 +788,18 @@ module.exports = function(RED) {
                         node.groups = JSON.parse(messageString);
                     }
                 } else if (node.getTopic('/bridge/state') === topic) {
+                    let availabilityStatus = false;
+                    if (Zigbee2mqttHelper.isJson(messageString)) {
+                        let availabilityStatusObject = JSON.parse(messageString);
+                        availabilityStatus = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
+                    } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                        availabilityStatus = messageString === 'online';
+                    }
                     node.emit('onMQTTBridgeState', {
                         topic: topic,
-                        payload: messageString === 'online',
+                        payload: availabilityStatus,
                     });
-                    if (messageString === 'online') {
+                    if (availabilityStatus) {
                         node.getDevices(null, true, true);
                     }
                 } else if (node.getTopic('/bridge/info') === topic) {
@@ -805,10 +819,21 @@ module.exports = function(RED) {
 
                 //availability
                 if (topic.substring(topic.length - 13, topic.length) === '/availability') {
-                    node.avaialability[topic.split('/availability').join('')] = messageString === 'online'
+
+                    let availabilityStatus = null;
+                    if (Zigbee2mqttHelper.isJson(messageString)) {
+                        let availabilityStatusObject = JSON.parse(messageString);
+                        availabilityStatus = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
+
+                    } else if (node.bridge_info.config.advanced.legacy_availability_payload) {
+                        availabilityStatus = messageString === 'online';
+                    }
+
+                    node.avaialability[topic.split('/availability').join('')] = availabilityStatus;
+
                     node.emit('onMQTTAvailability', {
                         topic: topic,
-                        payload: messageString === 'online',
+                        payload: availabilityStatus,
                         item: node.getDeviceOrGroupByKey(topic.split('/availability').join(''))
                     });
                     return;

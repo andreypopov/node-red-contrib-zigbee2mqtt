@@ -40,6 +40,8 @@
         "no_connection": "no connection",
         "searching": "looking for devices...",
         "paired": "paired!",
+        "online": "online",
+        "offline": "offline",
         "pairing": "pairing...",
         "connected": "connected",
         "failed": "failed!"
