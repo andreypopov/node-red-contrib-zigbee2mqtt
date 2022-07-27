@@ -527,12 +527,26 @@ module.exports = function(RED) {
             }
 
             let useProperty = null;
-            if (node.config.state && node.config.state !== '0' && payload_all && node.config.state in payload_all) {
-                payload = text = payload_all[node.config.state];
-                useProperty = node.config.state;
-            } else if (item.homekit && node.config.state && node.config.state.split("homekit_").join('') in item.homekit) {
-                payload = item.homekit[node.config.state.split("homekit_").join('')];
-                useProperty = node.config.state.split("homekit_").join('');
+            if (node.config.state && node.config.state !== '0' && payload_all) {
+                // console.log(item.current_values);
+                if (node.config.state in payload_all) {
+                    payload = text = payload_all[node.config.state];
+                    useProperty = node.config.state;
+                } else {
+                    //state was not found in payload (button case)
+                    //payload: { last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
+                    //payload: { action: 'single', last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
+                    // console.log('=======skip');
+                    return;
+                }
+            } else if (item.homekit && node.config.state) {
+                if (node.config.state.split("homekit_").join('') in item.homekit) {
+                    payload = item.homekit[node.config.state.split("homekit_").join('')];
+                    useProperty = node.config.state.split("homekit_").join('');
+                } else {
+                    //state was not found in payload
+                    return;
+                }
             } else {
                 payload = payload_all;
             }

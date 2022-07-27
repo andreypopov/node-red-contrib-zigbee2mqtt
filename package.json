@@ -5,7 +5,7 @@
   },
   "name": "node-red-contrib-zigbee2mqtt",
   "description": "Zigbee2mqtt connectivity nodes for node-red",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "dependencies": {
     "eventsource": "^2.0.2",
     "mqtt": "^4.3.7",
