@@ -114,14 +114,14 @@ module.exports = function(RED) {
                                     case 'lock':
                                         command = 'state';
                                         if (payload === 'toggle') {
-                                            if ('state' in device.current_values && device.current_values.state === 'lock') {
+                                            if ('lock_state' in device.current_values && device.current_values.lock_state === 'locked') {
                                                 payload = 'unlock';
                                             } else {
                                                 payload = 'lock';
                                             }
-                                        } else if (payload === 'lock' || payload == 1 || payload === true) {
+                                        } else if (payload === 'lock' || payload == 1 || payload === true || payload === 'on') {
                                             payload = 'lock';
-                                        } else if (payload === 'unlock' || payload == 0 || payload === false) {
+                                        } else if (payload === 'unlock' || payload == 0 || payload === false || payload === 'off') {
                                             payload = 'unlock';
                                         }
                                         break;
