@@ -111,6 +111,21 @@ module.exports = function(RED) {
                                         payload = parseInt(payload);
                                         break;
 
+                                    case 'lock':
+                                        command = 'state';
+                                        if (payload === 'toggle') {
+                                            if ('state' in device.current_values && device.current_values.state === 'lock') {
+                                                payload = 'unlock';
+                                            } else {
+                                                payload = 'lock';
+                                            }
+                                        } else if (payload === 'lock' || payload == 1 || payload === true) {
+                                            payload = 'lock';
+                                        } else if (payload === 'unlock' || payload == 0 || payload === false) {
+                                            payload = 'unlock';
+                                        }
+                                        break;
+
                                     case 'color':
                                         payload =  {"color":payload};
                                         break;
