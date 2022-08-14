@@ -304,6 +304,12 @@ class Zigbee2mqttHelper {
                 "TargetPosition": parseInt(payload.position),
                 "PositionState": payload.running ? 1 : 2 //increasing=1, stopped=2
             };
+        } else if ('position' in payload) { //no position in payload (eg: ikea)
+            msg["Window"] = msg["WindowCovering"] = msg["Door"] = {
+                "CurrentPosition": parseInt(payload.position),
+                "TargetPosition": parseInt(payload.position),
+                "PositionState": 2 //stopped=2, there is no way to get current motor status
+            };
         }
 
         //TemperatureSensor
