@@ -2,7 +2,7 @@
     "label": {
         "base_topic": "Base topic",
         "name": "Name",
-        "host": "Host",
+        "host": "MQTT Host",
         "mqtt_port": "MQTT Port",
         "mqtt_username": "MQTT Username",
         "mqtt_password": "MQTT Password",
