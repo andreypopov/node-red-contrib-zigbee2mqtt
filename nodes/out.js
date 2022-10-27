@@ -101,6 +101,11 @@ module.exports = function(RED) {
                                 command = node.config.command;
                                 switch (command) {
                                     case 'state':
+                                        if (payload === 'toggle') {
+                                            if ('position' in device.current_values) {
+                                                payload = device.current_values.position > 0 ? 'close' : 'open';
+                                            }
+                                        }
                                         break;
                                     case 'brightness':
                                         payload = parseInt(payload);
@@ -114,7 +119,8 @@ module.exports = function(RED) {
                                     case 'lock':
                                         command = 'state';
                                         if (payload === 'toggle') {
-                                            if ('lock_state' in device.current_values && device.current_values.lock_state === 'locked') {
+                                            if ('lock_state' in
+                                                device.current_values && device.current_values.lock_state === 'locked') {
                                                 payload = 'unlock';
                                             } else {
                                                 payload = 'lock';
