@@ -734,9 +734,7 @@ module.exports = function(RED) {
                         topic: topic,
                         payload: availabilityStatus,
                     });
-                    if (availabilityStatus) {
-                        node.warn('Bridge online')
-                    }
+                    node.warn(`Bridge ${availabilityStatus ? 'online' : 'offline'}`)
                 } else if (node.getTopic('/bridge/info') === topic) {
                     node.bridge_info = JSON.parse(messageString);
                 }
