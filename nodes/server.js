@@ -77,103 +77,13 @@ module.exports = function(RED) {
 
         getDevices(callback, forceRefresh = false, withGroups = false) {
             var node = this;
+            // TODO: we don't have devices/groups yet
 
-            if (forceRefresh || node.devices === undefined) {
-                node.log('Refreshing devices');
-                node.groups = [];
-
-                var timeout = null;
-                var timeout_ms = 60000;
-
-                var client = node.connectMQTT('tmp');
-                client.on('connect', function() {
-
-                    //end function after timeout, if now response
-                    timeout = setTimeout(function() {
-                        node.error('Error: getDevices timeout, close connection')
-                        client.end(true);
-                    }, timeout_ms);
-
-                    client.subscribe(node.getTopic('/#'), {'qos':parseInt(node.config.mqtt_qos||0)}, function(err) {
-                        if (err) {
-                            node.error('Error code #0023: ' + err);
-                            client.end(true);
-                        }
-                    });
-                });
-
-                client.on('error', function(error) {
-                    node.error('Error code #0024: ' + error);
-                    client.end(true);
-                });
-
-                client.on('end', function(error, s) {
-                    // console.log('END');
-                    clearTimeout(timeout);
-
-                    if (typeof (callback) === 'function') {
-                        callback(withGroups ? [node.devices, node.groups] : node.devices);
-                    }
-                    return withGroups ? [node.devices, node.groups] : node.devices;
-                });
-
-                client.on('message', function(topic, message) {
-                    if (node.getTopic('/bridge/state') === topic) {
-
-                        if (Zigbee2mqttHelper.isJson(message.toString())) {
-                            let availabilityStatusObject = JSON.parse(message.toString());
-                            node.bridge_state = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
-                        } else {
-                            node.bridge_state = message.toString() === 'online';
-                        }
-
-                        if (!node.bridge_state) {
-                            node.warn('Bridge status: offline');
-                        }
-
-                    } else if (node.getTopic('/bridge/groups') === topic) {
-                        var messageString = message.toString();
-                        if (Zigbee2mqttHelper.isJson(messageString)) {
-                            node.groups = JSON.parse(messageString);
-                        }
-
-                    } else if (node.getTopic('/bridge/info') === topic) {
-                        node.bridge_info = JSON.parse(message.toString());
-
-                    } else if (node.getTopic('/bridge/devices') === topic) {
-                        if (Zigbee2mqttHelper.isJson(message.toString())) {
-                            node.devices = JSON.parse(message.toString());
-
-                            //todo: getDevices() with homekit, move to better place
-                            for (let ind in node.devices) {
-                                node.devices[ind]['current_values'] = null;
-                                node.devices[ind]['homekit'] = null;
-                                node.devices[ind]['format'] = null;
-                                let topic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
-                                if (topic in node.devices_values) {
-                                    node.devices[ind]['current_values'] = node.devices_values[topic];
-                                    node.devices[ind]['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic]);
-                                    node.devices[ind]['format'] = Zigbee2mqttHelper.formatPayload(node.devices_values[topic], node.devices[ind]);
-                                } else {
-                                    // node.warn('no retain option for: ' + topic)
-                                    //force get data
-                                    node.mqtt.publish(node.getTopic('/bridge/'+node.devices[ind]['ieee_address']+'/get'));
-
-                                }
-                            }
-
-                        }
-                        client.end(true);
-                    }
-                });
-            } else {
-                // console.log(node.devices);
-                node.log('Using cached devices');
-                if (typeof (callback) === 'function') {
-                    callback(withGroups ? [node.devices, node.groups] : node.devices);
-                }
-                return withGroups ? [node.devices, node.groups] : node.devices;
+            node.log('Using cached devices');
+            if (typeof (callback) === 'function') {
+                callback(withGroups ? [node.devices, node.groups] : node.devices);
             }
+            return withGroups ? [node.devices, node.groups] : node.devices;
         }
 
 
@@ -731,9 +641,7 @@ module.exports = function(RED) {
             node.connection = true;
             node.log('MQTT Connected');
             node.emit('onMQTTConnect');
-            node.getDevices(() => {
-                node.subscribeMQTT();
-            });
+            node.subscribeMQTT();
 
         }
 
@@ -793,6 +701,22 @@ module.exports = function(RED) {
                 if (node.getTopic('/bridge/devices') === topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         node.devices = JSON.parse(messageString);
+                        // TODO: do we need this here?
+                        // for (let ind in node.devices) {
+                        //     node.devices[ind]['current_values'] = null;
+                        //     node.devices[ind]['homekit'] = null;
+                        //     node.devices[ind]['format'] = null;
+                        //     let topic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
+                        //     if (topic in node.devices_values) {
+                        //         node.devices[ind]['current_values'] = node.devices_values[topic];
+                        //         node.devices[ind]['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic]);
+                        //         node.devices[ind]['format'] = Zigbee2mqttHelper.formatPayload(node.devices_values[topic], node.devices[ind]);
+                        //     } else {
+                        //         // node.warn('no retain option for: ' + topic)
+                        //         //force get data
+                        //         node.mqtt.publish(node.getTopic('/bridge/'+node.devices[ind]['ieee_address']+'/get'));
+                        //     }
+                        // }
                     }
                 } else if (node.getTopic('/bridge/groups') === topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
@@ -811,7 +735,7 @@ module.exports = function(RED) {
                         payload: availabilityStatus,
                     });
                     if (availabilityStatus) {
-                        node.getDevices(null, true, true);
+                        node.warn('Bridge online')
                     }
                 } else if (node.getTopic('/bridge/info') === topic) {
                     node.bridge_info = JSON.parse(messageString);
