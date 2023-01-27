@@ -702,18 +702,13 @@ module.exports = function(RED) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         node.devices = JSON.parse(messageString);
                         for (let ind in node.devices) {
-                            node.devices[ind]['current_values'] = null;
-                            node.devices[ind]['homekit'] = null;
-                            node.devices[ind]['format'] = null;
                             let topic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
                             if (topic in node.devices_values) {
-                                node.devices[ind]['current_values'] = node.devices_values[topic];
-                                node.devices[ind]['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic]);
-                                node.devices[ind]['format'] = Zigbee2mqttHelper.formatPayload(node.devices_values[topic], node.devices[ind]);
+                                // getDeviceOrGroupByKey will add up-to-date information from node.device_values
                             } else {
                                 // force get data
                                 // definition.exposes[].access has to be 0b1xx to support get
-                                // special devices, like "Coordinator" don't have a definition
+                                // special devices, like "Coordinator", don't have a definition
                                 // Zigbee2MQTT seems to answer with the full state, not just the ones marked with gettable (but if we just send an empty/dummy payload, there won't be an answer)
                                 if (node.devices[ind].definition) {
                                     let getPayload = {}
@@ -747,8 +742,7 @@ module.exports = function(RED) {
                         topic: topic,
                         payload: availabilityStatus,
                     });
-                    // TODO: is this correct? prints online at redeploy
-                    if (node.bridge_state !== undefined || !availabilityStatus) {
+                    if (node.bridge_state != undefined || !availabilityStatus) {
                         node.warn(`Bridge ${availabilityStatus ? 'online' : 'offline'}`)
                     }
                     node.bridge_state = availabilityStatus
@@ -802,7 +796,6 @@ module.exports = function(RED) {
 // console.log(payload_json);
 // console.log('==========MQTT END')
                 node.devices_values[topic] = payload;
-                // TODO: do we need to set `node.devices[ind]['current_values']` here?
                 // node.devices_values[topic] = {
                 //     'old':topic in node.devices_values?node.devices_values[topic].new:null,
                 //     'new':payload,
