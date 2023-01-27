@@ -83,7 +83,6 @@ module.exports = function(RED) {
             if (typeof (callback) === 'function') {
                 callback(withGroups ? [node.devices, node.groups] : node.devices);
             }
-            return withGroups ? [node.devices, node.groups] : node.devices;
         }
 
 
