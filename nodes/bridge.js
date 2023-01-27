@@ -93,28 +93,14 @@ module.exports = function(RED) {
             let payload = Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload;
 
             if (node.server.getTopic('/bridge/state') === data.topic) {
-                if (Zigbee2mqttHelper.isJson(data.payload)) {
-                    let availabilityStatusObject = JSON.parse(data.payload);
-                    node.server.bridge_state = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
-                } else {
-                    node.server.bridge_state = data.payload === 'online';
-                }
                 node.setNodeStatus();
-
             } else if (node.server.getTopic('/bridge/info') === data.topic) {
                 if (payload.permit_join && node.status.fill !== 'yellow') {
                     node.setNodeStatus();
                 } else if (!payload.permit_join && node.status.fill !== 'green') {
                     node.setNodeStatus();
                 }
-            // } else if (node.server.getTopic('/bridge/logging') === data.topic) {
-            } else if (node.server.getTopic('/bridge/response/device/remove') === data.topic) {
-                node.server.getDevices(null, true, true);
             } else if (node.server.getTopic('/bridge/event') === data.topic) {
-                if (payload && 'type' in payload
-                    && (payload.type === 'device_interview' || payload.type === 'device_leave')) {
-                    node.server.getDevices(null, true, true);
-                }
                 node.status({
                     fill: "yellow",
                     shape: "ring",
@@ -127,7 +113,7 @@ module.exports = function(RED) {
             }
 
             node.send({
-                payload: Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload,
+                payload: payload,
                 topic: data.topic
             });
         }
