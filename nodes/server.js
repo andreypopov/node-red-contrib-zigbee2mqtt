@@ -741,7 +741,7 @@ module.exports = function(RED) {
                         topic: topic,
                         payload: availabilityStatus,
                     });
-                    if (node.bridge_state != undefined || !availabilityStatus) {
+                    if (node.bridge_state !== null || !availabilityStatus) {
                         node.warn(`Bridge ${availabilityStatus ? 'online' : 'offline'}`)
                     }
                     node.bridge_state = availabilityStatus
