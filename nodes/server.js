@@ -85,7 +85,7 @@ module.exports = function(RED) {
                 callback(withGroups ? [node.devices, node.groups] : node.devices);
             } else {
                 node.log('Waiting for device list')
-                var timeout = null
+                let timeout = null
                 let checkAvailability = null
                 new Promise(function(resolve) {
                     timeout = setTimeout(function() {
@@ -99,7 +99,7 @@ module.exports = function(RED) {
                     node.on('onMQTTMessageBridge', checkAvailability)
                 }).then(function() {
                     clearTimeout(timeout)
-                    node.removeListener("onMQTTMessageBridge", checkAvailability);
+                    node.removeListener('onMQTTMessageBridge', checkAvailability);
                     if (node.devices && (!withGroups || node.groups)) {
                         callback(withGroups ? [node.devices, node.groups] : node.devices);
                     } else {
