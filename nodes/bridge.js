@@ -95,9 +95,7 @@ module.exports = function(RED) {
             if (node.server.getTopic('/bridge/state') === data.topic) {
                 node.setNodeStatus();
             } else if (node.server.getTopic('/bridge/info') === data.topic) {
-                if (payload.permit_join && node.status.fill !== 'yellow') {
-                    node.setNodeStatus();
-                } else if (!payload.permit_join && node.status.fill !== 'green') {
+                if (payload.permit_join != (node.status.fill === 'yellow')) {
                     node.setNodeStatus();
                 }
             } else if (node.server.getTopic('/bridge/event') === data.topic) {

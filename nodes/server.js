@@ -75,13 +75,38 @@ module.exports = function(RED) {
             node.devices_values = {};
         }
 
-        getDevices(callback, forceRefresh = false, withGroups = false) {
-            var node = this;
-            // TODO: we don't have devices/groups yet
-
-            node.log('Using cached devices');
-            if (typeof (callback) === 'function') {
+        getDevices(callback, withGroups = false) {
+            if (typeof (callback) !== 'function') {
+                return
+            }
+            let node = this;
+            if (node.devices && (!withGroups || node.groups)) {
+                node.log('Using cached devices')
                 callback(withGroups ? [node.devices, node.groups] : node.devices);
+            } else {
+                node.log('Waiting for device list')
+                var timeout = null
+                let checkAvailability = null
+                new Promise(function(resolve) {
+                    timeout = setTimeout(function() {
+                        resolve()
+                    }, 60_000);
+                    checkAvailability = function() {
+                        if (node.devices && (!withGroups || node.groups)) {
+                            resolve()
+                        }
+                    }
+                    node.on('onMQTTMessageBridge', checkAvailability)
+                }).then(function() {
+                    clearTimeout(timeout)
+                    node.removeListener("onMQTTMessageBridge", checkAvailability);
+                    if (node.devices && (!withGroups || node.groups)) {
+                        callback(withGroups ? [node.devices, node.groups] : node.devices);
+                    } else {
+                        node.error('Error: getDevices timeout')
+                        callback(null)
+                    }
+                })
             }
         }
 

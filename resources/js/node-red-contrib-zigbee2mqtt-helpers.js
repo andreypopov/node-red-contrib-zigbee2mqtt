@@ -265,8 +265,7 @@ class Zigbee2MqttEditor {
         let that = this;
         if (that.devices === null || that.refresh) {
             const response = await fetch('zigbee2mqtt/getDevices?' + new URLSearchParams({
-                controllerID: that.getServerInput().val(),
-                forceRefresh: that.refresh
+                controllerID: that.getServerInput().val()
             }).toString(), {
                 method: 'GET',
                 cache: 'no-cache',
