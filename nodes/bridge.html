@@ -206,14 +206,14 @@
             });
 
             $('#refreshBtn').on("click", function(){
-                init(true);
+                init();
             });
 
-            init(false);
+            init();
 
 
 
-            function init (force = false) {
+            function init () {
                 var $permitJoinBtn = $('#permit_join_btn');
 
                 //get config
@@ -357,8 +357,7 @@
                 });
 
                 $.getJSON('zigbee2mqtt/getDevices', {
-                    controllerID: node.server,
-                    forceRefresh: force
+                    controllerID: node.server
                 }).done(function (data, textStatus, jqXHR) {
 
                     var tokeninputArr = [];
