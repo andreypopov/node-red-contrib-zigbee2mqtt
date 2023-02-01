@@ -102,7 +102,7 @@ module.exports = function(RED) {
                                 switch (command) {
                                     case 'state':
                                         if (payload === 'toggle') {
-                                            if ('position' in device.current_values) {
+                                            if (device.current_values && 'position' in device.current_values) {
                                                 payload = device.current_values.position > 0 ? 'close' : 'open';
                                             }
                                         }
@@ -119,7 +119,7 @@ module.exports = function(RED) {
                                     case 'lock':
                                         command = 'state';
                                         if (payload === 'toggle') {
-                                            if ('lock_state' in
+                                            if (device.current_values && 'lock_state' in
                                                 device.current_values && device.current_values.lock_state === 'locked') {
                                                 payload = 'unlock';
                                             } else {
