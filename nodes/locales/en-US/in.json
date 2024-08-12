@@ -6,14 +6,16 @@
         "state": "Payload output",
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List",
-        "start_output": "Start Output",
+        "start_output": "Start output",
         "start_output_help": "Send value on start",
         "always": "Always",
         "on_state_change": "On state change",
         "on_update": "On update",
         "filter_changes": "Filter",
         "filter_changes_help": "Send only if value changes",
-        "output": "Output"
+        "output": "Output",
+        "enable_multiple": "Multiple input",
+        "enable_multiple_help": "Listen multiple devices"
     },
     "placeholder": {
         "name": "Name"
