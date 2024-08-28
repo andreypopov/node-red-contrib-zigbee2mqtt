@@ -150,15 +150,9 @@
 
                 $inputCommand.on('change', function(event, type, value) {
                     let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                    const options = getOptions(value)
-                    if (options.length) {
-                        const payloadTypes = {
-                            value: 'z2m_payload',
-                            label: 'zigbee2mqtt',
-                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                            options: options
-                        };
-                        types = [payloadTypes, ...types]
+                    const predefinedValuesPayload = getPredefinedValuesPayload(value);
+                    if (predefinedValuesPayload) {
+                        types = [predefinedValuesPayload, ...types]
                     }
                     $('#node-input-payload').typedInput('types', types);
 
@@ -175,15 +169,9 @@
 
                 //init typedInput
                 let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                const options = getOptions(node.command);
-                if (options.length) {
-                    const payloadTypes = {
-                        value: 'z2m_payload',
-                        label: 'zigbee2mqtt',
-                        icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                        options: getOptions(node.command)
-                    };
-                    types = [payloadTypes, ...types]
+                const predefinedValuesPayload = getPredefinedValuesPayload(node.command);
+                if (predefinedValuesPayload) {
+                    types = [predefinedValuesPayload, ...types]
                 }
                 $('#node-input-payload').typedInput({
                     types,
@@ -194,7 +182,7 @@
                 $inputCommandType.val(node.commandType);
                 $('#node-input-payloadType').val(node.payloadType);
 
-                function getOptions(command) {
+                function getPredefinedValuesPayload(command) {
                     let options = [];
                     if ('state' === command) {
                         options = [
@@ -217,7 +205,16 @@
                             {'value':'lselect', 'label':'Blink log'}
                         ];
                     }
-                    return options;
+                    if (options.length) {
+                        return {
+                            value: 'z2m_payload',
+                            label: 'zigbee2mqtt',
+                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                            options
+                        };
+                    } else {
+                        return null;
+                    }
                 }
 
                 function showHelpBlock() {
