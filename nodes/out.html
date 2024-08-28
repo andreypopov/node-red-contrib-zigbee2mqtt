@@ -149,12 +149,7 @@
                 buildTypesInput();
 
                 $inputCommand.on('change', function(event, type, value) {
-                    let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                    const predefinedValuesPayload = getPredefinedValuesPayload(value);
-                    if (predefinedValuesPayload) {
-                        types = [predefinedValuesPayload, ...types]
-                    }
-                    $('#node-input-payload').typedInput('types', types);
+                    $('#node-input-payload').typedInput('types', getPayloadTypes(value));
 
                     //show/hide
                     if ('homekit' === type || 'nothing' === type) {
@@ -168,54 +163,14 @@
 
 
                 //init typedInput
-                let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                const predefinedValuesPayload = getPredefinedValuesPayload(node.command);
-                if (predefinedValuesPayload) {
-                    types = [predefinedValuesPayload, ...types]
-                }
                 $('#node-input-payload').typedInput({
-                    types,
+                    types: getPayloadTypes(node.command),
                     default: 'msg',
                     value: 'payload',
                     typeField: $('#node-input-payloadType'),
                 });
                 $inputCommandType.val(node.commandType);
                 $('#node-input-payloadType').val(node.payloadType);
-
-                function getPredefinedValuesPayload(command) {
-                    let options = [];
-                    if ('state' === command) {
-                        options = [
-                            {'value':'on', 'label':'On'},
-                            {'value':'off', 'label':'Off'},
-                            {'value':'toggle', 'label':'Toggle'},
-                            {'value':'lock', 'label':'Lock'},
-                            {'value':'unlock', 'label':'Unlock'}
-                        ];
-                    } else if ('color_temp' === command) {
-                        options = [
-                            {'value':'50', 'label':'Cold'},
-                            {'value':'250', 'label':'White'},
-                            {'value':'400', 'label':'Warm'}
-                        ];
-                    } else if ('alert' === command) {
-                        options = [
-                            {'value':'none', 'label':'None'},
-                            {'value':'select', 'label':'Blink short'},
-                            {'value':'lselect', 'label':'Blink log'}
-                        ];
-                    }
-                    if (options.length) {
-                        return {
-                            value: 'z2m_payload',
-                            label: 'zigbee2mqtt',
-                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                            options
-                        };
-                    } else {
-                        return null;
-                    }
-                }
 
                 function showHelpBlock() {
                     var command = $('#node-input-command').val(); //state
@@ -229,14 +184,14 @@
 
                 function buildTypesInput() {
                     $('#node-input-command').typedInput({
-                        types: getTypes(),
+                        types: getCommandTypes(),
                         default: 'msg',
                         value: 'topic',
                         typeField: $('#node-input-commandType'),
                     });
                 }
 
-                function getTypes() {
+                function getCommandTypes() {
                     return [
                         //z2m commands
                         {
@@ -281,6 +236,43 @@
                         {value:'msg', label: 'msg'},
                         {value:'json',label:'JSON',options:['{}']}
                     ];
+                }
+
+                function getPayloadTypes(command) {
+                    let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
+                    let options = [];
+                    if ('state' === command) {
+                        options = [
+                            {'value':'on', 'label':'On'},
+                            {'value':'off', 'label':'Off'},
+                            {'value':'toggle', 'label':'Toggle'},
+                            {'value':'lock', 'label':'Lock'},
+                            {'value':'unlock', 'label':'Unlock'}
+                        ];
+                    } else if ('color_temp' === command) {
+                        options = [
+                            {'value':'50', 'label':'Cold'},
+                            {'value':'250', 'label':'White'},
+                            {'value':'400', 'label':'Warm'}
+                        ];
+                    } else if ('alert' === command) {
+                        options = [
+                            {'value':'none', 'label':'None'},
+                            {'value':'select', 'label':'Blink short'},
+                            {'value':'lselect', 'label':'Blink log'}
+                        ];
+                    }
+                    if (options.length) {
+                        const predefinedValuesPayload = {
+                            value: 'z2m_payload',
+                            label: 'zigbee2mqtt',
+                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                            options
+                        };
+                        return [predefinedValuesPayload, ...types]
+                    } else {
+                        return types;
+                    }
                 }
             // }, 100); //need timeout to load server node
         },
