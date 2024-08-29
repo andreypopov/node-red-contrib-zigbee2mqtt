@@ -771,7 +771,12 @@ module.exports = function(RED) {
                     }
                     node.bridge_state = availabilityStatus
                 } else if (node.getTopic('/bridge/info') === topic) {
-                    node.bridge_info = JSON.parse(messageString);
+                    try {
+                        node.bridge_info = JSON.parse(messageString);
+                    } catch (error) {
+                        node.warn("Failed to parse Bridge info JSON:", error);
+                        node.bridge_info = null;
+                    }
                 }
 
                 node.emit('onMQTTMessageBridge', {
