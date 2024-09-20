@@ -1,0 +1,43 @@
+{
+    "label": {
+        "name": "Meno",
+        "server": "Server",
+        "topic": "Zariadenie",
+        "state": "Výstup dát",
+        "refresh": "Obnoviť",
+        "refresh_devices_list": "Obnoviť zoznam zariadení",
+        "start_output": "Spustiť výstup",
+        "start_output_help": "Odoslať hodnotu pri spustení",
+        "always": "Vždy",
+        "on_state_change": "Pri zmene stavu",
+        "on_update": "Pri aktualizácii",
+        "filter_changes": "Filtrovať",
+        "filter_changes_help": "Odoslať iba ak sa hodnota zmení",
+        "output": "Výstup",
+        "enable_multiple": "Povoliť viacnásobný vstup",
+        "enable_multiple_help": "Počúvať viacero zariadení"
+    },
+    "placeholder": {
+        "name": "Meno"
+    },
+    "status": {
+        "no_server": "žiadny server",
+        "no_device": "žiadne zariadenie",
+        "no_connection": "žiadne pripojenie",
+        "connected": "pripojené",
+        "received": "OK"
+    },
+    "multiselect": {
+        "devices": "Zariadenia",
+        "filter_devices": "Filtrovať zariadenia...",
+        "refresh": "Obnoviť zoznam zariadení",
+        "none_selected": "Žiadne vybrané",
+        "complete_payload": "Kompletný stavový payload",
+        "zigbee2mqtt": "Zigbee2Mqtt",
+        "homekit": "Homekit",
+        "groups": "Skupiny"
+    },
+    "tip": {
+        "deploy": "<b>Dôležité:</b> nainštalujte serverový uzol na získanie zoznamu zariadení"
+    }
+}

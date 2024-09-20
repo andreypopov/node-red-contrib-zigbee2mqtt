@@ -1,0 +1,84 @@
+{
+    "label": {
+        "name": "Meno",
+        "server": "Server",
+        "permit_join": "Povoliť pripájanie",
+        "permit_join_help": "Začať vyhľadávanie zariadení počas 3 minút",
+        "permit_join_cancel_help": "Zastaviť vyhľadávanie",
+        "log_level": "Úroveň záznamu",
+        "log_level_info": "info",
+        "log_level_debug": "debug",
+        "log_level_warn": "upozornenie",
+        "log_level_error": "chyba",
+        "version": "Verzia",
+        "restart_required": "Vyžadovaný reštart",
+        "no_legacy_api": "Žiadna stará API",
+        "coordinator": "Koordinátor",
+        "turn_off_legacy_api": "Malo by byť vypnuté",
+        "restart_needed": "Vyžadovaný reštart",
+        "ok": "OK",
+        "advanced_output": "Výstup json",
+        "should_be_json": "Malo by byť 'json'",
+        "restart_zigbee2mqtt": "Reštartovať zigbee2mqtt",
+        "retain_disabled_error": "force_disable_retain by malo byť FALSE",
+        "mqtt_disable_retain": "Zachovať mqtt",
+        "restart": "Reštart",
+        "disabled": "vypnuté",
+        "last_seen": "Posledný videný",
+        "availability": "Dostupnosť",
+        "sure_restart": "Ste si istí?",
+        "refresh": "Obnoviť",
+        "refresh_all": "Obnoviť všetky údaje"
+    },
+    "placeholder": {
+        "name": "Meno"
+    },
+    "status": {
+        "no_server": "žiadny server",
+        "no_device": "žiadne zariadenie",
+        "no_value": "žiadna hodnota",
+        "no_connection": "žiadne pripojenie",
+        "searching": "vyhľadávanie zariadení...",
+        "paired": "spárované!",
+        "online": "online",
+        "offline": "offline",
+        "pairing": "spárovanie...",
+        "connected": "pripojené",
+        "failed": "zlyhalo!"
+    },
+    "tabs": {
+        "bridge": "Most",
+        "devices": "Zariadenia",
+        "groups": "Skupiny",
+        "map": "Mapa"
+    },
+    "devices": {
+        "ieee_addr": "ieee_adresa",
+        "friendly_name": "Prijateľné meno",
+        "model": "Model",
+        "device": "Zariadenie",
+        "set": "nastaviť",
+        "remove": "odstrániť",
+        "sure_remove": "Ste si istí, že chcete odstrániť zariadenie?"
+    },
+    "groups": {
+        "id": "ID",
+        "friendly_name": "Prijateľné meno",
+        "devices": "Zariadenia",
+        "set": "nastaviť",
+        "remove": "odstrániť",
+        "add": "Pridať skupinu",
+        "enter_group_name": "Zadajte názov skupiny",
+        "sure_remove": "Ste si istí, že chcete odstrániť skupinu?"
+    },
+    "map": {
+        "refresh": "Obnoviť mapu",
+        "fullscreen": "Otvoriť v celoobrazovkovom režime",
+        "loading": "Načítava sa..."
+    },
+    "tokeninput": {
+        "searching": "Vyhľadávanie...",
+        "type_to_search": "Napíšte pre vyhľadávanie zariadenia",
+        "no_results": "Žiadne výsledky"
+    }
+}
