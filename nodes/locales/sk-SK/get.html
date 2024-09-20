@@ -1,0 +1,18 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-get">
+    <p>Získať poslednú hodnotu zariadenia.</p>
+    <h3>Konfigurácia</h3>
+    <dl class="message-properties">
+        <dt class="optional">Meno <span class="property-type">reťazec</span></dt><dd>Vyberte akékoľvek meno na identifikáciu vášho uzla</dd>
+        <dt>Server <span class="property-type">objekt</span></dt><dd>Vyberte inštanciu servera zigbee2mqtt, ktorú chcete použiť</dd>
+        <dt>Zariadenie <span class="property-type">reťazec</span></dt><dd>Vyberte zariadenie, ktoré chcete počúvať</dd>
+    </dl>
+
+    <h3>Výstupy</h3>
+    <h5>Výstup</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">reťazec</span></dt><dd>aktuálna hodnota</dd>
+        <dt>payload_in<span class="property-type">objekt</span></dt><dd>vstupný payload</dd>
+        <dt>payload_raw<span class="property-type">objekt</span></dt><dd>kompletný payload</dd>
+        <dt>zariadenie<span class="property-type">objekt</span></dt><dd>informácie o zariadení</dd>
+    </dl>
+</script>
