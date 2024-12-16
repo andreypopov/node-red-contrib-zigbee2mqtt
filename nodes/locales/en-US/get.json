@@ -6,7 +6,9 @@
         "state": "Payload output",
         "refresh": "Refresh",
         "legacy_api": "Legacy API",
-        "refresh_devices_list": "Refresh Devices List"
+        "refresh_devices_list": "Refresh Devices List",
+        "enable_multiple": "Multiple input",
+        "enable_multiple_help": "Listen multiple devices"
     },
     "placeholder": {
         "name": "Name"
