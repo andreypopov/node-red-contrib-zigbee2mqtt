@@ -1,0 +1,21 @@
+{
+    "label": {
+        "name": "Meno",
+        "server": "Server",
+        "topic": "Zariadenie",
+        "state": "Výstup dát",
+        "refresh": "Obnoviť",
+        "legacy_api": "Stará API",
+        "refresh_devices_list": "Obnoviť zoznam zariadení"
+    },
+    "placeholder": {
+        "name": "Meno"
+    },
+    "multiselect": {
+        "devices": "Zariadenia",
+        "filter_devices": "Filtrovať zariadenia...",
+        "refresh": "Obnoviť zoznam zariadení",
+        "none_selected": "Žiadne vybrané",
+        "complete_payload": "Úplné dátové výstupy"
+    }
+}

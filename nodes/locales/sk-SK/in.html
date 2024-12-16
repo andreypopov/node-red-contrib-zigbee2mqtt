@@ -1,0 +1,23 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-in">
+    <p>Tento uzol počúva mqtt správy poslané vašim zigbee2mqtt mostom (bridge).</p>
+    <h3>Konfigurácia</h3>
+    <dl class="message-properties">
+        <dt class="optional">Meno <span class="property-type">reťazec</span></dt><dd>Vyberte akékoľvek meno na identifikáciu vášho uzla</dd>
+        <dt>Server <span class="property-type">objekt</span></dt><dd>Vyberte inštanciu servera zigbee2mqtt, ktorú chcete použiť</dd>
+        <dt>Zariadenie <span class="property-type">reťazec</span></dt><dd>Vyberte zariadenie, ktoré chcete počúvať</dd>
+        <dt class="optional">Výstup dát <span class="property-type">reťazec</span></dt><dd>Vyberte možnosť, ktorú chcete poslať do payloadu</dd>
+        <dt class="optional">Spustiť výstup <span class="property-type">boolean</span></dt><dd>Výstup stavu pri štarte.<br>
+        <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Posielať len v prípade zmeny hodnoty. Zrušte v prípade tlačidiel.<br>
+        <b><i>poznámka #1:</i></b> nastavte <code>retain: true</code> v konfiguračnom súbore zigbee2mqtt configuration.yaml pre každé zariadenie (z2m plugin automaticky nastaví pri pridaní zariadenia)<br>
+        <b><i>poznámka #2:</i></b> nevypíše v "Deploy only modified nodes", pokiaľ nie sú žiadne zmeny v aktuálnom uzle
+        </dd>
+    </dl>
+
+    <h3>Výstupy</h3>
+    <h5>Výstup</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">reťazec | objekt</span></dt><dd>aktuálna hodnota závisí na formátovaní nastavení výstupného stavu</dd>
+        <dt>payload_raw <span class="property-type">objekt</span></dt><dd>dáta tak, ako sú</dd>
+        <dt>zariadenie<span class="property-type">objekt</span></dt><dd>informácie o zariadení</dd>
+    </dl>
+</script>
