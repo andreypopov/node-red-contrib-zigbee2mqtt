@@ -115,6 +115,11 @@ module.exports = function(RED) {
                                     case 'position':
                                         payload = parseInt(payload);
                                         break;
+                                    
+                                    case 'scene':
+                                        command = 'scene_recall';
+                                        payload = parseInt(payload);
+                                        break;
 
                                     case 'lock':
                                         command = 'state';
