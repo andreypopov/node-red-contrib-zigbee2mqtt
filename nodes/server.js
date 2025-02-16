@@ -184,7 +184,7 @@ module.exports = function(RED) {
 
         setLogLevel(val) {
             let node = this;
-            if (['info', 'debug', 'warn', 'error'].indexOf(val) < 0) val = 'info';
+            if (['info', 'debug', 'warning', 'error'].indexOf(val) < 0) val = 'info';
             let payload = {
                 'options': {
                     'advanced': {

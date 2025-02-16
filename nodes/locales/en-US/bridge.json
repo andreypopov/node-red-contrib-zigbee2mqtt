@@ -8,7 +8,7 @@
         "log_level": "Log Level",
         "log_level_info": "info",
         "log_level_debug": "debug",
-        "log_level_warn": "warn",
+        "log_level_warning": "warning",
         "log_level_error": "error",
         "version": "Version",
         "restart_required": "Restart required",
