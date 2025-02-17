@@ -8,7 +8,7 @@
         "log_level": "Úroveň záznamu",
         "log_level_info": "info",
         "log_level_debug": "debug",
-        "log_level_warn": "upozornenie",
+        "log_level_warning": "upozornenie",
         "log_level_error": "chyba",
         "version": "Verzia",
         "restart_required": "Vyžadovaný reštart",
