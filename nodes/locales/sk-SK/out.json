@@ -17,5 +17,8 @@
         "refresh": "Obnoviť zoznam zariadení",
         "none_selected": "Žiadne vybrané",
         "complete_payload": "Úplné dátové výstupy"
+    },
+    "help": {
+        "endpoint_topic": "Nastavte Zariadenie na msg.topic a odošlite celú tému, napríklad zigbee2mqtt/0x00158d0003a27716/left/set, na ovládanie koncového bodu zariadenia."
     }
 }
