@@ -14,6 +14,7 @@
         "on_update": "Bei jeder Aktualisierung",
         "filter_changes": "Änderungen filtern",
         "filter_changes_help": "Nur bei geändertem Wert senden",
+        "filter_properties": "Eigenschaften vergleichen",
         "output": "Ausgabe",
         "enable_multiple": "Mehrere Geräte",
         "enable_multiple_help": "Aktualisierungen von jedem ausgewählten Gerät empfangen."
@@ -35,11 +36,19 @@
         "refresh": "Geräteliste aktualisieren",
         "none_selected": "Nichts ausgewählt",
         "complete_payload": "Vollständiger Status",
+        "compare_full_payload": "Vollständiger Payload",
+        "select_devices_first": "Zuerst ein Gerät auswählen",
+        "no_properties_available": "Keine Eigenschaften verfügbar",
+        "filter_properties": "Eigenschaften filtern…",
+        "properties_selected": "ausgewählt",
+        "all_properties_selected": "Alle verfügbaren Eigenschaften ausgewählt",
+        "no_properties_found": "Keine Eigenschaften gefunden",
         "zigbee2mqtt": "Zigbee2MQTT",
         "homekit": "HomeKit",
         "groups": "Gruppen"
     },
     "tip": {
-        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden",
+        "filter_properties_help": "Nur ausgewählte Eigenschaften bestimmen, wann eine Nachricht gesendet wird; der vollständige Payload bleibt erhalten. Leer lassen, um den gesamten Payload zu vergleichen."
     }
 }

@@ -8,6 +8,7 @@ module.exports = function(RED) {
             node.cleanTimer = null;
             node.server = RED.nodes.getNode(node.config.server);
             node.last_value = null;
+            node.last_filter_value = null;
             node.last_successful_status = {};
             node.status({});
 
@@ -54,6 +55,8 @@ module.exports = function(RED) {
                         ||  ("id" in data.item && (node.config.device_id).includes(data.item.id)))
                 ) {
                     node.server.nodeSend(node, {
+                        'filter': node.config.filterChanges,
+                        'filterProperties': node.config.filterProperties,
                         'changed' : data,
                         'retained': data.retained
                     });
@@ -67,6 +70,7 @@ module.exports = function(RED) {
                 ) {
                     node.server.nodeSend(node, {
                         'filter':  node.config.filterChanges,
+                        'filterProperties': node.config.filterProperties,
                         'retained': data.retained
                     });
                 }
@@ -119,6 +123,5 @@ module.exports = function(RED) {
     }
     RED.nodes.registerType('zigbee2mqtt-in', Zigbee2mqttNodeIn);
 };
-
 
 

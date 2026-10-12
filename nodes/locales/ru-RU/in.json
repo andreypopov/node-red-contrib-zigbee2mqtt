@@ -14,6 +14,7 @@
         "on_update": "При каждом обновлении",
         "filter_changes": "Фильтровать изменения",
         "filter_changes_help": "Отправлять только при изменении значения",
+        "filter_properties": "Свойства для сравнения",
         "output": "Вывод",
         "enable_multiple": "Несколько устройств",
         "enable_multiple_help": "Получать обновления от каждого выбранного устройства."
@@ -35,11 +36,19 @@
         "refresh": "Обновить список устройств",
         "none_selected": "Ничего не выбрано",
         "complete_payload": "Полное состояние",
+        "compare_full_payload": "Весь payload",
+        "select_devices_first": "Сначала выберите устройство",
+        "no_properties_available": "Нет доступных свойств",
+        "filter_properties": "Фильтр свойств…",
+        "properties_selected": "выбрано",
+        "all_properties_selected": "Выбраны все доступные свойства",
+        "no_properties_found": "Свойства не найдены",
         "zigbee2mqtt": "Zigbee2MQTT",
         "homekit": "HomeKit",
         "groups": "Группы"
     },
     "tip": {
-        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств"
+        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств",
+        "filter_properties_help": "От выбранных свойств зависит, когда отправлять сообщение; в выходе остаётся полный payload. Оставьте выбор пустым, чтобы сравнивать весь payload."
     }
 }

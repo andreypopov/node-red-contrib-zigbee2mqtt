@@ -14,6 +14,7 @@
         "on_update": "On update",
         "filter_changes": "Filter",
         "filter_changes_help": "Send only if value changes",
+        "filter_properties": "Compare properties",
         "output": "Output",
         "enable_multiple": "Multiple devices",
         "enable_multiple_help": "Receive updates from each selected device."
@@ -35,11 +36,19 @@
         "refresh": "Refresh devices list",
         "none_selected": "None selected",
         "complete_payload": "Complete state payload",
+        "compare_full_payload": "Full payload",
+        "select_devices_first": "Select a device first",
+        "no_properties_available": "No properties available",
+        "filter_properties": "Filter properties...",
+        "properties_selected": "selected",
+        "all_properties_selected": "All available properties selected",
+        "no_properties_found": "No properties found",
         "zigbee2mqtt": "Zigbee2Mqtt",
         "homekit": "Homekit",
         "groups": "Groups"
     },
     "tip": {
-        "deploy": "<b>Important:</b> deploy server node to get devices list"
+        "deploy": "<b>Important:</b> deploy server node to get devices list",
+        "filter_properties_help": "Only selected properties determine when to send; the full payload is still output. Leave empty to compare the full payload."
     }
 }

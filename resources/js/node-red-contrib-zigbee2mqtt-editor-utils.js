@@ -27,6 +27,38 @@
         return `${name}${endpointSuffix}${unit}`;
     }
 
+    function getComparePropertyOptions(devices) {
+        const options = new Map();
+        const addProperty = (property, label) => {
+            if (typeof property !== 'string' || !property.trim() || options.has(property)) return;
+            options.set(property, {
+                value: property,
+                label: typeof label === 'string' && label ? label : property
+            });
+        };
+        const addExpose = (expose, parent = null) => {
+            if (!expose || typeof expose !== 'object') return;
+            if (Array.isArray(expose.features)) {
+                expose.features.forEach((feature) => addExpose(feature, expose));
+            }
+            if (typeof expose.property === 'string') {
+                addProperty(expose.property, formatExposeLabel(expose, parent));
+            }
+        };
+
+        (Array.isArray(devices) ? devices : []).forEach((device) => {
+            const exposes = device && device.definition && device.definition.exposes;
+            if (Array.isArray(exposes)) exposes.forEach((expose) => addExpose(expose));
+
+            const state = device && device.current_values;
+            if (state && typeof state === 'object' && !Array.isArray(state)) {
+                Object.keys(state).forEach((property) => addProperty(property));
+            }
+        });
+
+        return [...options.values()].sort((a, b) => a.label.localeCompare(b.label));
+    }
+
     function getWritableExposeOptions(device) {
         const exposes = device && device.definition && device.definition.exposes;
         if (!Array.isArray(exposes)) return [];
@@ -142,6 +174,7 @@
 
     return {
         formatExposeLabel,
+        getComparePropertyOptions,
         getWritableExposeOptions,
         getWritableExposePayloadOptions,
         getStateCommandOptions,

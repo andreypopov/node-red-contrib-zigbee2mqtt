@@ -14,6 +14,7 @@
         "on_update": "每次更新时",
         "filter_changes": "筛选变化",
         "filter_changes_help": "仅在数值变化时发送",
+        "filter_properties": "比较属性",
         "output": "输出",
         "enable_multiple": "多个设备",
         "enable_multiple_help": "接收每个所选设备的更新。"
@@ -35,11 +36,19 @@
         "refresh": "刷新设备列表",
         "none_selected": "未选择任何项",
         "complete_payload": "完整状态",
+        "compare_full_payload": "完整 payload",
+        "select_devices_first": "请先选择设备",
+        "no_properties_available": "没有可用属性",
+        "filter_properties": "筛选属性…",
+        "properties_selected": "项已选",
+        "all_properties_selected": "已选择所有可用属性",
+        "no_properties_found": "未找到属性",
         "zigbee2mqtt": "Zigbee2MQTT",
         "homekit": "HomeKit",
         "groups": "群组"
     },
     "tip": {
-        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表"
+        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表",
+        "filter_properties_help": "仅所选属性决定何时发送消息，输出仍保留完整 payload。留空则比较完整 payload。"
     }
 }

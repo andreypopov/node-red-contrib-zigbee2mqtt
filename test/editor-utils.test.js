@@ -68,6 +68,49 @@ test('expose labels distinguish endpoint properties while retaining names and un
     assert.equal(EditorUtils.formatExposeLabel(null), '');
 });
 
+test('comparison property options combine exposed and current state properties across devices', () => {
+    const devices = [
+        {
+            definition: {
+                exposes: [
+                    {
+                        type: 'light',
+                        features: [
+                            { type: 'binary', name: 'State', property: 'state_l1', endpoint: 'l1' },
+                            { type: 'numeric', name: 'Brightness', property: 'brightness', unit: '%' }
+                        ]
+                    },
+                    { type: 'numeric', name: 'Link quality', property: 'linkquality' }
+                ]
+            },
+            current_values: { state_l1: 'ON', brightness: 80, linkquality: 100, action: 'single' }
+        },
+        {
+            definition: {
+                exposes: [{
+                    type: 'light',
+                    features: [
+                        { type: 'binary', name: 'State', property: 'state_l2', endpoint: 'l2' },
+                        { type: 'numeric', name: 'Brightness', property: 'brightness', unit: '%' }
+                    ]
+                }]
+            },
+            current_values: { state_l2: 'OFF', brightness: 20, last_seen: 'now' }
+        }
+    ];
+
+    const options = EditorUtils.getComparePropertyOptions(devices);
+    const byValue = new Map(options.map((option) => [option.value, option.label]));
+
+    assert.deepEqual([...byValue.keys()].sort(), [
+        'action', 'brightness', 'last_seen', 'linkquality', 'state_l1', 'state_l2'
+    ]);
+    assert.equal(byValue.get('brightness'), 'Brightness, %');
+    assert.equal(byValue.get('state_l1'), 'State (l1)');
+    assert.equal(byValue.get('state_l2'), 'State (l2)');
+    assert.deepEqual(EditorUtils.getComparePropertyOptions(null), []);
+});
+
 test('writable expose options include settable parameters and their selectable values', () => {
     const device = {
         definition: {

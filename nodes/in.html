@@ -38,6 +38,11 @@
         <label for='node-input-filterChanges' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.filter_changes"></span></label>
         <input type="checkbox" id="node-input-filterChanges" checked="checked" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.filter_changes_help"></span></input>
     </div>
+    <div class="form-row">
+        <label for="node-input-filterProperties" class="l-width"><i class="fa fa-list"></i> <span data-i18n="label.filter_properties"></span></label>
+        <select id="node-input-filterProperties" class="s-width" multiple="multiple"></select>
+        <div class="form-tips"><span data-i18n="tip.filter_properties_help"></span></div>
+    </div>
 </script>
 
 <script type='text/javascript'>
@@ -70,6 +75,10 @@
             filterChanges: {
                 value: false,
                 required: true
+            },
+            filterProperties: {
+                value: [],
+                required: false
             },
             enableMultiple: {
                 value: false,
@@ -120,6 +129,17 @@
 
             let $property = $('#node-input-state');
             this.state = $property.val()!=='0'?$property.val():null;
+
+            let $filterProperties = $('#node-input-filterProperties');
+            if ($filterProperties.length) {
+                const selectedProperties = $filterProperties.multipleSelect('getSelects', 'value');
+                const noOptionsAvailable = $filterProperties.find('option').length === 0;
+                this.filterProperties = noOptionsAvailable
+                    ? [...new Set([...(this.filterProperties || []), ...selectedProperties])]
+                    : selectedProperties;
+            } else {
+                this.filterProperties = [];
+            }
         }
     });
 
