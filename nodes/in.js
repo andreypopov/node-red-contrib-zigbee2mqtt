@@ -5,7 +5,6 @@ module.exports = function(RED) {
 
             let node = this;
             node.config = config;
-            node.firstMsg = true;
             node.cleanTimer = null;
             node.server = RED.nodes.getNode(node.config.server);
             node.last_value = null;
@@ -55,7 +54,8 @@ module.exports = function(RED) {
                         ||  ("id" in data.item && (node.config.device_id).includes(data.item.id)))
                 ) {
                     node.server.nodeSend(node, {
-                        'changed' : data
+                        'changed' : data,
+                        'retained': data.retained
                     });
                 }
 
@@ -66,7 +66,8 @@ module.exports = function(RED) {
                         ||  ("id" in data.item && parseInt(data.item.id) === parseInt(node.config.device_id)))
                 ) {
                     node.server.nodeSend(node, {
-                        'filter':  node.config.filterChanges
+                        'filter':  node.config.filterChanges,
+                        'retained': data.retained
                     });
                 }
             }
