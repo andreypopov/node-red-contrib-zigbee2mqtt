@@ -313,11 +313,16 @@ module.exports = function(RED) {
 
         addGroup(name) {
             let node = this;
+            const friendlyName = typeof name === 'string' ? name.trim() : '';
+            if (!friendlyName) {
+                return {'error': true, 'description': 'can not be empty'};
+            }
+
             let payload = {
-                'friendly_name': name,
+                'friendly_name': friendlyName,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/group/add'), JSON.stringify(payload));
-            node.log('Add group: ' + name);
+            node.log('Add group: ' + friendlyName);
 
             return {'success': true, 'description': 'command sent'};
         }
