@@ -21,8 +21,7 @@
     },
     "placeholder": {
         "name": "Nombre",
-        "friendly_name": "Nombre del dispositivo",
-        "filter_properties": "state, brightness"
+        "friendly_name": "Nombre del dispositivo"
     },
     "status": {
         "no_server": "no hay nodo servidor",
@@ -37,12 +36,19 @@
         "refresh": "Actualizar lista de dispositivos",
         "none_selected": "Ninguno seleccionado",
         "complete_payload": "Estado completo",
+        "compare_full_payload": "Payload completo",
+        "select_devices_first": "Selecciona primero un dispositivo",
+        "no_properties_available": "No hay propiedades disponibles",
+        "filter_properties": "Filtrar propiedades…",
+        "properties_selected": "seleccionadas",
+        "all_properties_selected": "Todas las propiedades disponibles seleccionadas",
+        "no_properties_found": "No se encontraron propiedades",
         "zigbee2mqtt": "Zigbee2MQTT",
         "homekit": "HomeKit",
         "groups": "Grupos"
     },
     "tip": {
         "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos",
-        "filter_properties_help": "Nombres de propiedades separados por comas, por ejemplo state, brightness. Solo estas propiedades determinan cuándo se envía un mensaje; la salida conserva el payload completo. En el modo de varios dispositivos, se comparan para cada dispositivo. Déjalo vacío para comparar el payload completo."
+        "filter_properties_help": "Solo las propiedades seleccionadas determinan cuándo se envía un mensaje; la salida conserva el payload completo. Déjalo vacío para comparar el payload completo."
     }
 }

@@ -40,7 +40,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-filterProperties" class="l-width"><i class="fa fa-list"></i> <span data-i18n="label.filter_properties"></span></label>
-        <input type="text" id="node-input-filterProperties" style="width:70%" data-i18n="[placeholder]placeholder.filter_properties">
+        <select id="node-input-filterProperties" class="s-width" multiple="multiple"></select>
         <div class="form-tips"><span data-i18n="tip.filter_properties_help"></span></div>
     </div>
 </script>
@@ -77,7 +77,7 @@
                 required: true
             },
             filterProperties: {
-                value: "",
+                value: [],
                 required: false
             },
             enableMultiple: {
@@ -129,6 +129,17 @@
 
             let $property = $('#node-input-state');
             this.state = $property.val()!=='0'?$property.val():null;
+
+            let $filterProperties = $('#node-input-filterProperties');
+            if ($filterProperties.length) {
+                const selectedProperties = $filterProperties.multipleSelect('getSelects', 'value');
+                const noOptionsAvailable = $filterProperties.find('option').length === 0;
+                this.filterProperties = noOptionsAvailable
+                    ? [...new Set([...(this.filterProperties || []), ...selectedProperties])]
+                    : selectedProperties;
+            } else {
+                this.filterProperties = [];
+            }
         }
     });
 

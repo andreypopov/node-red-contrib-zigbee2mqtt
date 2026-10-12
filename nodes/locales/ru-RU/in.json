@@ -21,8 +21,7 @@
     },
     "placeholder": {
         "name": "Имя",
-        "friendly_name": "Имя устройства",
-        "filter_properties": "state, brightness"
+        "friendly_name": "Имя устройства"
     },
     "status": {
         "no_server": "нет серверного узла",
@@ -37,12 +36,19 @@
         "refresh": "Обновить список устройств",
         "none_selected": "Ничего не выбрано",
         "complete_payload": "Полное состояние",
+        "compare_full_payload": "Весь payload",
+        "select_devices_first": "Сначала выберите устройство",
+        "no_properties_available": "Нет доступных свойств",
+        "filter_properties": "Фильтр свойств…",
+        "properties_selected": "выбрано",
+        "all_properties_selected": "Выбраны все доступные свойства",
+        "no_properties_found": "Свойства не найдены",
         "zigbee2mqtt": "Zigbee2MQTT",
         "homekit": "HomeKit",
         "groups": "Группы"
     },
     "tip": {
         "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств",
-        "filter_properties_help": "Названия свойств через запятую, например state, brightness. Только эти свойства определяют, когда отправлять сообщение; в выходе остаётся полный payload. В режиме нескольких устройств они сравниваются отдельно для каждого устройства. Оставьте поле пустым, чтобы сравнивать весь payload."
+        "filter_properties_help": "От выбранных свойств зависит, когда отправлять сообщение; в выходе остаётся полный payload. Оставьте выбор пустым, чтобы сравнивать весь payload."
     }
 }

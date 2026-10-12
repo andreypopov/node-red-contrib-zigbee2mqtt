@@ -21,8 +21,7 @@
     },
     "placeholder": {
         "name": "名称",
-        "friendly_name": "设备名称",
-        "filter_properties": "state, brightness"
+        "friendly_name": "设备名称"
     },
     "status": {
         "no_server": "未配置服务器节点",
@@ -37,12 +36,19 @@
         "refresh": "刷新设备列表",
         "none_selected": "未选择任何项",
         "complete_payload": "完整状态",
+        "compare_full_payload": "完整 payload",
+        "select_devices_first": "请先选择设备",
+        "no_properties_available": "没有可用属性",
+        "filter_properties": "筛选属性…",
+        "properties_selected": "项已选",
+        "all_properties_selected": "已选择所有可用属性",
+        "no_properties_found": "未找到属性",
         "zigbee2mqtt": "Zigbee2MQTT",
         "homekit": "HomeKit",
         "groups": "群组"
     },
     "tip": {
         "deploy": "<b>重要：</b>部署服务器节点以加载设备列表",
-        "filter_properties_help": "用逗号分隔属性名，例如 state, brightness。仅这些属性决定是否发送消息，输出仍保留完整 payload。多设备模式下会分别比较每个设备的这些属性。留空则比较完整 payload。"
+        "filter_properties_help": "仅所选属性决定何时发送消息，输出仍保留完整 payload。留空则比较完整 payload。"
     }
 }

@@ -21,8 +21,7 @@
     },
     "placeholder": {
         "name": "Meno",
-        "friendly_name": "Názov zariadenia",
-        "filter_properties": "state, brightness"
+        "friendly_name": "Názov zariadenia"
     },
     "status": {
         "no_server": "žiadny server",
@@ -37,12 +36,19 @@
         "refresh": "Obnoviť zoznam zariadení",
         "none_selected": "Žiadne vybrané",
         "complete_payload": "Úplný stavový payload",
+        "compare_full_payload": "Celý payload",
+        "select_devices_first": "Najprv vyberte zariadenie",
+        "no_properties_available": "Nie sú dostupné žiadne vlastnosti",
+        "filter_properties": "Filtrovať vlastnosti…",
+        "properties_selected": "vybrané",
+        "all_properties_selected": "Vybrané všetky dostupné vlastnosti",
+        "no_properties_found": "Nenašli sa žiadne vlastnosti",
         "zigbee2mqtt": "Zigbee2MQTT",
         "homekit": "HomeKit",
         "groups": "Skupiny"
     },
     "tip": {
         "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení",
-        "filter_properties_help": "Názvy vlastností oddelené čiarkami, napríklad state, brightness. O odoslaní správy rozhodujú iba tieto vlastnosti; výstup stále obsahuje celý payload. Pri viacerých zariadeniach sa porovnávajú pre každé zariadenie zvlášť. Ak chcete porovnávať celý payload, nechajte pole prázdne."
+        "filter_properties_help": "O odoslaní správy rozhodujú iba vybrané vlastnosti; výstup stále obsahuje celý payload. Nechajte výber prázdny, ak chcete porovnávať celý payload."
     }
 }

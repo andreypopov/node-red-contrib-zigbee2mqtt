@@ -25,7 +25,7 @@ Extra features:
 
 ## Filtering In node output
 
-Enable **Filter** to send a message only when the selected value changes. When **Payload output** is set to the complete state, or **Multiple devices** is enabled, **Compare properties** can limit the comparison to comma-separated fields such as state, brightness. Changes to other fields such as linkquality will not trigger output, while the emitted message still contains the complete payload. In multiple-device mode, the selected fields are compared separately for each device. Leave **Compare properties** empty to compare the full payload.
+Enable **Filter** to send a message only when the selected value changes. When **Payload output** is set to the complete state, or **Multiple devices** is enabled, **Compare properties** lets you select exposed state properties for the selected device or devices. Changes to other fields such as linkquality will not trigger output, while the emitted message still contains the complete payload. In multiple-device mode, the selected fields are compared separately for each device. Leave the selection empty to compare the full payload.
 
 The Server node has an optional **Flow label**. When set, it is appended to the labels of the Bridge, In, Get, and Out nodes that use that server, making multiple Zigbee2MQTT instances easier to distinguish in a flow. For example, set it to `Upstairs` to show `Lamp [Upstairs]`.
 
