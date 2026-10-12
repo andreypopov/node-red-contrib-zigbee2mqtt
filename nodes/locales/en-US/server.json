@@ -31,6 +31,7 @@
         "msg_topic": "msg.topic",
         "complete_payload": "Complete payload",
         "zigbee2mqtt": "zigbee2mqtt",
-        "homekit": "Apple Homekit"
+        "homekit": "Apple Homekit",
+        "error_no_commands": "This device has no output commands available. Please select a device with controllable features."
     }
 }

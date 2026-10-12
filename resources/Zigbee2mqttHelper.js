@@ -2,83 +2,49 @@
 
 
 class Zigbee2mqttHelper {
-    static generateSelector(topic) {
-        var transliterate = function(text) {
-            text = text
-                .replace(/\u0401/g, 'YO')
-                .replace(/\u0419/g, 'I')
-                .replace(/\u0426/g, 'TS')
-                .replace(/\u0423/g, 'U')
-                .replace(/\u041A/g, 'K')
-                .replace(/\u0415/g, 'E')
-                .replace(/\u041D/g, 'N')
-                .replace(/\u0413/g, 'G')
-                .replace(/\u0428/g, 'SH')
-                .replace(/\u0429/g, 'SCH')
-                .replace(/\u0417/g, 'Z')
-                .replace(/\u0425/g, 'H')
-                .replace(/\u042A/g, '')
-                .replace(/\u0451/g, 'yo')
-                .replace(/\u0439/g, 'i')
-                .replace(/\u0446/g, 'ts')
-                .replace(/\u0443/g, 'u')
-                .replace(/\u043A/g, 'k')
-                .replace(/\u0435/g, 'e')
-                .replace(/\u043D/g, 'n')
-                .replace(/\u0433/g, 'g')
-                .replace(/\u0448/g, 'sh')
-                .replace(/\u0449/g, 'sch')
-                .replace(/\u0437/g, 'z')
-                .replace(/\u0445/g, 'h')
-                .replace(/\u044A/g, "'")
-                .replace(/\u0424/g, 'F')
-                .replace(/\u042B/g, 'I')
-                .replace(/\u0412/g, 'V')
-                .replace(/\u0410/g, 'a')
-                .replace(/\u041F/g, 'P')
-                .replace(/\u0420/g, 'R')
-                .replace(/\u041E/g, 'O')
-                .replace(/\u041B/g, 'L')
-                .replace(/\u0414/g, 'D')
-                .replace(/\u0416/g, 'ZH')
-                .replace(/\u042D/g, 'E')
-                .replace(/\u0444/g, 'f')
-                .replace(/\u044B/g, 'i')
-                .replace(/\u0432/g, 'v')
-                .replace(/\u0430/g, 'a')
-                .replace(/\u043F/g, 'p')
-                .replace(/\u0440/g, 'r')
-                .replace(/\u043E/g, 'o')
-                .replace(/\u043B/g, 'l')
-                .replace(/\u0434/g, 'd')
-                .replace(/\u0436/g, 'zh')
-                .replace(/\u044D/g, 'e')
-                .replace(/\u042F/g, 'Ya')
-                .replace(/\u0427/g, 'CH')
-                .replace(/\u0421/g, 'S')
-                .replace(/\u041C/g, 'M')
-                .replace(/\u0418/g, 'I')
-                .replace(/\u0422/g, 'T')
-                .replace(/\u042C/g, "'")
-                .replace(/\u0411/g, 'B')
-                .replace(/\u042E/g, 'YU')
-                .replace(/\u044F/g, 'ya')
-                .replace(/\u0447/g, 'ch')
-                .replace(/\u0441/g, 's')
-                .replace(/\u043C/g, 'm')
-                .replace(/\u0438/g, 'i')
-                .replace(/\u0442/g, 't')
-                .replace(/\u044C/g, "'")
-                .replace(/\u0431/g, 'b')
-                .replace(/\u044E/g, 'yu');
-
-            return text;
+    static initTransliterationMap() {
+        const map = {
+            '\u0401': 'YO', '\u0419': 'I', '\u0426': 'TS', '\u0423': 'U', '\u041A': 'K',
+            '\u0415': 'E', '\u041D': 'N', '\u0413': 'G', '\u0428': 'SH', '\u0429': 'SCH',
+            '\u0417': 'Z', '\u0425': 'H', '\u042A': '', '\u0451': 'yo', '\u0439': 'i',
+            '\u0446': 'ts', '\u0443': 'u', '\u043A': 'k', '\u0435': 'e', '\u043D': 'n',
+            '\u0433': 'g', '\u0448': 'sh', '\u0449': 'sch', '\u0437': 'z', '\u0445': 'h',
+            '\u044A': "'", '\u0424': 'F', '\u042B': 'I', '\u0412': 'V', '\u0410': 'a',
+            '\u041F': 'P', '\u0420': 'R', '\u041E': 'O', '\u041B': 'L', '\u0414': 'D',
+            '\u0416': 'ZH', '\u042D': 'E', '\u0444': 'f', '\u044B': 'i', '\u0432': 'v',
+            '\u0430': 'a', '\u043F': 'p', '\u0440': 'r', '\u043E': 'o', '\u043B': 'l',
+            '\u0434': 'd', '\u0436': 'zh', '\u044D': 'e', '\u042F': 'Ya', '\u0427': 'CH',
+            '\u0421': 'S', '\u041C': 'M', '\u0418': 'I', '\u0422': 'T', '\u042C': "'",
+            '\u0411': 'B', '\u042E': 'YU', '\u044F': 'ya', '\u0447': 'ch', '\u0441': 's',
+            '\u043C': 'm', '\u0438': 'i', '\u0442': 't', '\u044C': "'", '\u0431': 'b',
+            '\u044E': 'yu'
         };
-
-        topic = transliterate(topic);
-        return topic.split('/').join('_').replace(/[^a-zA-Z0-9_-]/g, '');
+        Zigbee2mqttHelper.TRANSLITERATION_MAP = map;
+        return map;
     }
-
+    
+    static generateSelector(topic) {
+        // Inicialização Lazy estática para evitar recriação a cada chamada
+        if (!Zigbee2mqttHelper.TRANSLITERATION_MAP) {
+            Zigbee2mqttHelper.initTransliterationMap();
+        }
+        
+        if (!Zigbee2mqttHelper.SELECTOR_REGEX) {
+            Zigbee2mqttHelper.SELECTOR_REGEX = /[^a-zA-Z0-9_-]/g;
+        }
+ 
+        // Verificação de segurança para input nulo
+        if (!topic || typeof topic !== 'string') return '';
+ 
+        const map = Zigbee2mqttHelper.TRANSLITERATION_MAP;
+        
+        // Transliteração otimizada sem recriar função anónima
+        // Usa o mapa estático diretamente
+        const transliterated = topic.split('').map(char => map[char] || char).join('');
+        
+        return transliterated.split('/').join('_').replace(Zigbee2mqttHelper.SELECTOR_REGEX, '');
+    }
+    
     static convertRange(value, r1, r2) {
         var val = Math.ceil((value - r1[0]) * (r2[1] - r2[0]) / (r1[1] - r1[0]) + r2[0]);
         if (val < r2[0]) val = r2[0];
@@ -87,12 +53,22 @@ class Zigbee2mqttHelper {
     }
 
     static isJson(str) {
-        try {
-            JSON.parse(str);
-        } catch (e) {
-            return false;
+        if (typeof str !== 'string') return false;
+        const trimmed = str.trim();
+        // Verificação rápida de estrutura
+        if (trimmed.length < 2) return false;
+        const first = trimmed[0];
+        const last = trimmed[trimmed.length - 1];
+        
+        if ((first === '{' && last === '}') || (first === '[' && last === ']')) {
+            try {
+                JSON.parse(str);
+                return true;
+            } catch (e) {
+                return false;
+            }
         }
-        return true;
+        return false;
     }
 
     static cie2rgb(x, y, brightness) {
@@ -103,6 +79,7 @@ class Zigbee2mqttHelper {
 
         var z = 1.0 - x - y;
         var Y = (brightness / 254).toFixed(2);
+        if (y === 0) y = 0.000001; // Prevent division by zero
         var X = (Y / y) * x;
         var Z = (Y / y) * z;
 
@@ -217,7 +194,7 @@ class Zigbee2mqttHelper {
                 if ("color" in payload && "hue" in payload.color && "saturation" in payload.color) {
                     hue = payload.color.hue;
                     sat = payload.color.saturation;
-                } else if ("color" in payload && "x" in payload.color) {
+                } else if (payload.color && "x" in payload.color) {
                     var rgb = Zigbee2mqttHelper.cie2rgb(payload.color.x, payload.color.y, payload.brightness);
                     var hsv = Zigbee2mqttHelper.rgb2hsv(rgb.r, rgb.g, rgb.b);
                     hue = hsv.h;
@@ -387,8 +364,11 @@ class Zigbee2mqttHelper {
     }
 
     static formatPayload(payload, device) {
-        var node = this;
         var result = {};
+
+        // REFATORADO: Verificação de nulos mais robusta
+        if (!payload || typeof payload !== 'object') 
+            return result;
 
         //convert XY to RGB, HSV
         if (payload && "color" in payload && "x" in payload.color) {

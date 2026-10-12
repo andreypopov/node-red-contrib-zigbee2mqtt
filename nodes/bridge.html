@@ -1,523 +1,1752 @@
-<style>
-    .node-input-devices-friendly_name, .node-input-groups-friendly_name {
-        width:100% !important;
-        min-width: 200px !important;
+<script type="text/javascript">
+// ✅ SIMPLIFICADO: Apenas herda Z2MDebug do parent (já carregado pelo api.html)
+(function(win) {
+    // Ensure parent exists and prevent cross-origin errors
+    try {
+        if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
+            win.Z2MDebug = win.parent.Z2MDebug;
+        }
+    } catch(e) { console.warn('Z2MDebug inheritance failed:', e); }
+    
+    // ✅ OPCIONAL: Log de confirmação (só aparece se debug ativo)
+    if (win.Z2MDebug && win.Z2MDebug.isEnabled()) {
+        console.log('[Bridge] Z2MDebug inherited from parent');
     }
-    table.z2m_table {
-        border-spacing: 5px;
-        border-collapse: separate;
-    }
-    table.z2m_table th {
-        text-align: left;
-    }
-    table.z2m_table td {
-        vertical-align: top;
-    }
-</style>
+})(window);
+</script>
+
+<link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
+<link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/bridge.css" type="text/css" />
+<link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/tokeninput/token-input-facebook.css" type="text/css" />
+
 <script type='text/javascript'>
     $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
 </script>
 
-
-
 <script type="text/x-red" data-template-name="zigbee2mqtt-bridge">
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/tokeninput/token-input-facebook.css" type="text/css" />
-
     <div class="form-row">
-        <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
+        <label for="node-input-name"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
     </div>
+    
     <div class="form-row">
-        <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
+        <label for="node-input-server"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
         <input type="text" id="node-input-server">
     </div>
-    <div class="form-row">
-        <label for="refreshBtn" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
-        <a class="red-ui-button s-width" id="refreshBtn"><span data-i18n="label.refresh_all"></span></a>
+
+    <div class="bridge-tabs">
+        <button class="tab-button active" data-tab="bridge" type="button">
+            <i class="fa fa-cog"></i> Bridge
+        </button>
+        <button class="tab-button" data-tab="status" id="tab-status" type="button">
+            <i class="fa fa-info-circle"></i> Status
+        </button>
+        <button class="tab-button" data-tab="devices" id="tab-devices" type="button">
+            <i class="fa fa-lightbulb-o"></i> Devices
+        </button>
+        <button class="tab-button" data-tab="groups" id="tab-groups" type="button">
+            <i class="fa fa-object-group"></i> Groups
+        </button>
+        <button class="tab-button" data-tab="map" id="tab-map" type="button">
+            <i class="fa fa-sitemap"></i> Map
+        </button>
     </div>
 
-    <div id="config_wr" style="display:none;">
+    <div class="tab-content active" id="content-bridge">
         <div class="form-row">
-            <!-- Tabsheets -->
-            <ul style="background: #fff; min-width: 600px; margin-bottom: 20px;" id="node-z2m-tabs"></ul>
+            <label for="refresh-all" class="l-width">
+                <i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span>
+            </label>
+            <a class="red-ui-button s-width" id="refresh-all">
+                <span data-i18n="label.refresh_all"></span>
+            </a>
         </div>
-        <div id="node-z2m-tabs-content" style="min-height: 150px">
-            <!-- Content of all tabsheets -->
-            <div id="node-z2m-tab-bridge" class="node-z2m-tab-bridge" style="position: relative; margin-top: 30px;">
-                <div class="form-row">
-                    <label for="permit_join_btn" class="l-width"><i class="fa fa-share-alt"></i> <span data-i18n="label.permit_join"></span></label>
-                    <button style="width: 70%" class="red-ui-button permit_join_btn" id="permit_join_btn"><span data-i18n="label.permit_join_help"></span></button>
-                    <button style="width: 70%" class="red-ui-button permit_join_btn" style="display:none;" id="permit_join_cancel_btn"><span data-i18n="label.permit_join_cancel_help"></span></button>
+        
+        <!-- ✅ VERSÃO CORRIGIDA DO PERMIT JOIN -->
+        <div class="form-row">
+            <label class="l-width">
+                <i class="fa fa-sign-in"></i> Permit Join
+            </label>
+            
+            <!-- Container principal - CSS em bridge.css -->
+            <div class="permit-join-controls">
+                
+                <!-- Linha 1: Botões Start/Stop -->
+                <div class="permit-join-buttons">
+                    <a class="red-ui-button" id="permit-join-start">
+                        <i class="fa fa-play"></i> <span data-i18n="label.permit_join_help">Start searching devices for 3 minutes</span>
+                    </a>
+                    <a class="red-ui-button" id="permit-join-stop" style="display:none;">
+                        <i class="fa fa-stop"></i> <span data-i18n="label.permit_join_cancel_help">Stop searching devices</span>
+                    </a>
                 </div>
-                <div class="form-row">
-                    <label for="log_level_info_btn" class="l-width"><i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span></label>
-                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="info" id="log_level_info_btn"><span data-i18n="label.log_level_info"></span></button>
-                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="debug" id="log_level_debug_btn"><span data-i18n="label.log_level_debug"></span></button>
-                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="warning" id="log_level_warning_btn"><span data-i18n="label.log_level_warning"></span></button>
-                    <button style="width: 17%" class="red-ui-button log_level_btn" data-level="error" id="log_level_error_btn"><span data-i18n="label.log_level_error"></span></button>
+                
+                <!-- Linha 2: Input de tempo -->
+                <div class="permit-join-time-input">
+                    <input type="number" 
+                           id="node-input-permitjoin-time" 
+                           value="180" 
+                           min="10" 
+                           max="3600" 
+                           step="30">
+                    <span class="time-display">
+                        seconds (<span id="permit-join-time-formatted">3 min</span>)
+                    </span>
                 </div>
-                <div class="form-row">
-                    <label for="config_version" class="l-width"><span data-i18n="label.version"></span></label>
-                    <span id="config_version" style="font-weight:bold"> - </span>
-                </div>
-                <div class="form-row">
-                    <label for="config_coordinator" class="l-width"><span data-i18n="label.coordinator"></span></label>
-                    <span id="config_coordinator" style="font-weight:bold"> - </span>
-                </div>
-                <div class="form-row">
-                    <label for="config_advanced_output" class="l-width"><span data-i18n="label.advanced_output"></span></label>
-                    <span id="config_advanced_output"> - </span>
-                </div>
-                <div class="form-row">
-                    <label for="config_legacy_api" class="l-width"><span data-i18n="label.no_legacy_api"></span></label>
-                    <span id="config_legacy_api"> - </span>
-                </div>
-<!--                <div class="form-row">-->
-<!--                    <label for="config_last_seen" class="l-width"><span data-i18n="label.last_seen"></span></label>-->
-<!--                    <span id="config_last_seen"> - </span>-->
-<!--                </div>-->
-                <div class="form-row">
-                    <label for="config_mqtt_disable_retain" class="l-width"><span data-i18n="label.mqtt_disable_retain"></span></label>
-                    <span id="config_mqtt_disable_retain"> - </span>
-                </div>
-                <div class="form-row">
-                    <label for="config_availability" class="l-width"><span data-i18n="label.availability"></span></label>
-                    <span id="config_availability"> - </span>
-                </div>
-                <div class="form-row">
-                    <label for="config_restart_required" class="l-width"><span data-i18n="label.restart_required"></span></label>
-                    <span id="config_restart_required"> - </span>
-                </div>
-                <div class="form-row">
-                    <label for="restart_btn" class="l-width"><i class="fa fa-power-off"></i> <span data-i18n="label.restart"></span></label>
-                    <button style="width: 70%" class="red-ui-button" id="restart_btn"><span data-i18n="label.restart_zigbee2mqtt"></span></button>
-                </div>
-            </div>
-
-            <div id="node-z2m-tab-devices" class="node-z2m-tab-devices" style="position: relative; margin-top: 30px;">
-                <table class="z2m_table" id="node-z2m-devices_table">
-                    <thead>
-                        <th style="width:150px"><span data-i18n="devices.friendly_name"></span></th>
-                        <th style="width:95%;"><span data-i18n="devices.device"></span></th>
-                        <th style="width:50px;"></th>
-                        <th style="width:50px;"></th>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <div class="form-row form-row-auto-height">
-                    <ol id="node-input-devices-container"></ol>
-                </div>
-            </div>
-
-            <div id="node-z2m-tab-groups" class="node-z2m-tab-groups" style="position: relative; margin-top: 30px;">
-            <a href="#" class="red-ui-item-add red-ui-button"><i class="fa fa-plus"></i>&nbsp;<span data-i18n="groups.add"></span></a>
-                <table class="z2m_table" id="node-z2m-groups_table">
-                    <thead>
-                        <th style="width:95%;"><span data-i18n="groups.friendly_name"></span></th>
-                        <th style="width:50px;"></th>
-                        <th style="width:50px;"></th>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <div class="form-row form-row-auto-height">
-                    <ol id="node-input-groups-container"></ol>
-                </div>
-            </div>
-
-
-            <div id="node-z2m-tab-map" class="node-z2m-tab-map" style="position: relative; margin-top: 30px;">
-
-
-                <select id="node-input-engine" style="width:100px;display:none;">
-                    <option value="circo" selected>circo</option>
-                    <option value="dot">dot</option>
-                    <option value="fdp">fdp</option>
-                    <option value="neato">neato</option>
-                    <option value="osage">osage</option>
-                    <option value="twopi">twopi</option>
-                 </select>
-
-                <a href="#" id="z2m_map_refresh_btn" class="red-ui-item-add red-ui-button"><i class="fa fa-refresh"></i>&nbsp;<span data-i18n="map.refresh"></span></a>
-                <a href="#" id="z2m_map_fullscreen_btn" style="display:none;" class="red-ui-item-add red-ui-button"><i class="fa fa-external-link"></i>&nbsp;<span data-i18n="map.fullscreen"></span></a>
-                <div id="z2m_map_img"></div>
             </div>
         </div>
+        
+        <div class="form-row">
+            <label for="log-level" class="l-width">
+                <i class="fa fa-commenting-o"></i> <span data-i18n="label.log_level"></span>
+            </label>
+            <button style="width: 17%" class="red-ui-button log-level-btn" data-level="info" id="log-level-info-btn" type="button">
+                <span data-i18n="label.log_level_info"></span>
+            </button>
+            <button style="width: 17%" class="red-ui-button log-level-btn" data-level="debug" id="log-level-debug-btn" type="button">
+                <span data-i18n="label.log_level_debug"></span>
+            </button>
+            <button style="width: 17%" class="red-ui-button log-level-btn" data-level="warning" id="log-level-warning-btn" type="button">
+                <span data-i18n="label.log_level_warning"></span>
+            </button>
+            <button style="width: 17%" class="red-ui-button log-level-btn" data-level="error" id="log-level-error-btn" type="button">
+                <span data-i18n="label.log_level_error"></span>
+            </button>
+        </div>
+        
+        <div class="form-row">
+            <label for="restart-bridge" class="l-width">
+                <i class="fa fa-power-off"></i> <span data-i18n="label.restart"></span>
+            </label>
+            <button style="width: 70%" class="red-ui-button" id="restart-bridge" type="button">
+                <span data-i18n="label.restart_zigbee2mqtt"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="tab-content" id="content-status">
+        <div class="server-status-section" id="server-connection-status">
+            <div class="server-status-title">
+                <span class="server-status-indicator" id="server-indicator"></span>
+                <span id="server-status-text">Checking server connection...</span>
+            </div>
+            <div class="server-status-details" id="server-status-details"></div>
+        </div>
+        
+        <div class="status-grid" id="status-display">
+            <div class="status-label">Coordinator:</div>
+            <div class="status-value" id="status-coordinator">Loading...</div>
+            
+            <div class="status-label">Advanced Output:</div>
+            <div class="status-value" id="status-advanced-output">Loading...</div>
+            
+            <div class="status-label">Legacy API:</div>
+            <div class="status-value" id="status-legacy-api">Loading...</div>
+            
+            <div class="status-label">MQTT Retain:</div>
+            <div class="status-value" id="status-mqtt-retain">Loading...</div>
+            
+            <div class="status-label">Permit Join:</div>
+            <div class="status-value" id="status-permit-join">Loading...</div>
+            
+            <div class="status-label">Restart Required:</div>
+            <div class="status-value" id="status-restart-required">Loading...</div>
+            
+            <div class="status-label">Log Level:</div>
+            <div class="status-value" id="status-log-level">Loading...</div>
+            
+            <div class="status-label">Devices Count:</div>
+            <div class="status-value" id="status-devices-count">Loading...</div>
+            
+            <div class="status-label">Groups Count:</div>
+            <div class="status-value" id="status-groups-count">Loading...</div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="content-devices">
+        <div class="form-tips" id="devices-status">
+            <i class="fa fa-spinner fa-spin"></i> Loading devices...
+        </div>
+        <table class="z2m-table" id="devices-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th class="status-col"><i class="fa fa-circle"></i></th>
+                    <th class="sortable" data-sort="friendly_name" style="width:180px;"><span data-i18n="devices.friendly_name"></span></th>
+                    <th class="sortable" data-sort="model" style="width:120px;">Model</th>
+                    <th style="width:60px;">LQI</th>
+                    <th style="width:60px;">Batt</th>
+                    <th style="width:100px;">Last Seen</th>
+                    <th style="width:50px;"></th>
+                    <th style="width:50px;"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="tab-content" id="content-groups">
+        <div class="form-row">
+            <a href="#" class="red-ui-button" id="add-group-btn">
+                <i class="fa fa-plus"></i>&nbsp;<span data-i18n="groups.add"></span>
+            </a>
+        </div>
+        <div class="form-tips" id="groups-status">
+            <i class="fa fa-spinner fa-spin"></i> Loading groups...
+        </div>
+        <table class="z2m-table" id="groups-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th class="status-col">
+                        <i class="fa fa-circle"></i>
+                    </th>
+                    <th class="sortable" data-sort="friendly_name" style="width:200px;">
+                        <span data-i18n="groups.friendly_name"></span>
+                    </th>
+                    <th style="width:auto;">Members</th>
+                    <th style="width:80px;"></th>
+                    <th style="width:80px;"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="tab-content" id="content-map">
+        <div class="form-row">
+            <a href="#" id="refresh-map-btn" class="red-ui-button">
+                <i class="fa fa-refresh"></i>&nbsp;<span data-i18n="map.refresh"></span>
+            </a>
+            <a href="#" id="fullscreen-map-btn" class="red-ui-button" style="display:none; margin-left: 10px;">
+                <i class="fa fa-external-link"></i>&nbsp;<span data-i18n="map.fullscreen"></span>
+            </a>
+        </div>
+        <div id="map-display" style="text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 6px; background: #fafafa;">
+            <i class="fa fa-sitemap" style="font-size: 48px; color: #ccc;"></i>
+            <p style="color: #999; margin-top: 10px;">Click "Refresh" to load network map</p>
+        </div>
+        <select id="node-input-engine" style="width:100px;display:none;">
+            <option value="circo" selected>circo</option>
+            <option value="dot">dot</option>
+            <option value="fdp">fdp</option>
+            <option value="neato">neato</option>
+            <option value="osage">osage</option>
+            <option value="twopi">twopi</option>
+        </select>
     </div>
 </script>
 
 <script type='text/javascript'>
-    RED.nodes.registerType('zigbee2mqtt-bridge', {
-        category: 'Zigbee2mqtt',
-        color: '#FDBF48',
-        defaults: {
-            name: {
-                value: ""
-            },
-            server: {
-                type: "zigbee2mqtt-server",
-                required: true
-            },
-            topic: {
-                value: null,
-                required: false
-            }
+RED.nodes.registerType('zigbee2mqtt-bridge', {
+    category: 'Zigbee2mqtt',
+    color: '#FDBF48',
+    defaults: {
+        name: { value: "" },
+        server: { type: "zigbee2mqtt-server", required: true },
+        permitjoin_time: { value: 180 }
+    },
+    inputs: 1,
+    outputs: 1,
+    paletteLabel: 'bridge',
+    icon: "icon.png",
+    label: function() {
+        return this.name || 'Zigbee2mqtt Bridge';
         },
-        inputs: 1,
-        outputs: 1,
-        outputLabels: ["value"],
-        paletteLabel: 'bridge',
-        icon: "icon.png",
-        label: function () {
-            var label = 'Zigbee2mqtt Bridge';
-            if (this.name) {
-                label = this.name;
+   
+    oneditprepare: function() {
+        const node = this;
+        // ✅ DEFINIÇÃO LOCAL (Correto)
+        // Garante que 'debug' existe para todo o ciclo de vida da janela de edição
+        var debug = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Bridge') : {
+            log: function() { console.log.apply(console, arguments); },
+            warn: function() { console.warn.apply(console, arguments); },
+            error: function() { console.error.apply(console, arguments); },
+            isEnabled: function() { return false; }
+        };
+        
+        // ═══════════════════════════════════════════════════════
+        // VARIÁVEIS GLOBAIS
+        // ═══════════════════════════════════════════════════════
+         node._permitJoinTimeout = null;
+        let devicesData = [];
+        let groupsData = [];
+        let hasMapData = false;
+        let isOnline = false; // ← Estado único e simples
+        let stateCheckInterval = null;
+        
+        node._z2m_stateCheckInterval = null;
+        let serverState = {
+            online: false,
+            state: 'unknown',        // 'online', 'mqtt_offline', 'z2m_offline', 'unknown'
+            errorComponent: null,    // null, 'mqtt', 'zigbee2mqtt', 'unknown'
+            mqtt: null,
+            zigbee2mqtt: null,
+            stats: null
+        };
+        
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Detectar Estado (SIMPLES)
+        // ═══════════════════════════════════════════════════════
+        function detectServerState(serverId, callback) {
+            debug.log('🔍 Calling API /zigbee2mqtt/serverState/' + serverId);
+            
+            const apiUrl = 'zigbee2mqtt/serverState/' + serverId;
+            
+            $.getJSON(apiUrl)
+                .done(function(data) {
+                    debug.log('✅ API Response:', data);
+                    
+                    if (!data) {
+                        debug.warn('⚠️ Empty response from API');
+                        callback({
+                            online: false,
+                            state: 'unknown',
+                            errorComponent: 'unknown'
+                        });
+                        return;
+                    }
+                    
+                    // ✅ Guardar estado completo
+                    const newState = {
+                        online: data.online === true,
+                        state: data.state || 'unknown',
+                        errorComponent: data.errorComponent || null,
+                        mqtt: data.mqtt || null,
+                        zigbee2mqtt: data.zigbee2mqtt || null,
+                        stats: data.stats || null
+                    };
+                    
+                    debug.log('📊 Server state:', newState.state);
+                    if (!newState.online && newState.errorComponent) {
+                        debug.warn('⚠️ Component failed:', newState.errorComponent);
+                    }
+                    
+                    callback(newState);
+                })
+                .fail(function(xhr, status, error) {
+                    debug.error('❌ API call failed');
+                    debug.error('  - Status:', status);
+                    debug.error('  - Error:', error);
+                    
+                    callback({
+                        online: false,
+                        state: 'api_error',
+                        errorComponent: 'api'
+                    });
+                });
+        }
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Monitoramento (2s)
+        // ═══════════════════════════════════════════════════════
+        function startStateMonitoring() {
+            const currentServer = $('#node-input-server').val();
+            
+            if (!currentServer || currentServer === '_ADD_' || currentServer === '') {
+                debug.log('⚠️ Cannot start monitoring: no server selected');
+                return;
             }
-            return label;
-        },
-        oneditprepare: function () {
-            var node = this;
+            
+            // ✅ Parar qualquer monitoramento anterior
+            stopStateMonitoring();
+            
+            debug.log('▶️ Starting state monitoring for server:', currentServer);
+            
+            // ✅ CRIAR INTERVALO
+            stateCheckInterval = setInterval(function() {
+                // ✅ Detectar estado atual
+                detectServerState(currentServer, function(newState) {
+                    // ✅ Comparar estado
+                    const stateChanged = newState.state !== serverState.state;
+                    const errorChanged = newState.errorComponent !== serverState.errorComponent;
+                    
+                    if (stateChanged || errorChanged) {
+                        debug.log('🔄 State changed:', serverState.state, '→', newState.state);
+                        if (newState.errorComponent) {
+                            debug.warn('⚠️ Error component:', newState.errorComponent);
+                        }
+                        
+                        // ✅ Atualizar estado global
+                        serverState = newState;
+                        
+                        // ✅ Atualizar UI
+                        updateUIState();
+                    }
+                });
+            }, 2000); // A cada 2 segundos
+            
+            // ✅ Guardar referência
+            node._z2m_stateCheckInterval = stateCheckInterval;
+            
+            debug.log('✅ Monitoring started, interval ID:', stateCheckInterval);
+        }
+        function stopStateMonitoring() {
+            if (stateCheckInterval) {
+                debug.log('⏹️ Stopping monitoring, interval ID:', stateCheckInterval);
+                clearInterval(stateCheckInterval);
+                stateCheckInterval = null;
+                node._z2m_stateCheckInterval = null;
+            }
+        }
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Atualizar UI baseado no estado
+        // ═══════════════════════════════════════════════════════
+        function updateUIState() {
+            const currentServer = $('#node-input-server').val();
+            const hasServer = currentServer && currentServer !== '_ADD_' && currentServer !== '';
+            
+            // CASO 1: Sem servidor configurado
+            if (!hasServer) {
+                $('#server-connection-status')
+                    .removeClass('online offline mqtt-offline z2m-offline')
+                    .css({ 'border-color': '#bdbdbd', 'background': '#fafafa' });
+                $('#server-indicator').removeClass('online offline').css('background', '#bdbdbd');
+                $('#server-status-text').html(
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.no_server_configured") + '</strong>'
+                );
+                $('#server-status-details').html(
+                    '<span style="color: #757575;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.select_server_begin") + '</span>'
+                );
+                
+                $('#tab-status, #tab-devices, #tab-groups, #tab-map').removeClass('success warning error mqtt-error z2m-error');
+                setControlsEnabled(false);
+                return;
+            }
+            
+            const serverInfo = getServerInfo(currentServer);
+            
+            // CASO 2: Tudo ONLINE ✔
+            if (serverState.state === 'online') {
+                $('#server-connection-status')
+                    .removeClass('offline mqtt-offline z2m-offline')
+                    .addClass('online');
+                $('#server-indicator').removeClass('offline').addClass('online');
+                $('#server-status-text').html(
+                    '<strong>✔ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.all_systems_online") + '</strong>'
+                );
+                
+                const mqttHost = serverState.mqtt?.host || 'Unknown';
+                const mqttPort = serverState.mqtt?.port || '1883';
+                const z2mVersion = serverState.zigbee2mqtt?.version || 'Unknown';
+                const baseTopic = serverState.zigbee2mqtt?.base_topic || 'zigbee2mqtt';
+                
+                $('#server-status-details').html(
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.server") + ':</strong> ' + (serverInfo?.name || 'Z2M') + '<br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.mqtt_broker") + ':</strong> ' +
+                    '<span style="color: #2e7d32;">' + mqttHost + ':' + mqttPort + '</span> ' +
+                    '<span class="status-ok">' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.connected") + '</span><br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.zigbee2mqtt") + ':</strong> ' +
+                    '<span style="color: #1976d2;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.version") + z2mVersion + '</span> ' +
+                    '<span class="status-ok">' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.online") + '</span><br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.base_topic") + ':</strong> ' + baseTopic
+                );
+                
+                $('#tab-status').removeClass('warning error mqtt-error z2m-error').addClass('success');
+                
+                if (devicesData.length > 0) $('#tab-devices').removeClass('warning error').addClass('success');
+                else $('#tab-devices').removeClass('warning error success');
+                
+                if (groupsData.length > 0) $('#tab-groups').removeClass('warning error').addClass('success');
+                else $('#tab-groups').removeClass('warning error success');
+                
+                if (hasMapData) $('#tab-map').removeClass('warning error').addClass('success');
+                else $('#tab-map').removeClass('warning error success');
+                
+                setControlsEnabled(true);
+            }
+            
+            // CASO 3: MQTT OFFLINE ✘
+            else if (serverState.state === 'mqtt_offline') {
+                $('#server-connection-status')
+                    .removeClass('online z2m-offline')
+                    .addClass('offline mqtt-offline');
+                $('#server-indicator').removeClass('online').addClass('offline');
+                $('#server-status-text').html(
+                    '<strong>✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.mqtt_offline") + '</strong>'
+                );
+                
+                const mqttHost = serverState.mqtt?.host || 'Unknown';
+                const mqttPort = serverState.mqtt?.port || '1883';
+                
+                $('#server-status-details').html(
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.server") + ':</strong> ' + (serverInfo?.name || 'Z2M') + '<br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.mqtt_broker") + ':</strong> ' +
+                    '<span style="color: #c62828;">' + mqttHost + ':' + mqttPort + '</span> ' +
+                    '<span class="status-error">' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.mqtt_disconnected") + '</span><br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.zigbee2mqtt") + ':</strong> ' +
+                    '<span style="color: #999;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.cannot_reach") + '</span>'
+                );
+                
+                $('#tab-status').removeClass('success warning z2m-error').addClass('error mqtt-error');
+                
+                if (devicesData.length > 0) $('#tab-devices').removeClass('success error').addClass('warning');
+                else $('#tab-devices').removeClass('success warning').addClass('error');
+                
+                if (groupsData.length > 0) $('#tab-groups').removeClass('success error').addClass('warning');
+                else $('#tab-groups').removeClass('success warning').addClass('error');
+                
+                if (hasMapData) $('#tab-map').removeClass('success error').addClass('warning');
+                else $('#tab-map').removeClass('success warning').addClass('error');
+                
+                setControlsEnabled(false);
+            }
+            
+            // CASO 4: ZIGBEE2MQTT OFFLINE ⚠
+            else if (serverState.state === 'z2m_offline') {
+                $('#server-connection-status')
+                    .removeClass('online mqtt-offline')
+                    .addClass('offline z2m-offline');
+                $('#server-indicator').removeClass('online').addClass('offline');
+                $('#server-status-text').html(
+                    '<strong>⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.z2m_offline") + '</strong>'
+                );
+                
+                const mqttHost = serverState.mqtt?.host || 'Unknown';
+                const mqttPort = serverState.mqtt?.port || '1883';
+                const baseTopic = serverState.zigbee2mqtt?.base_topic || 'zigbee2mqtt';
+                
+                $('#server-status-details').html(
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.server") + ':</strong> ' + (serverInfo?.name || 'Z2M') + '<br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.mqtt_broker") + ':</strong> ' +
+                    '<span style="color: #2e7d32;">' + mqttHost + ':' + mqttPort + '</span> ' +
+                    '<span class="status-ok">' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.connected") + '</span><br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.zigbee2mqtt") + ':</strong> ' +
+                    '<span style="color: #e65100;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.z2m_not_responding") + '</span> ' +
+                    '<span class="status-error">' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.offline") + '</span><br>' +
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.expected_topic") + ':</strong> ' + baseTopic
+                );
+                
+                $('#tab-status').removeClass('success warning mqtt-error').addClass('error z2m-error');
+                
+                if (devicesData.length > 0) $('#tab-devices').removeClass('success error').addClass('warning');
+                else $('#tab-devices').removeClass('success warning').addClass('error');
+                
+                if (groupsData.length > 0) $('#tab-groups').removeClass('success error').addClass('warning');
+                else $('#tab-groups').removeClass('success warning').addClass('error');
+                
+                if (hasMapData) $('#tab-map').removeClass('success error').addClass('warning');
+                else $('#tab-map').removeClass('success warning').addClass('error');
+                
+                setControlsEnabled(false);
+            }
+            
+            // CASO 5: Estado desconhecido
+            else {
+                $('#server-connection-status')
+                    .removeClass('online mqtt-offline z2m-offline')
+                    .addClass('offline');
+                $('#server-indicator').removeClass('online').addClass('offline');
+                $('#server-status-text').html(
+                    '<strong>? ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.unknown_state") + '</strong>'
+                );
+                
+                $('#server-status-details').html(
+                    '<strong>' + RED._("node-red-contrib-zigbee2mqtt/bridge:server_info.server") + ':</strong> ' + (serverInfo?.name || 'Z2M') + '<br>' +
+                    '<span style="color: #999;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.unable_to_determine") + '</span>'
+                );
+                
+                $('#tab-status').removeClass('success warning mqtt-error z2m-error').addClass('error');
+                $('#tab-devices').removeClass('success warning').addClass('error');
+                $('#tab-groups').removeClass('success warning').addClass('error');
+                $('#tab-map').removeClass('success warning').addClass('error');
+                
+                setControlsEnabled(false);
+            }
+        }
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Habilitar/Desabilitar controles
+        // ═══════════════════════════════════════════════════════
+        function setControlsEnabled(enabled) {
+            if (enabled) {
+                $('#refresh-all').removeClass('disabled');
+                $('#permit-join-start').removeClass('disabled');
+                $('#permit-join-stop').removeClass('disabled');
+                $('.log-level-btn').prop('disabled', false);
+                $('#restart-bridge').prop('disabled', false);
+                $('#node-input-permitjoin-time').prop('disabled', false);
+                $('#add-group-btn').removeClass('disabled');
+                $('#refresh-map-btn').removeClass('disabled');
+            } else {
+                $('#refresh-all').addClass('disabled');
+                $('#permit-join-start').addClass('disabled');
+                $('#permit-join-stop').addClass('disabled');
+                $('.log-level-btn').prop('disabled', true);
+                $('#restart-bridge').prop('disabled', true);
+                $('#node-input-permitjoin-time').prop('disabled', true);
+                $('#add-group-btn').addClass('disabled');
+                $('#refresh-map-btn').addClass('disabled');
+            }
+        }
+        
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Obter info do servidor
+        // ═══════════════════════════════════════════════════════
+        function getServerInfo(serverId) {
+            const serverNode = RED.nodes.node(serverId);
+            if (!serverNode) return null;
+            
+            return {
+                name: serverNode.name || 'Unnamed Server',
+                broker: serverNode.broker || 'Unknown',
+                port: serverNode.port || '1883',
+                clientid: serverNode.clientid || 'Unknown',
+                base_topic: serverNode.base_topic || 'zigbee2mqtt'
+            };
+        }
+        
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Limpar todas as tabelas
+        // ═══════════════════════════════════════════════════════
+        function clearAllTables() {
+            $('#devices-table').hide().find('tbody').empty();
+            $('#devices-status').html(
+                '<span style="color: #999;">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.no_server_configured") + '</span>'
+            );
+            
+            $('#groups-table').hide().find('tbody').empty();
+            $('#groups-status').html(
+                '<span style="color: #999;">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.no_server_configured") + '</span>'
+            );
+            
+            $('#status-coordinator, #status-advanced-output, #status-legacy-api, #status-mqtt-retain, #status-permit-join, #status-restart-required, #status-log-level, #status-devices-count, #status-groups-count').text('–');
+            
+            $('#map-display').html(
+                '<i class="fa fa-sitemap" style="font-size: 48px; color: #ccc;"></i>' +
+                '<p style="color: #999; margin-top: 10px;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:map.no_server_configured") + '</p>'
+            );
+            $('#fullscreen-map-btn').hide();
+        }
+        
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Formatar tempo
+        // ═══════════════════════════════════════════════════════
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            
+            let parts = [];
+            if (h > 0) parts.push(h + ' h');
+            if (m > 0) parts.push(m + ' min');
+            if (s > 0 || parts.length === 0) parts.push(s + ' s');
+            
+            return parts.join(' ');
+        }
 
-            node.tabs = RED.tabs.create({
-                id: "node-z2m-tabs",
-                onchange: function (tab) {
-                    $("#node-z2m-tabs-content").children().hide();
-                    $("#" + tab.id).show();
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO INIT - CHAMADA UMA ÚNICA VEZ
+        // ═══════════════════════════════════════════════════════
+        function init() {
+            const currentServer = $('#node-input-server').val();
+            
+            debug.log('🚀 init() called with server:', currentServer);
+
+            if (!currentServer || currentServer === '_ADD_' || currentServer === '') {
+                debug.warn('⚠️ No valid server');
+                serverState = {
+                    online: false,
+                    state: 'not_configured',
+                    errorComponent: null
+                };
+                clearAllTables();
+                updateUIState();
+                return;
+            }
+            
+            // ✅ Detectar estado inicial
+            detectServerState(currentServer, function(state) {
+                serverState = state;
+                debug.log('📡 Initial server state:', serverState.state);
+                
+                // ✅ Carregar dados
+                $.getJSON('zigbee2mqtt/getDevices', {
+                    controllerID: currentServer
+                }).done(function(data) {
+                    if (data && data[0] && data[1]) {
+                        devicesData = data[0].filter(d => d.type !== "Coordinator");
+                        groupsData = data[1];
+                        debug.log('✅ Data loaded:', { devices: devicesData.length, groups: groupsData.length });
+                    } else {
+                        devicesData = [];
+                        groupsData = [];
+                        debug.warn('⚠️ No data returned');
+                    }
+                    updateUIState();
+                }).fail(function() {
+                    debug.error('❌ Failed to load data');
+                    devicesData = [];
+                    groupsData = [];
+                    updateUIState();
+                });
+            });
+            
+            // ✅ Carregar config se online
+            if (serverState.state === 'online') {
+                $.getJSON('zigbee2mqtt/getConfig', {
+                    controllerID: currentServer,
+                    permit_join: true
+                }).done(function(data) {
+                    if (data && data.log_level) {
+                        $('.log-level-btn').removeClass('active');
+                        $(`#log-level-${data.log_level}-btn`).addClass('active');
+                    }
+                    
+                    if (data && data.permit_join) {
+                        $('#permit-join-start').hide();
+                        $('#permit-join-stop').show();
+                    } else {
+                        $('#permit-join-start').show();
+                        $('#permit-join-stop').hide();
+                    }
+                });
+            }
+        }      
+        // ═══════════════════════════════════════════════════════
+        // EVENT HANDLERS - Setup inicial
+        // ═══════════════════════════════════════════════════════
+        
+        // Permit Join Time - Formatação
+        if (node.permitjoin_time) {
+            $('#node-input-permitjoin-time').val(node.permitjoin_time);
+        }
+
+        $('#node-input-permitjoin-time').on('input change', function() {
+            const seconds = parseInt($(this).val()) || 180;
+            $('#permit-join-time-formatted').text(formatTime(seconds));
+        });
+
+        $('#node-input-permitjoin-time').trigger('change');
+        
+        // Mudança de servidor - Proteção contra duplicação
+        $('#node-input-server').off('change').on('change', function() {
+            const val = $(this).val();
+            if (node._lastServer === val) return; // Impedir init duplo no arranque
+            node._lastServer = val;
+            debug.log('🔄 Server changed to:', val);
+            init();
+        });
+        // Delegar evento de clique para pastas (Suporte a Sub-níveis)
+        $('#devices-table').on('click', '.z2m-group-header-row', function() {
+            const $clickedHeader = $(this);
+            $clickedHeader.toggleClass('collapsed');
+            $clickedHeader.find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
+            $clickedHeader.find('i.fa-folder-open-o, i.fa-folder-o').toggleClass('fa-folder-open-o fa-folder-o');
+ 
+            const updateVisibility = () => {
+                $('#devices-table tbody tr').each(function() {
+                    const $row = $(this);
+                    if ($row.hasClass('z2m-group-header-row') && $row.is($clickedHeader)) return;
+ 
+                    // Obter o path dependendo se é device ou header de pasta
+                    const rowPath = $row.hasClass('z2m-device-row') ? $row.data('full-path') : $row.data('path');
+                    if (!rowPath) return;
+ 
+                    const segments = rowPath.split('/');
+                    let shouldBeVisible = true;
+ 
+                    // Verificar se algum dos pais acima está colapsado
+                    for (let i = 1; i < segments.length; i++) {
+                        const parentPath = segments.slice(0, i).join('/');
+                        const $parentHeader = $('#devices-table').find(`.z2m-group-header-row[data-path="${parentPath}"]`);
+                        if ($parentHeader.hasClass('collapsed')) {
+                            shouldBeVisible = false;
+                            break;
+                        }
+                    }
+                    $row.toggle(shouldBeVisible);
+                });
+            };
+            updateVisibility();
+        });
+        
+        // Refresh All
+        $('#refresh-all').off('click').on('click', function() {
+            // ✅ CORRIGIDO: Usar serverState.state
+            if (serverState.state !== 'online') {
+                RED.notify('Cannot refresh: server is offline', 'warning');
+                return;
+            }
+            debug.log('🔄 Refresh all clicked');
+            init();
+        });
+        
+        // Trocar de aba - SEM reinicializar!
+        $('.tab-button').off('click').on('click', function() {
+            const tab = $(this).data('tab');
+            
+            $('.tab-button').removeClass('active');
+            $(this).addClass('active');
+            
+            $('.tab-content').removeClass('active');
+            $(`#content-${tab}`).addClass('active');
+            
+            // Carregar dados da aba se necessário
+            const currentServer = $('#node-input-server').val();
+            if (!currentServer || currentServer === '_ADD_' || currentServer === '') return;
+            
+            if (tab === 'status') loadStatus();
+            else if (tab === 'devices') loadDevices();
+            else if (tab === 'groups') loadGroups();
+        });
+        
+        // ═══════════════════════════════════════════════════════
+        // PERMIT JOIN
+        // ═══════════════════════════════════════════════════════
+        // PERMIT JOIN START
+        $('#permit-join-start').off('click').on('click', function() {
+            if (serverState.state !== 'online') {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline"), 'warning');
+                return;
+            }
+            
+            const currentServer = $('#node-input-server').val();
+            const time = parseInt($('#node-input-permitjoin-time').val()) || 180;
+            
+            clearTimeout(permitJoinTimeout);
+            
+            $('#permit-join-start').hide();
+            $('#permit-join-stop').show();
+            
+            $.getJSON('zigbee2mqtt/setPermitJoin', {
+                controllerID: currentServer,
+                permit_join: true,
+                time: time
+            }).done(function(data) {
+                RED.notify(
+                    RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.permit_join_enabled")
+                        .replace('{time}', time),
+                    'success'
+                );
+                
+                permitJoinTimeout = setTimeout(function() {
+                    $('#permit-join-start').show();
+                    $('#permit-join-stop').hide();
+                }, time * 1000);
+                
+            }).fail(function() {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.failed_permit_join"), 'error');
+                $('#permit-join-start').show();
+                $('#permit-join-stop').hide();
+            });
+        });
+
+        // PERMIT JOIN STOP
+        $('#permit-join-stop').off('click').on('click', function() {
+            if (serverState.state !== 'online') {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline"), 'warning');
+                return;
+            }
+            
+            const currentServer = $('#node-input-server').val();
+            
+            clearTimeout(permitJoinTimeout);
+            
+            $('#permit-join-start').show();
+            $('#permit-join-stop').hide();
+            
+            $.getJSON('zigbee2mqtt/setPermitJoin', {
+                controllerID: currentServer,
+                permit_join: false
+            }).done(function(data) {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.permit_join_disabled"), 'success');
+            }).fail(function() {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.failed_cancel_permit"), 'error');
+            });
+        });
+        // ═══════════════════════════════════════════════════════
+        // LOG LEVEL
+        // ═══════════════════════════════════════════════════════
+        $('.log-level-btn').off('click').on('click', function() {
+            if (serverState.state !== 'online') {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline"), 'warning');
+                return;
+            }
+            
+            const currentServer = $('#node-input-server').val();
+            const level = $(this).data('level');
+            
+            $('.log-level-btn').removeClass('active');
+            $(this).addClass('active');
+            
+            $.getJSON('zigbee2mqtt/setLogLevel', {
+                controllerID: currentServer,
+                log_level: level
+            }).done(function(data) {
+                RED.notify(
+                    RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.log_level_set")
+                        .replace('{level}', level),
+                    'success'
+                );
+            }).fail(function() {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.failed_log_level"), 'error');
+            });
+        });
+        
+        // ═══════════════════════════════════════════════════════
+        // RESTART BRIDGE
+        // ═══════════════════════════════════════════════════════
+        $('#restart-bridge').off('click').on('click', function() {
+            if (serverState.state !== 'online') {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline"), 'warning');
+                return;
+            }
+            
+            const currentServer = $('#node-input-server').val();
+            
+            if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:label.sure_restart"))) {
+                $.getJSON('zigbee2mqtt/restart', {
+                    controllerID: currentServer
+                }).done(function(data) {
+                    RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.restart_requested"), 'success');
+                }).fail(function() {
+                    RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.failed_restart"), 'error');
+                });
+            }
+        });
+        
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Carregar Status
+        // ═══════════════════════════════════════════════════════
+        function loadStatus() {
+            const currentServer = $('#node-input-server').val();
+            if (!currentServer) return;
+            
+            $('#status-devices-count').text(devicesData.length);
+            $('#status-groups-count').text(groupsData.length);
+            
+            const isCached = serverState.state !== 'online';
+            
+            if (isCached) {
+                if (serverState.zigbee2mqtt && serverState.zigbee2mqtt.coordinator) {
+                    const coord = serverState.zigbee2mqtt.coordinator;
+                    $('#status-coordinator').html(
+                        coord.type + ' (' + (coord.meta?.revision || 'Unknown') + ') ' +
+                        '<span style="color: #e65100; font-size: 11px;">(cached)</span>'
+                    );
+                } else {
+                    $('#status-coordinator').html(
+                        '<span class="status-error">✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.offline") + '</span>'
+                    );
+                }
+                
+                $('#status-advanced-output').html('<span class="status-error">✘</span>');
+                $('#status-legacy-api').html('<span class="status-error">✘</span>');
+                $('#status-mqtt-retain').html('<span class="status-error">✘</span>');
+                $('#status-permit-join').html('<span class="status-error">✘</span>');
+                $('#status-restart-required').html('<span class="status-error">✘</span>');
+                
+                const logLevel = serverState.zigbee2mqtt?.log_level || 'Unknown';
+                $('#status-log-level').html(
+                    logLevel + ' <span style="color: #e65100; font-size: 11px;">(cached)</span>'
+                );
+                return;
+            }
+            
+            $.getJSON('zigbee2mqtt/getConfig', {
+                controllerID: currentServer,
+                permit_join: true
+            }).done(function(data) {
+                if (!data || !data.coordinator) return;
+                
+                $('#status-coordinator').text(data.coordinator.type + ' (' + (data.coordinator.meta?.revision || 'Unknown') + ')');
+                
+                $('#status-advanced-output').html(
+                    data.config?.advanced?.output !== 'json' ? 
+                    '<span class="status-error">✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.should_be_json") + '</span>' : 
+                    '<span class="status-ok">✔ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") + '</span>'
+                );
+                
+                $('#status-legacy-api').html(
+                    data.config?.advanced?.legacy_api ? 
+                    '<span class="status-error">✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.turn_off_legacy_api") + '</span>' : 
+                    '<span class="status-ok">✔ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") + '</span>'
+                );
+                
+                $('#status-mqtt-retain').html(
+                    data.config?.mqtt?.force_disable_retain ? 
+                    '<span class="status-error">✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.retain_disabled_error") + '</span>' : 
+                    '<span class="status-ok">✔ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") + '</span>'
+                );
+                
+                $('#status-permit-join').html(
+                    data.permit_join ? 
+                    '<span class="status-warning">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.permit_join") + '</span>' : 
+                    '<span class="status-ok">✘ Disabled</span>'
+                );
+                
+                $('#status-restart-required').html(
+                    data.restart_required ? 
+                    '<span class="status-warning">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.restart_needed") + '</span>' : 
+                    '<span class="status-ok">✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.not_required") + '</span>'
+                );
+                
+                $('#status-log-level').text(data.log_level || 'info');
+            }).fail(function() {
+                if (serverState.zigbee2mqtt && serverState.zigbee2mqtt.coordinator) {
+                    const coord = serverState.zigbee2mqtt.coordinator;
+                    $('#status-coordinator').html(
+                        coord.type + ' (' + (coord.meta?.revision || 'Unknown') + ') ' +
+                        '<span style="color: #e65100; font-size: 11px;">(cached)</span>'
+                    );
+                } else {
+                    $('#status-coordinator').html(
+                        '<span class="status-error">✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:status.cannot_retrieve") + '</span>'
+                    );
                 }
             });
-            node.tabs.addTab({
-                id: "node-z2m-tab-bridge",
-                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.bridge")
+        }
+        function sortTable(tableId, data, sortKey, sortOrder) {
+            const sorted = [...data].sort((a, b) => {
+                const partsA = (a.friendly_name || '').split(/[\/\\]/);
+                const partsB = (b.friendly_name || '').split(/[\/\\]/);
+                const pathA = partsA.slice(0, -1).join('/');
+                const pathB = partsB.slice(0, -1).join('/');
+ 
+                if (pathA !== pathB) return pathA.localeCompare(pathB);
+ 
+                let valA, valB;
+                if (sortKey === 'friendly_name') {
+                    valA = partsA.pop() || ''; valB = partsB.pop() || '';
+                } else if (sortKey === 'model') {
+                    valA = a.definition?.model || ''; valB = b.definition?.model || '';
+                } else if (sortKey === 'lqi') {
+                    valA = a.current_values?.linkquality || 0; valB = b.current_values?.linkquality || 0;
+                } else if (sortKey === 'battery') {
+                    valA = a.current_values?.battery || 0; valB = b.current_values?.battery || 0;
+                } else if (sortKey === 'last_seen') {
+                    valA = a.last_seen || 0; valB = b.last_seen || 0;
+                }
+ 
+                if (typeof valA === 'string') {
+                    return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                } else {
+                    return sortOrder === 'asc' ? valA - valB : valB - valA;
+                }
             });
-            node.tabs.addTab({
-                id: "node-z2m-tab-devices",
-                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.devices")
+            return sorted;
+        }
+        
+        function getDeviceStatusIcon(device) {
+        if (serverState.state !== 'online' || !device) return '';
+        
+        if (device.disabled === true) {
+            return '<span class="device-status-disabled" title="Device Disabled">⚫</span>';
+        }
+        
+        if (device.availability && device.availability.toLowerCase() === 'offline') {
+            return '<span class="device-status-offline" title="Device Offline">❌</span>';
+        }
+        
+        if (device.interview_completed === false) {
+            return `<span class="device-status-interview" 
+                         title="Click to re-interview device" 
+                         data-ieee="${device.ieee_address}"
+                         style="cursor:pointer;">🔵</span>`;
+        }
+        
+        if (!device.definition || device.supported === false) {
+            return '<span class="device-status-not-supported" title="Device Not Supported">🔶</span>';
+        }
+        
+        return '<span class="device-status-online" title="Device Online">✅</span>';
+    }
+                
+        function getGroupStatusIcon(group) {
+            if (serverState.state !== 'online') return '';
+            
+            if (!group.members || group.members.length === 0) {
+                return '<span class="device-status-offline" title="No members in group">❌</span>';
+            }
+            
+            let onlineCount = 0;
+            let offlineCount = 0;
+            
+            group.members.forEach(function(member) {
+                const device = devicesData.find(d => d.ieee_address === member.ieee_address);
+                if (!device || device.availability === 'offline') {
+                    offlineCount++;
+                } else {
+                    onlineCount++;
+                }
             });
-            node.tabs.addTab({
-                id: "node-z2m-tab-groups",
-                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.groups")
-            });
-            node.tabs.addTab({
-                id: "node-z2m-tab-map",
-                label: RED._("node-red-contrib-zigbee2mqtt/bridge:tabs.map")
-            });
+            
+            if (offlineCount === group.members.length) {
+                return '<span class="device-status-offline" title="All devices offline">❌</span>';
+            } else if (onlineCount === group.members.length) {
+                return '<span class="device-status-online" title="All devices online">✅</span>';
+            } else {
+                return `<span class="device-status-warning" title="${onlineCount}/${group.members.length} devices online">⚠️</span>`;
+            }
+        }  
+    
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Carregar Devices
+        // ═══════════════════════════════════════════════════════
+        function loadDevices(sortKey = 'friendly_name', sortOrder = 'asc') {
+            const currentServer = $('#node-input-server').val();
+            if (!currentServer) return;
+            
+            if (devicesData.length === 0) {
+                $('#devices-status').html(
+                    '<span class="status-warning">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:devices.no_devices_found") + '</span>'
+                );
+                $('#devices-table').hide();
+                return;
+            }
+            
+            if (serverState.state === 'online') {
+                $('#devices-status').html(
+                    '<span class="status-ok">✔ ' + devicesData.length + ' ' + RED._("node-red-contrib-zigbee2mqtt/bridge:devices.devices_found") + '</span>'
+                );
+            } else {
+                $('#devices-status').html(
+                    '<span class="status-warning">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline_cached") + '</span>'
+                );
+            }
+            
+            renderDevicesTable(devicesData, sortKey, sortOrder);
+        }
 
-            $('#refreshBtn').on("click", function(){
-                init();
-            });
-
-            init();
-
-
-
-            function init () {
-                var $permitJoinBtn = $('#permit_join_btn');
-
-                //get config
-                $.getJSON('zigbee2mqtt/getConfig', {
-                    controllerID: node.server,
-                    permit_join: true
-                }).done(function (data, textStatus, jqXHR) {
-                    if (data) {
-                        $('#config_wr').show();
-                        $('#config_version').text(data.version);
-                        $('#config_coordinator')
-                            .text(data.coordinator.type + ' (' + data.coordinator.meta.revision + ')');
-                        $('#config_legacy_api')
-                            .html(data.config.advanced.legacy_api
-                                ? '<b style="color:#c10000;">' +
-                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.turn_off_legacy_api") + '</b>'
-                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
-                                '</b>');
-                        $('#config_advanced_output')
-                            .html(data.config.advanced.output !== 'json'
-                                ? '<b style="color:#c10000;">' +
-                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.should_be_json") + '</b>'
-                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
-                                '</b>');
-                        // $('#config_last_seen').html(data.config.advanced.last_seen!=='disabled'?'<b style="color:green;">'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b> ' + data.config.advanced.last_seen:'<b>'+RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled")+'</b>');
-                        $('#config_availability')
-                            .html(data.availability !== false ? '<b style="color:green;">' +
-                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") + '</b>' : '<b>' +
-                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.disabled") + '</b>');
-                        $('#config_restart_required')
-                            .html(data.restart_required
-                                ? '<b style="color:#c10000;">' +
-                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.restart_needed") + '</b>'
-                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
-                                '</b>');
-                        $('#config_mqtt_disable_retain')
-                            .html(data.config.mqtt.force_disable_retain
-                                ? '<b style="color:#c10000;">' +
-                                RED._("node-red-contrib-zigbee2mqtt/bridge:label.retain_disabled_error") + '</b>'
-                                : '<b style="color:green;">' + RED._("node-red-contrib-zigbee2mqtt/bridge:label.ok") +
-                                '</b>');
-
-                        $('.log_level_btn').each(function() {
-                            $(this).removeClass('active');
+        function renderDevicesTable(devices, sortKey, sortOrder) {
+            const sortedDevices = sortTable('devices', devices, sortKey, sortOrder);
+            const currentServer = $('#node-input-server').val();
+            
+            $('#devices-table tbody').empty();
+            
+            const isOnline = serverState.state === 'online';
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 1: IDENTIFICAR PASTAS ÚNICAS (CASE-INSENSITIVE)
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            const folderMap = new Map(); // key: lowercase path, value: {originalName, level}
+            
+            sortedDevices.forEach(device => {
+                const fullPath = device.friendly_name || '';
+                const parts = fullPath.split(/[\/\\]/);
+                parts.pop(); // Remove nome do device
+                
+                for (let i = 0; i < parts.length; i++) {
+                    const currentPath = parts.slice(0, i + 1).join('/');
+                    const normalizedPath = currentPath.toLowerCase(); // ← CRÍTICO: Normalize para comparação
+                    
+                    // Guardar o primeiro nome encontrado (preserva case original)
+                    if (!folderMap.has(normalizedPath)) {
+                        folderMap.set(normalizedPath, {
+                            originalPath: currentPath,      // "TESTE" ou "Teste" ou "teste"
+                            normalizedPath: normalizedPath, // "teste" (sempre lowercase)
+                            level: i,
+                            name: parts[i]                  // Primeiro nome encontrado
                         });
-                        $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
-
-                        $('.permit_join_btn').each(function() {
-                            $(this).hide();
-                        });
-
-                        if (data.permit_join) {
-                            $('#permit_join_cancel_btn').show()
-                        } else {
-                            $permitJoinBtn.show();
+                    }
+                }
+            });
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 2: ORDENAR DISPOSITIVOS POR PATH NORMALIZADO
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            const devicesSortedByPath = [...sortedDevices].sort((a, b) => {
+                const pathA = (a.friendly_name || '').toLowerCase();
+                const pathB = (b.friendly_name || '').toLowerCase();
+                return pathA.localeCompare(pathB);
+            });
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 3: RENDERIZAR HEADERS E DEVICES
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            const renderedFolders = new Set(); // Usando paths NORMALIZADOS
+            
+            devicesSortedByPath.forEach(device => {
+                const fullPath = device.friendly_name || '';
+                const parts = fullPath.split(/[\/\\]/);
+                const leafName = parts.pop();
+                const folders = parts;
+                
+                // ✅ Renderizar headers (usando path normalizado para verificação)
+                for (let i = 0; i < folders.length; i++) {
+                    const currentPath = folders.slice(0, i + 1).join('/');
+                    const normalizedPath = currentPath.toLowerCase(); // ← Normalize para comparação
+                    
+                    // ✅ Verificar se JÁ foi renderizado (usando path normalizado)
+                    if (!renderedFolders.has(normalizedPath)) {
+                        renderedFolders.add(normalizedPath);
+                        
+                        // ✅ Buscar o nome ORIGINAL da pasta (do primeiro device)
+                        const folderInfo = folderMap.get(normalizedPath);
+                        const displayName = folderInfo ? folderInfo.name : folders[i];
+                        
+                        const indent = i * 20;
+                        
+                        $('#devices-table tbody').append(`
+                            <tr class="z2m-group-header-row" 
+                                data-path="${normalizedPath}" 
+                                data-original-path="${currentPath}"
+                                data-level="${i}"
+                                style="cursor:pointer; user-select:none;">
+                                <td class="status-col">
+                                    <i class="fa fa-chevron-down" style="font-size:10px; color:#aaa;"></i>
+                                </td>
+                                <td colspan="7" style="padding-left: ${indent}px; color: #555; font-size: 11px; text-transform: uppercase; font-weight: bold; background: #f0f0f0;">
+                                    <i class="fa fa-folder-open-o"></i> ${displayName}
+                                </td>
+                            </tr>
+                        `);
+                    }
+                }
+                
+                // ✅ Renderizar o device
+                const statusIcon = getDeviceStatusIcon(device);
+                const lqi = isOnline ? (device.current_values?.linkquality || '—') : '—';
+                const battery = isOnline ? 
+                    (device.current_values?.battery !== undefined ? device.current_values.battery + '%' : '—') : '—';
+                const lastSeen = device.last_seen ? new Date(device.last_seen).toLocaleTimeString() : '—';
+                const model = device.definition?.model || 'Unknown';
+                
+                const indent = folders.length * 20;
+                const branchIndicator = folders.length > 0 ? '<span style="color:#ccc;margin-right:5px;">└─</span>' : '';
+                
+                const input = `
+                    <div style="display:flex; align-items:center; padding-left:${indent}px;">
+                        ${branchIndicator}
+                        <input type="text" 
+                               value="${leafName}" 
+                               data-full-name="${fullPath}" 
+                               class="node-input-devices-friendly_name" 
+                               style="flex:1;">
+                    </div>`;
+                
+                const saveBtn = `<a href="#" class="red-ui-button device-save-btn" data-ieee="${device.ieee_address}"><i class="fa fa-check"></i></a>`;
+                const removeBtn = `<a href="#" class="red-ui-button device-remove-btn" data-ieee="${device.ieee_address}"><i class="fa fa-trash"></i></a>`;
+                
+                const lqiColor = lqi > 150 ? '#2e7d32' : (lqi > 50 ? '#f57c00' : '#d32f2f');
+                const battColor = parseInt(battery) > 50 ? '#2e7d32' : (parseInt(battery) > 20 ? '#f57c00' : '#d32f2f');
+                
+                $('#devices-table tbody').append(`
+                    <tr class="z2m-device-row" data-ieee="${device.ieee_address}" data-full-path="${fullPath}">
+                        <td class="status-col">${statusIcon}</td>
+                        <td>${input}</td>
+                        <td><small>${model}</small></td>
+                        <td style="color:${lqiColor}; font-weight:bold;">${lqi}</td>
+                        <td style="color:${battColor}; font-weight:bold;">${battery}</td>
+                        <td><small>${lastSeen}</small></td>
+                        <td>${saveBtn}</td>
+                        <td>${removeBtn}</td>
+                    </tr>
+                `);
+            });
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 4: ATUALIZAR HEADER DE ORDENAÇÃO
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            $('#devices-table th.sortable').removeClass('sorted-asc sorted-desc');
+            $(`#devices-table th[data-sort="${sortKey}"]`).addClass(sortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            
+            $('#devices-table').show();
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // EVENT HANDLERS
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            // ✅ FOLDER COLLAPSE/EXPAND
+            $('#devices-table').off('click', '.z2m-group-header-row').on('click', '.z2m-group-header-row', function() {
+                const $clickedHeader = $(this);
+                const normalizedPath = $clickedHeader.data('path');
+                
+                // Toggle collapsed state
+                $clickedHeader.toggleClass('collapsed');
+                
+                // Toggle icons
+                $clickedHeader.find('i.fa-chevron-down, i.fa-chevron-right').toggleClass('fa-chevron-down fa-chevron-right');
+                $clickedHeader.find('i.fa-folder-open-o, i.fa-folder-o').toggleClass('fa-folder-open-o fa-folder-o');
+                
+                // Update visibility of all rows
+                updateRowVisibility();
+            });
+            
+            function updateRowVisibility() {
+                // First, hide/show sub-folders based on parent state
+                $('#devices-table .z2m-group-header-row').each(function() {
+                    const $header = $(this);
+                    const headerPath = $header.data('path');
+                    const headerLevel = $header.data('level');
+                    
+                    // Check if any parent is collapsed
+                    let shouldBeVisible = true;
+                    
+                    for (let level = 0; level < headerLevel; level++) {
+                        const pathParts = headerPath.split('/');
+                        const parentPath = pathParts.slice(0, level + 1).join('/');
+                        const $parentHeader = $(`#devices-table .z2m-group-header-row[data-path="${parentPath}"]`);
+                        
+                        if ($parentHeader.hasClass('collapsed')) {
+                            shouldBeVisible = false;
+                            break;
                         }
-                        $('.log_level_btn#log_level_' + data.log_level + '_btn').addClass('active');
                     }
+                    
+                    $header.toggle(shouldBeVisible);
                 });
-
-                //restart
-                $('#restart_btn').off('click').on('click', function () {
-                    if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:label.sure_restart"))) {
-                        $.getJSON('zigbee2mqtt/restart', {
-                            controllerID: node.server
-                        });
+                
+                // Then, hide/show devices based on their folder state
+                $('#devices-table .z2m-device-row').each(function() {
+                    const $row = $(this);
+                    const devicePath = $row.data('full-path');
+                    if (!devicePath) return;
+                    
+                    const normalizedDevicePath = devicePath.toLowerCase();
+                    const pathSegments = normalizedDevicePath.split(/[\/\\]/);
+                    pathSegments.pop(); // Remove device name
+                    
+                    let shouldBeVisible = true;
+                    
+                    // Check if any parent folder is collapsed
+                    for (let i = 1; i <= pathSegments.length; i++) {
+                        const parentPath = pathSegments.slice(0, i).join('/');
+                        const $parentHeader = $(`#devices-table .z2m-group-header-row[data-path="${parentPath}"]`);
+                        
+                        if ($parentHeader.hasClass('collapsed')) {
+                            shouldBeVisible = false;
+                            break;
+                        }
                     }
-                });
-
-                //log level
-                $('.log_level_btn').off('click').on('click', function () {
-                    $('.log_level_btn').each(function () {
-                        $(this).removeClass('active');
-                    });
-                    $(this).addClass('active');
-
-                    $.getJSON('zigbee2mqtt/setLogLevel', {
-                        controllerID: node.server,
-                        log_level: $(this).data('level')
-                    }).done(function (data, textStatus, jqXHR) {
-                    });
-                });
-
-                var timeout = null;
-                //permit join
-                $('#permit_join_cancel_btn').off('click').on('click', function () {
-                    $permitJoinBtn.show();
-                    $('#permit_join_cancel_btn').hide();
-                    $.getJSON('zigbee2mqtt/setPermitJoin', {
-                        controllerID: node.server,
-                        permit_join: false
-                    });
-                });
-
-                $permitJoinBtn.off('click').on('click', function () {
-                    clearTimeout(timeout);
-                    $permitJoinBtn.hide();
-                    $('#permit_join_cancel_btn').show();
-                    $.getJSON('zigbee2mqtt/setPermitJoin', {
-                        controllerID: node.server,
-                        permit_join: true
-                    }).done(function (data, textStatus, jqXHR) {
-                        timeout = setTimeout(function () {
-                            $permitJoinBtn.show();
-                            $('#permit_join_cancel_btn').hide();
-                            $.getJSON('zigbee2mqtt/setPermitJoin', {
-                                controllerID: node.server,
-                                permit_join: false
-                            });
-                        }, 60000 * 3);
-                    });
-                });
-
-                $('#z2m_map_refresh_btn').off('click').on('click', function () {
-                    var $btn = $(this);
-                    $('#z2m_map_img').html('');
-                    $btn.find('.fa-refresh').addClass('fa-spin');
-                    $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.loading"));
-                    $('#z2m_map_fullscreen_btn').hide();
-                    $.getJSON('zigbee2mqtt/refreshMap', {
-                        controllerID: node.server,
-                        engine: $('#node-input-engine').val()
-                    }).done(function (data, textStatus, jqXHR) {
-                        $btn.find('.fa-refresh').removeClass('fa-spin');
-                        $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.refresh"));
-                        $('#z2m_map_fullscreen_btn').show();
-                        $('#z2m_map_img').html(data.svg).find('svg').attr('width','100%').attr('height','100%');
-                    });
-                });
-                $('#z2m_map_fullscreen_btn').off('click').on('click', function () {
-                    var url = '/zigbee2mqtt/showMap?controllerID='+node.server;
-
-                    var win = window.open(url, '_blank');
-                    if (win) {
-                        //Browser has allowed it to be opened
-                        win.focus();
-                    } else {
-                        //Browser has blocked it
-                        alert('Please allow popups for this website');
-                    }
-                });
-
-                $.getJSON('zigbee2mqtt/getDevices', {
-                    controllerID: node.server
-                }).done(function (data, textStatus, jqXHR) {
-
-                    var tokeninputArr = [];
-                    var tokeninputArrPrePopulate = [];
-                    var devices = data[0]; //devices
-                    var devicesById = {}; //devices
-                    if (devices) {
-                        $('#node-z2m-devices_table tbody tr').remove();
-                        devices.forEach(function (device, index) {
-                          if ("Coordinator" === device.type) return;
-
-                          devicesById[device.ieee_address+''] = device;
-
-                          tokeninputArr.push({'id':device.ieee_address, 'name':device.friendly_name, 'model': device.definition.model});
-                          var input = '<input class="node-input-devices-friendly_name" type="text" value="' + device.friendly_name + '">';
-                          var info = '<div class="device_wr"><span><b>' + device.ieee_address + '</b>: ' + device.definition.model + '</span></div>';
-                          var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + device.ieee_address + '"><i class="fa fa-remove"></i></a>'
-                          var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-ieee_address="' + device.ieee_address + '"><i class="fa fa-check"></i>&nbsp;' + RED._("node-red-contrib-zigbee2mqtt/bridge:devices.set") + '</a>'
-
-                          $('#node-z2m-devices_table tbody').append('<tr><td>' + input + '</td><td>' + info + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td><</tr>');
-                        });
-
-                        $('#node-z2m-devices_table .red-ui-item-save').on('click', function () {
-                            var ieee_address = $(this).attr('data-ieee_address');
-                            var newName = $(this).closest('tr').find('.node-input-devices-friendly_name').val();
-
-                            $.getJSON('zigbee2mqtt/renameDevice', {
-                                controllerID: node.server,
-                                ieee_address: ieee_address,
-                                newName: newName
-                            }).done(function (data, textStatus, jqXHR) {
-                                if ("error" in data) alert(data.description);
-                            });
-                        });
-                        $('#node-z2m-devices_table .red-ui-item-remove').on('click', function () {
-                            if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:devices.sure_remove"))) {
-                                var id = $(this).attr('data-id');
-                                $(this).closest('tr').remove();
-
-                                $.getJSON('zigbee2mqtt/removeDevice', {
-                                    controllerID: node.server,
-                                    id: id
-                                }).done(function (data, textStatus, jqXHR) {
-                                    if ("error" in data) alert(data.description);
-                                });
-                            }
-                        });
-                    }
-
-                    var groups = data[1]; //groups
-                    if (groups) {
-                        $('#node-z2m-groups_table tbody tr').remove();
-                        groups.forEach(function (group, index) {
-                            var input = '<input class="node-input-groups-friendly_name" type="text" value="' + group.friendly_name + '">';
-
-                            // var info = '<div class="device_wr"><span><b>'+device.ieee_address+'</b>: '+device.modelID+'</span><div class="help-tips">'+device.description+'</div></div>';
-                            var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + group.id + '"><i class="fa fa-remove"></i></a>'
-                            var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-id="' + group.id + '"><i class="fa fa-check"></i>&nbsp;' + RED._("node-red-contrib-zigbee2mqtt/bridge:groups.set") + '</a>'
-
-                            $('#node-z2m-groups_table tbody').append('<tr class="group_row_' + group.id + '"><td>' + input + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td></tr><tr class="group_row_' + group.id + '"><td colspan="4" style="padding-bottom:25px;"><input type="hidden" data-group_id="' + group.id + '" id="tokeninput_'+group.id+'" class="tokeninput"/></td></tr>');
-
-                            tokeninputArrPrePopulate  = [];
-
-                            group.members.forEach(function (value) {
-                                if (value) {
-                                  tokeninputArrPrePopulate.push({
-                                    "id": value.ieee_address,
-                                    "name": devicesById[value.ieee_address + '']['friendly_name'],
-                                    "model": devicesById[value.ieee_address + '']['definition']['model']
-                                  });
-                                }
-                            });
-                            $("#tokeninput_"+group.id).tokenInput(tokeninputArr, {
-                                theme:'facebook',
-                                prePopulate:tokeninputArrPrePopulate,
-                                processPrePopulate:true,
-                                hintText:RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.type_to_search"),
-                                noResultsText:RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.no_results"),
-                                searchingText:RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.searching"),
-                                deleteText:'&times;',
-                                animateDropdown:true,
-                                resultsFormatter:function (item) {
-                                    return '<li>' + item.name + ' : '+item.model+'</li>'
-                                },
-                                onAdd:function (item) {
-                                    var groupId = this.attr('data-group_id');
-                                    var deviceId = item.id;
-
-                                    $.getJSON('zigbee2mqtt/addDeviceToGroup', {
-                                        controllerID: node.server,
-                                        groupId: groupId,
-                                        deviceId: deviceId,
-                                    }).done(function (data, textStatus, jqXHR) {
-                                        if ("error" in data) alert(data.description);
-                                    });
-                                },
-                                onDelete:function (item) {
-                                    var groupId = this.attr('data-group_id');
-                                    var deviceId = item.id;
-
-                                    $.getJSON('zigbee2mqtt/removeDeviceFromGroup', {
-                                        controllerID: node.server,
-                                        groupId: groupId,
-                                        deviceId: deviceId,
-                                    }).done(function (data, textStatus, jqXHR) {
-                                        if ("error" in data) alert(data.description);
-                                    });
-                                },
-                            });
-                        });
-
-
-                        $('#node-z2m-groups_table .red-ui-item-save').on('click', function () {
-                            var id = $(this).attr('data-id');
-                            var newName = $(this).closest('tr').find('.node-input-groups-friendly_name').val();
-
-                            $.getJSON('zigbee2mqtt/renameGroup', {
-                                controllerID: node.server,
-                                id: id,
-                                newName: newName
-                            }).done(function (data, textStatus, jqXHR) {
-                                if ("error" in data) alert(data.description);
-                            });
-                        });
-                        $('#node-z2m-groups_table .red-ui-item-remove').on('click', function () {
-                            if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.sure_remove"))) {
-                                var id = $(this).attr('data-id');
-                                $('.group_row_' + id).remove();
-
-                                $.getJSON('zigbee2mqtt/removeGroup', {
-                                    controllerID: node.server,
-                                    id: id
-                                }).done(function (data, textStatus, jqXHR) {
-                                    if ("error" in data) alert(data.description);
-                                });
-                            }
-                        });
-                        $('#node-z2m-tab-groups .red-ui-item-add').on('click', function () {
-                            var name = prompt(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.enter_group_name"), "");
-                            if (name) {
-                                $.getJSON('zigbee2mqtt/addGroup', {
-                                    controllerID: node.server,
-                                    name: name
-                                }).done(function (data, textStatus, jqXHR) {
-                                    if ("error" in data) alert(data.description);
-                                    setTimeout(function(){
-                                        init();
-                                    }, 1000);
-                                });
-                            }
-                        });
-                    }
-
+                    
+                    $row.toggle(shouldBeVisible);
                 });
             }
+            
+            // DEVICE SAVE BUTTON
+            $('.device-save-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                const ieee = $(this).data('ieee');
+                const $input = $(this).closest('tr').find('.node-input-devices-friendly_name');
+                const oldFullName = $input.data('full-name');
+                const editedLeaf = $input.val();
+                
+                const nameParts = oldFullName.split(/[\/\\]/);
+                nameParts[nameParts.length - 1] = editedLeaf;
+                const finalNewName = nameParts.join('/');
+                
+                $.getJSON('zigbee2mqtt/renameDevice', {
+                    controllerID: currentServer,
+                    ieee_address: ieee,
+                    newName: finalNewName
+                }).done(function(data) {
+                    if ("error" in data) {
+                        alert(data.description);
+                    } else {
+                        RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.device_renamed"), 'success');
+                    }
+                });
+            });
 
-        },
-        oneditsave: function () {
-
+            // DEVICE REMOVE BUTTON
+            $('.device-remove-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:devices.sure_remove"))) {
+                    const ieee = $(this).data('ieee');
+                    
+                    $.getJSON('zigbee2mqtt/removeDevice', {
+                        controllerID: currentServer,
+                        id: ieee
+                    }).done(function(data) {
+                        if ("error" in data) {
+                            alert(data.description);
+                        } else {
+                            $(`tr[data-ieee="${ieee}"]`).remove();
+                            RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.device_removed"), 'success');
+                        }
+                    });
+                }
+            });
         }
-    });
-</script>
 
+    $('#devices-table').off('click', 'th.sortable').on('click', 'th.sortable', function() {
+            const sortKey = $(this).data('sort');
+            const currentOrder = $(this).hasClass('sorted-asc') ? 'desc' : 'asc';
+            loadDevices(sortKey, currentOrder);
+        });
+        
+        // ═══════════════════════════════════════════════════════
+        // FUNÇÃO: Carregar Groups
+        // ═══════════════════════════════════════════════════════
+        function loadGroups(sortKey = 'friendly_name', sortOrder = 'asc') {
+            const currentServer = $('#node-input-server').val();
+            if (!currentServer) return;
+            
+            if (groupsData.length === 0) {
+                $('#groups-status').html(
+                    '<span class="status-warning">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:groups.no_groups_found") + '</span>'
+                );
+                $('#groups-table').hide();
+                return;
+            }
+            
+            if (serverState.state === 'online') {
+                $('#groups-status').html(
+                    '<span class="status-ok">✔ ' + groupsData.length + ' ' + RED._("node-red-contrib-zigbee2mqtt/bridge:groups.groups_found") + '</span>'
+                );
+            } else {
+                $('#groups-status').html(
+                    '<span class="status-warning">⚠ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline_cached") + '</span>'
+                );
+            }
+            
+            renderGroupsTable(groupsData, devicesData, sortKey, sortOrder);
+        }
+        
+        function renderGroupsTable(groups, devices, sortKey, sortOrder) {
+            const sortedGroups = sortTable('groups', groups, sortKey, sortOrder);
+            const devicesById = {};
+            const currentServer = $('#node-input-server').val();
+            
+            devices.forEach(function(device) {
+                devicesById[device.ieee_address + ''] = device;
+            });
+            
+            $('#groups-table tbody').empty();
+            
+            sortedGroups.forEach(function(group) {
+                const statusIcon = getGroupStatusIcon(group);
+                const input = `<input type="text" value="${group.friendly_name}" class="node-input-groups-friendly_name">`;
+                
+                const tokeninputArr = devices.map(d => ({
+                    id: d.ieee_address,
+                    name: d.friendly_name,
+                    model: d.definition?.model || 'Unknown'
+                }));
+                
+                const tokeninputPrePopulate = group.members.map(m => ({
+                    id: m.ieee_address,
+                    name: devicesById[m.ieee_address + '']?.friendly_name || 'Unknown',
+                    model: devicesById[m.ieee_address + '']?.definition?.model || 'Unknown'
+                }));
+                
+                const saveBtn = `<a href="#" class="red-ui-button group-save-btn" data-id="${group.id}"><i class="fa fa-check"></i></a>`;
+                const removeBtn = `<a href="#" class="red-ui-button group-remove-btn" data-id="${group.id}"><i class="fa fa-trash"></i></a>`;
+                
+                $('#groups-table tbody').append(
+                    `<tr class="group-row-${group.id}">
+                        <td class="status-col">${statusIcon}</td>
+                        <td>${input}</td>
+                        <td><input type="hidden" data-group_id="${group.id}" id="tokeninput_${group.id}" class="tokeninput"/></td>
+                        <td>${saveBtn}</td>
+                        <td>${removeBtn}</td>
+                    </tr>`
+                );
+                
+                $(`#tokeninput_${group.id}`).tokenInput(tokeninputArr, {
+                    theme: 'facebook',
+                    prePopulate: tokeninputPrePopulate,
+                    processPrePopulate: true,
+                    hintText: RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.type_to_search"),
+                    noResultsText: RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.no_results"),
+                    searchingText: RED._("node-red-contrib-zigbee2mqtt/bridge:tokeninput.searching"),
+                    deleteText: '&times;',
+                    animateDropdown: true,
+                    resultsFormatter: function(item) {
+                        return '<li>' + item.name + ' : ' + item.model + '</li>';
+                    },
+                    // ADD DEVICE TO GROUP
+                    onAdd: function(item) {
+                        const groupId = this.attr('data-group_id');
+                        const deviceId = item.id;
+                        
+                        $.getJSON('zigbee2mqtt/addDeviceToGroup', {
+                            controllerID: currentServer,
+                            groupId: groupId,
+                            deviceId: deviceId
+                        }).done(function(data) {
+                            if ("error" in data) {
+                                alert(data.description);
+                            } else {
+                                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.device_added_to_group"), 'success');
+                            }
+                        });
+                    },
+
+                    // REMOVE DEVICE FROM GROUP
+                    onDelete: function(item) {
+                        const groupId = this.attr('data-group_id');
+                        const deviceId = item.id;
+                        
+                        $.getJSON('zigbee2mqtt/removeDeviceFromGroup', {
+                            controllerID: currentServer,
+                            groupId: groupId,
+                            deviceId: deviceId
+                        }).done(function(data) {
+                            if ("error" in data) {
+                                alert(data.description);
+                            } else {
+                                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.device_removed_from_group"), 'success');
+                            }
+                        });
+                    }
+                });
+            });
+            
+            $('#groups-table th.sortable').removeClass('sorted-asc sorted-desc');
+            $(`#groups-table th[data-sort="${sortKey}"]`).addClass(sortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            
+            $('#groups-table').show();
+            
+            // GROUP SAVE BUTTON
+            $('.group-save-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const newName = $(this).closest('tr').find('.node-input-groups-friendly_name').val();
+                
+                $.getJSON('zigbee2mqtt/renameGroup', {
+                    controllerID: currentServer,
+                    id: id,
+                    newName: newName
+                }).done(function(data) {
+                    if ("error" in data) {
+                        alert(data.description);
+                    } else {
+                        RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.group_renamed"), 'success');
+                    }
+                });
+            });
+
+            // GROUP REMOVE BUTTON
+            $('.group-remove-btn').off('click').on('click', function(e) {
+                e.preventDefault();
+                if (confirm(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.sure_remove"))) {
+                    const id = $(this).data('id');
+                    
+                    $.getJSON('zigbee2mqtt/removeGroup', {
+                        controllerID: currentServer,
+                        id: id
+                    }).done(function(data) {
+                        if ("error" in data) {
+                            alert(data.description);
+                        } else {
+                            $(`.group-row-${id}`).remove();
+                            RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.group_removed"), 'success');
+                        }
+                    });
+                }
+            });
+        }
+        
+        $('#groups-table').off('click', 'th.sortable').on('click', 'th.sortable', function() {
+            const sortKey = $(this).data('sort');
+            const currentOrder = $(this).hasClass('sorted-asc') ? 'desc' : 'asc';
+            loadGroups(sortKey, currentOrder);
+        });
+        
+        // ═══════════════════════════════════════════════════════
+        // ADD GROUP
+        // ═══════════════════════════════════════════════════════
+        $('#add-group-btn').off('click').on('click', function(e) {
+            e.preventDefault();
+            
+            if (serverState.state !== 'online') {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline"), 'warning');
+                return;
+            }
+            
+            const currentServer = $('#node-input-server').val();
+            const name = prompt(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.enter_group_name"), "");
+            
+            if (name) {
+                $.getJSON('zigbee2mqtt/addGroup', {
+                    controllerID: currentServer,
+                    name: name
+                }).done(function(data) {
+                    if ("error" in data) {
+                        alert(data.description);
+                    } else {
+                        RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.group_added"), 'success');
+                        setTimeout(function() {
+                            init();
+                        }, 1000);
+                    }
+                }).fail(function() {
+                    RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.failed_add_group"), 'error');
+                });
+            }
+        });
+        
+        // ═══════════════════════════════════════════════════════
+        // MAP
+        // ═══════════════════════════════════════════════════════
+        // REFRESH MAP
+        $('#refresh-map-btn').off('click').on('click', function(e) {
+            e.preventDefault();
+            
+            if (serverState.state !== 'online') {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.server_offline"), 'warning');
+                return;
+            }
+            
+            const currentServer = $('#node-input-server').val();
+            const $btn = $(this);
+            
+            $('#map-display').html('');
+            $btn.find('.fa-refresh').addClass('fa-spin');
+            $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.loading"));
+            $('#fullscreen-map-btn').hide();
+            
+            $.getJSON('zigbee2mqtt/refreshMap', {
+                controllerID: currentServer,
+                engine: $('#node-input-engine').val()
+            }).done(function(data) {
+                $btn.find('.fa-refresh').removeClass('fa-spin');
+                $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.refresh"));
+                $('#fullscreen-map-btn').show();
+                $('#map-display').html(data.svg).find('svg').attr('width', '100%').attr('height', '100%');
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.map_refreshed"), 'success');
+                
+                hasMapData = true;
+                updateUIState();
+            }).fail(function() {
+                $btn.find('.fa-refresh').removeClass('fa-spin');
+                $btn.find('span').text(RED._("node-red-contrib-zigbee2mqtt/bridge:map.refresh"));
+                $('#map-display').html(
+                    '<span class="status-error">✘ ' + RED._("node-red-contrib-zigbee2mqtt/bridge:map.failed_to_load") + '</span>'
+                );
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:notifications.failed_refresh_map"), 'error');
+                
+                hasMapData = false;
+                updateUIState();
+            });
+        });
+
+        // FULLSCREEN MAP
+        $('#fullscreen-map-btn').off('click').on('click', function(e) {
+            e.preventDefault();
+            
+            const svgContent = $('#map-display').html();
+            
+            if (!svgContent || svgContent.trim() === '') {
+                RED.notify(RED._("node-red-contrib-zigbee2mqtt/bridge:map.no_map_data"), 'warning');
+                return;
+            }
+            
+            const $overlay = $('<div>')
+                .css({
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.95)',
+                    zIndex: 10000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                });
+            
+            const $closeBtn = $('<button>')
+                .html('<i class="fa fa-times"></i> ' + RED._("node-red-contrib-zigbee2mqtt/bridge:map.fullscreen"))
+                .css({
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    padding: '10px 20px',
+                    backgroundColor: '#c62828',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    zIndex: 10001
+                })
+                .on('click', function() {
+                    $overlay.remove();
+                    $(document).off('keydown.mapfullscreen');
+                })
+                .on('mouseenter', function() {
+                    $(this).css('backgroundColor', '#b71c1c');
+                })
+                .on('mouseleave', function() {
+                    $(this).css('backgroundColor', '#c62828');
+                });
+            
+            const $mapContainer = $('<div>')
+                .html(svgContent)
+                .css({
+                    width: '95%',
+                    height: '95%',
+                    backgroundColor: 'white',
+                    borderRadius: '8px',
+                    padding: '20px',
+                    overflow: 'auto',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                });
+            
+            $mapContainer.find('svg').attr('width', '100%').attr('height', '100%');
+            
+            $overlay.append($closeBtn).append($mapContainer);
+            $('body').append($overlay);
+            
+            $(document).on('keydown.mapfullscreen', function(e) {
+                if (e.key === 'Escape') {
+                    $overlay.remove();
+                    $(document).off('keydown.mapfullscreen');
+                }
+            });
+        });
+        // ═══════════════════════════════════════════════════════
+        // INICIALIZAÇÃO ÚNICA
+        // ═══════════════════════════════════════════════════════
+       if (node.server && node.server !== '_ADD_' && node.server !== '') {
+            setTimeout(function() {
+                init();
+                startStateMonitoring(); // ✅ INICIAR MONITORAMENTO
+            }, 100);
+        } else {
+            serverState = {
+                online: false,
+                state: 'not_configured',
+                errorComponent: null
+            };
+            clearAllTables();
+            updateUIState();
+        }
+    },
+
+    // ═══════════════════════════════════════════════════════
+    // oneditsave
+    // ═══════════════════════════════════════════════════════
+     oneditsave: function() {
+        const node = this;
+        const d = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Bridge') : console;
+ 
+        node.permitjoin_time = parseInt($('#node-input-permitjoin-time').val()) || 180;
+        
+        if (node._z2m_stateCheckInterval) {
+            if (d && d.log) d.log('🛑 Cleanup: Stopping monitoring on SAVE');
+            clearInterval(node._z2m_stateCheckInterval);
+            node._z2m_stateCheckInterval = null;
+        }
+    },
+
+    // ═══════════════════════════════════════════════════════
+    // oneditcancel
+    // ═══════════════════════════════════════════════════════    
+    oneditcancel: function() {
+        // LIMPEZA: Garantir que o intervalo é limpo e a referência removida
+        // para evitar chamadas API fantasma após fechar o editor.
+        var debug = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Bridge') : console;
+ 
+        if (this._z2m_stateCheckInterval) {
+            debug.log('🛑 Cleanup: Stopping monitoring on CANCEL');
+            clearInterval(this._z2m_stateCheckInterval);
+            this._z2m_stateCheckInterval = null;
+        }
+        // Limpar também quaisquer timeouts pendentes de permitJoin se existirem
+        // Also clear permitJoinTimeout which was defined globally in oneditprepare scope
+        // Note: This requires permitJoinTimeout to be accessible here, or attached to 'this'
+        if (this._permitJoinTimeout) {
+            clearTimeout(this._permitJoinTimeout);
+            this._permitJoinTimeout = null;
+        }
+    }
+});
+</script>

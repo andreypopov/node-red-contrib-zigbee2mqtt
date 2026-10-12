@@ -1,3 +1,7 @@
+<script type='text/javascript'>
+    $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
+</script>
+
 <script type="text/x-red" data-template-name="zigbee2mqtt-server">
     <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
     <input autocomplete="false" name="hidden" type="text" style="display:none;">
@@ -42,7 +46,6 @@
         </div>
     </div>
     <div class="form-tips" data-i18n="[html]tip.deploy"></div>
-
 </script>
 
 <script type='text/javascript'>
@@ -62,25 +65,27 @@
                 required: false,
                 validate:RED.validators.number()
             },
-            mqtt_username: {
-                value: null,
-                required: false
-            },
-            mqtt_password: {
-                value: null,
-                required: false
-            },
             mqtt_qos: {
                 value: 0,
                 required: false,
                 validate:RED.validators.number()
             },
-            tls: {type:"tls-config",required: false},
-            usetls: {value: false},
+            tls: {
+                    type:"tls-config",
+                    required: false
+                },
+            usetls: {
+                value: false
+            },
             base_topic: {
                 value: 'zigbee2mqtt',
                 required: true
             },
+        },
+        
+        credentials: {
+            mqtt_username: { type: "text" },
+            mqtt_password: { type: "password" }
         },
         label: function() {
             return this.name || this.host;
@@ -90,7 +95,14 @@
            if (node.mqtt_qos === undefined) {
                $('#node-config-input-mqtt_qos').val(0);
            }
+           if (node.credentials) {
+                if (node.credentials.mqtt_username) {
+                    $('#node-config-input-mqtt_username').val(node.credentials.mqtt_username);
+                }
+                if (node.credentials.mqtt_password) {
+                    $('#node-config-input-mqtt_password').val(node.credentials.mqtt_password);
+                }
+            }
         }
     });
 </script>
-

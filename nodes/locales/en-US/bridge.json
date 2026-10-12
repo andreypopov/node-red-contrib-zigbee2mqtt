@@ -44,7 +44,16 @@
         "offline": "offline",
         "pairing": "pairing...",
         "connected": "connected",
-        "failed": "failed!"
+        "failed": "failed!",
+        "all_systems_online": "All Systems Online",
+        "mqtt_offline": "MQTT Broker Offline",
+        "mqtt_disconnected": "Disconnected",
+        "z2m_offline": "Zigbee2MQTT Offline",
+        "z2m_not_responding": "Not responding",
+        "unknown_state": "Unknown State",
+        "unable_to_determine": "Unable to determine system state",
+        "no_server_configured": "No Server Configured",
+        "select_server_begin": "Select a server to begin"        
     },
     "tabs": {
         "bridge": "Bridge",
@@ -59,7 +68,13 @@
         "device": "Device",
         "set": "set",
         "remove": "remove",
-        "sure_remove": "Are you sure you want to remove device?"
+        "sure_remove": "Are you sure you want to remove device?",
+        "no_devices_found": "No devices found",
+        "devices_found": "devices found",
+        "offline": "Device Offline",
+        "disabled": "Device Disabled",
+        "not_supported": "Device Not Supported",
+        "re_interview": "Click to re-interview device"
     },
     "groups": {
         "id": "ID",
@@ -69,16 +84,57 @@
         "remove": "remove",
         "add": "Add group",
         "enter_group_name": "Enter group name",
-        "sure_remove": "Are you sure you want to remove group?"
+        "sure_remove": "Are you sure you want to remove group?",
+        "no_groups_found": "No groups found",
+        "groups_found": "groups found",
+        "members": "Members",
+        "all_offline": "All devices offline",
+        "all_online": "All devices online",
+        "partial_online": "devices online"
     },
     "map": {
         "refresh": "Refresh map",
         "fullscreen": "Open in full screen",
-        "loading": "Loading..."
+        "loading": "Loading...",
+        "no_map_data": "No map data to display",
+        "failed_to_load": "Failed to load map",
+        "no_server_configured": "No server configured"
     },
     "tokeninput": {
         "searching": "Searching...",
         "type_to_search": "Type to search device",
         "no_results": "No results"
+    },
+    "server_info": {
+        "server": "Server",
+        "mqtt_broker": "MQTT Broker",
+        "connected": "Connected",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "base_topic": "Base Topic",
+        "expected_topic": "Expected Topic",
+        "cannot_reach": "Cannot reach (MQTT down)",
+        "version": "v"
+    },
+  "notifications": {
+        "server_offline": "Cannot perform action: server is offline",
+        "permit_join_enabled": "Permit Join enabled for {time}s",
+        "permit_join_disabled": "Permit Join disabled",
+        "failed_permit_join": "Failed to enable Permit Join",
+        "failed_cancel_permit": "Failed to disable Permit Join",
+        "log_level_set": "Log level set to {level}",
+        "failed_log_level": "Failed to set log level",
+        "restart_requested": "Zigbee2MQTT restart requested",
+        "failed_restart": "Failed to restart Zigbee2MQTT",
+        "device_renamed": "Device renamed successfully",
+        "device_removed": "Device removed successfully",
+        "group_renamed": "Group renamed successfully",
+        "group_removed": "Group removed successfully",
+        "device_added_to_group": "Device added to group",
+        "device_removed_from_group": "Device removed from group",
+        "group_added": "Group added successfully",
+        "failed_add_group": "Failed to add group",
+        "map_refreshed": "Map refreshed successfully",
+        "failed_refresh_map": "Failed to refresh map",
+        "server_offline_cached": "Server offline - showing cached data"
     }
 }

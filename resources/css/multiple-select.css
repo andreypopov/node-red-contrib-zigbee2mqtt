@@ -136,7 +136,6 @@
 .ms-drop ul > li .disabled {
   font-weight: normal !important;
   opacity: .35;
-  filter: Alpha(Opacity=35);
   cursor: default; }
 .ms-drop ul > li.multiple {
   display: block;

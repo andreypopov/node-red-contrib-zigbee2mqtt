@@ -1,56 +1,192 @@
+/**
+ * ============================================================================
+ * ZIGBEE2MQTT - COMMON STYLES (CENTRALIZED)
+ * ============================================================================
+ * 
+ * Este ficheiro gere o layout e componentes visuais de todos os nós Z2M.
+ * Organização:
+ * 1. Layout & Alinhamento
+ * 2. Custom Multiple-Select Fixes
+ * 3. TypedInput & Widgets
+ * 4. Z2M Dynamic UI Engine (Sliders & Color Pickers)
+ * 5. Help, Tips & Notifications
+ * 6. Token Input Helper
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════ 
+   1. LAYOUT & ALINHAMENTO
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Largura padrão para as labels da esquerda (l-width) */
 .form-row label.l-width {
-    width: 25%;
-    min-width: 120px;
+    width: 25% !important;
+    min-width: 120px !important;
+    display: inline-block;
 }
+
+/* Largura automática para labels pequenas */
 .form-row label.a-width {
-    width: auto;
+    width: auto !important;
 }
-.s-width {width:70% !important;}
+
+/* Largura padrão para inputs da direita (s-width) */
+.s-width {
+    width: 70% !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ 
+   2. CUSTOM MULTIPLE-SELECT FIXES
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .ms-choice {
-    height:34px;
-    border: 1px solid rgb(204, 204, 204);
+    height: 34px !important;
+    border: 1px solid #ccc !important;
     line-height: 34px !important;
+    border-radius: 4px !important;
 }
+
 .ms-search input {
-    width:100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
+
 .ms-drop li label {
-    width:20px !important;
+    width: 20px !important; /* Fix para checkbox não empurrar texto */
 }
+
 .ms-drop li span {
-    padding-left:5px !important;
+    padding-left: 5px !important;
 }
+
+/* Estado desativado com melhor visibilidade */
+.ms-drop ul > li .disabled {
+    color: #2a2a2a !important;
+    font-weight: bold !important;
+    opacity: 1 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ 
+   3. TYPEDINPUT & WIDGETS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Garantir que os containers do TypedInput ocupam o espaço correto */
+.red-ui-typedInput-container {
+    width: 70% !important;
+}
+
 button.active {
-    background-color: #ddd;
+    background-color: #ddd !important;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,.125) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════ 
+   4. Z2M DYNAMIC UI ENGINE (SLIDERS & CONTROLS)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Custom Slider Styling (The Track) */
+.z2m-dynamic-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+    margin: 10px 0;
+}
+
+.z2m-dynamic-slider:hover {
+    opacity: 1;
+}
+
+/* The Slider Handle (The Thumb) */
+.z2m-dynamic-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #2196F3;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.1s ease-in-out;
+}
+
+.z2m-dynamic-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Layout Containers para Sliders */
+#z2m-manual-controls-container {
+    background: #fdfdfd;
+    border-radius: 4px;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+
+#z2m-sliders-wrapper {
+    animation: z2mFadeIn 0.3s ease-out;
+}
+
+/* Preview de Cor Dinâmico */
+#z2m-color-preview {
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+@keyframes z2mFadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ 
+   5. HELP, TIPS & NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .help_block {
-    display: none;
+    display: none; /* Controlado via JS */
 }
+
 .help-tips {
     font-style: italic;
     font-size: 12px;
+    color: #666;
 }
 
-.red-ui-editor .form-horizontal li.token-input-input-token-facebook input {
-    height:23px !important;
-    width: 50px;
-    padding: 1px 4px;
-    background-color: #fafafa;
-    border: 1px dashed #91bacf;
-    margin: 3px;
-    border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    font-size: 12px;
+.form-tips {
+    background: #e3f2fd !important;
+    border-left: 4px solid #2196F3 !important;
+    color: #333 !important;
+    padding: 12px !important;
+    margin: 15px 0 !important;
+    border-radius: 0 4px 4px 0 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════ 
+   6. TOKEN INPUT HELPER (Facebook Theme Tweaks)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+li.token-input-input-token-facebook input {
+    height: 23px !important;
+    width: 100px !important;
+    padding: 1px 4px !important;
+    background-color: #fafafa !important;
+    border: 1px dashed #91bacf !important;
+    margin: 3px !important;
+    font-size: 12px !important;
+}
+
 li.token-input-token-facebook {
-    height:19px !important;
+    height: 19px !important;
+    padding: 2px 8px !important;
+    background-color: #eff2f7 !important;
+    border-radius: 3px !important;
 }
+
 .tokeninput-label {
-    float:left;
+    float: left;
     line-height: 23px;
     padding: 3px 5px 0 0;
+    font-weight: bold;
 }
-
-.ms-drop ul > li .disabled  {color: #2a2a2a !important;font-weight: bold!important;opacity: 1!important;}

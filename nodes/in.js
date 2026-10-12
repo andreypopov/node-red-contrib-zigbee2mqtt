@@ -38,7 +38,10 @@ module.exports = function(RED) {
 
         onMQTTAvailability(data) {
             let node = this;
-
+            // ROBUSTEZ: Verificar se node.server existe antes de chamar métodos
+            if (!node.server) 
+                return;
+            
             if (data.item && 'ieee_address' in data.item && data.item.ieee_address === node.config.device_id) {
                 node.server.nodeSend(node, {
                     'node_send': false
@@ -63,7 +66,7 @@ module.exports = function(RED) {
             } else {
                 if (data.item &&
                     (("ieee_address" in data.item && data.item.ieee_address === node.config.device_id)
-                        ||  ("id" in data.item && parseInt(data.item.id) === parseInt(node.config.device_id)))
+                        ||  ("id" in data.item && String(data.item.id) === String(node.config.device_id)))
                 ) {
                     node.server.nodeSend(node, {
                         'filter':  node.config.filterChanges
@@ -94,19 +97,20 @@ module.exports = function(RED) {
         onClose() {
             let node = this;
 
-            if (node.listener_onMQTTAvailability) {
-                node.server.removeListener("onMQTTAvailability", node.listener_onMQTTAvailability);
+            if (node.server) {
+                if (node.listener_onMQTTAvailability) {
+                    node.server.removeListener("onMQTTAvailability", node.listener_onMQTTAvailability);
+                }
+                if (node.listener_onConnectError) {
+                    node.server.removeListener("onConnectError", node.listener_onConnectError);
+                }
+                if (node.listener_onMQTTMessage) {
+                    node.server.removeListener("onMQTTMessage", node.listener_onMQTTMessage);
+                }
+                if (node.listener_onMQTTBridgeState) {
+                    node.server.removeListener("onMQTTBridgeState", node.listener_onMQTTBridgeState);
+                }
             }
-            if (node.listener_onConnectError) {
-                node.server.removeListener("onConnectError", node.listener_onConnectError);
-            }
-            if (node.listener_onMQTTMessage) {
-                node.server.removeListener("onMQTTMessage", node.listener_onMQTTMessage);
-            }
-            if (node.listener_onMQTTBridgeState) {
-                node.server.removeListener("onMQTTBridgeState", node.listener_onMQTTBridgeState);
-            }
-
             node.onConnectError();
         }
 

@@ -1,10 +1,54 @@
+<!-- ============================================================================ -->
+<!-- 🔥 CRITICAL: Carregar Scripts SINCRONAMENTE (ordem importa!)              -->
+<!-- ============================================================================ -->
+
+<!-- 1️⃣ Debug System (PRIMEIRO - outros dependem dele) -->
+<script src="resources/node-red-contrib-zigbee2mqtt/js/debug.js"></script>
+
+<!-- 2️⃣ Config System -->
+<script src="resources/node-red-contrib-zigbee2mqtt/js/z2m-config.js"></script>
+
+<!-- 3️⃣ UI Libraries -->
+<script src="resources/node-red-contrib-zigbee2mqtt/js/multiple-select.min.js"></script>
+
+<!-- 4️⃣ Editor Class (depende de debug.js e z2m-config.js) -->
+<script src="resources/node-red-contrib-zigbee2mqtt/js/node-red-contrib-zigbee2mqtt-helpers.js"></script>
+
+<!-- ============================================================================ -->
+<!-- ✅ Verificação de Carregamento                                             -->
+<!-- ============================================================================ -->
 <script type='text/javascript'>
-    $.getScript('resources/node-red-contrib-zigbee2mqtt/js/multiple-select.min.js');
-    $.getScript('resources/node-red-contrib-zigbee2mqtt/js/node-red-contrib-zigbee2mqtt-helpers.js');
+    (function() {
+        var debug = Z2MDebug.create('api.html'); 
+        
+        debug.log('');
+        debug.log('╔═══════════════════════════════════════════════════════════╗');
+        debug.log('║ 🔍 [api.html] SCRIPT LOADING CHECK                       ║');
+        debug.log('╚═══════════════════════════════════════════════════════════╝');
+        
+        const checks = {
+            'Z2MDebug': typeof Z2MDebug !== 'undefined',
+            'Z2MConfig': typeof Z2MConfig !== 'undefined',
+            'Zigbee2MqttEditor': typeof Zigbee2MqttEditor !== 'undefined'
+        };
+        
+        let allOk = true;
+        for (let [name, status] of Object.entries(checks)) {
+            const icon = status ? '✅' : '❌';
+            debug.log(`  ${icon} ${name}: ${status ? 'LOADED' : 'MISSING'}`);
+            if (!status) allOk = false;
+        }
+        
+        if (allOk) {
+            debug.log('');
+            debug.log('✅ All scripts loaded successfully!');
+        } else {
+            debug.error('');
+            debug.error('❌ Some scripts FAILED to load!');
+            debug.error('   Check if files exist in resources/node-red-contrib-zigbee2mqtt/js/');
+        }
+        
+        debug.log('╚═══════════════════════════════════════════════════════════╝');
+        debug.log('');
+    })();
 </script>
-
-
-
-
-
-
