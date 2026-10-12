@@ -22,8 +22,7 @@
         "received": "prijaté"
     },
     "tip": {
-        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení",
-        "flow_label": "Pridá sa do hranatých zátvoriek k označeniam uzlov Bridge, In, Get a Out, ktoré používajú tento server. Ak chcete ponechať súčasné označenia, nechajte pole prázdne."
+        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení"
     },
     "editor": {
         "groups": "Skupiny",

@@ -22,8 +22,7 @@
         "received": "empfangen"
     },
     "tip": {
-        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden",
-        "flow_label": "Wird in eckigen Klammern an die Beschriftungen der Bridge-, In-, Get- und Out-Nodes angehängt, die diesen Server nutzen. Leer lassen, um die bisherigen Beschriftungen beizubehalten."
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
     },
     "editor": {
         "groups": "Gruppen",

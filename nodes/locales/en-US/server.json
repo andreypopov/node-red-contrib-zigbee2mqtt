@@ -22,8 +22,7 @@
         "received": "ok"
     },
     "tip": {
-        "deploy": "<b>Important:</b> deploy server node to get devices list",
-        "flow_label": "Appended in brackets to labels of Bridge, In, Get, and Out nodes that use this server. Leave blank to keep their current labels."
+        "deploy": "<b>Important:</b> deploy server node to get devices list"
     },
     "editor": {
         "groups": "Groups",

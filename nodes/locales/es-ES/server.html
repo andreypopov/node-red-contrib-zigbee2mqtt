@@ -1,0 +1,13 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-server">
+    <p>Conexión con tu puente Zigbee2MQTT</p>
+    <h3>Configuración</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nombre <span class="property-type">cadena</span></dt><dd>Elige un nombre para identificar este nodo.</dd>
+        <dt class="optional">Etiqueta del flujo <span class="property-type">cadena</span></dt><dd>Etiqueta opcional de hasta 24 caracteres. Se añade entre corchetes a las etiquetas de los nodos Bridge, In, Get y Out que usan este servidor. Por ejemplo: <code>Lámpara [Planta alta]</code>. Déjala vacía para conservar las etiquetas actuales.</dd>
+        <dt>Host MQTT <span class="property-type">cadena</span></dt><dd>Dirección IP o host MQTT de tu instancia de Zigbee2MQTT. Ejemplos: <code>127.0.0.1</code>, <code>192.168.1.100</code>, <code>myzigbee2mqtt.dydns.com</code></dd>
+        <dt class="required">Tema base <span class="property-type">cadena</span></dt><dd>El mismo valor que en tu <code>configuration.yaml</code>.</dd>
+        <dt class="optional">Puerto MQTT <span class="property-type">número</span></dt><dd>El puerto predeterminado de MQTT es 1883.</dd>
+        <dt class="optional">Usuario MQTT <span class="property-type">cadena</span></dt><dd></dd>
+        <dt class="optional">Contraseña MQTT <span class="property-type">cadena</span></dt><dd></dd>
+    </dl>
+</script>

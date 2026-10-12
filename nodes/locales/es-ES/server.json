@@ -22,8 +22,7 @@
         "received": "recibido"
     },
     "tip": {
-        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos",
-        "flow_label": "Se añade entre corchetes a las etiquetas de los nodos Bridge, In, Get y Out que usan este servidor. Déjala vacía para conservar las etiquetas actuales."
+        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos"
     },
     "editor": {
         "groups": "Grupos",
