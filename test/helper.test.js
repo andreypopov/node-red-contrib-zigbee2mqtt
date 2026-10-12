@@ -80,6 +80,20 @@ test('payload2homekit maps lights, temperature, battery and lock state', () => {
     });
 });
 
+test('payload2homekit maps occupancy sensor tamper state', () => {
+    assert.deepEqual(Helper.payload2homekit({ occupancy: true, tamper: true }).OccupancySensor, {
+        OccupancyDetected: 1,
+        StatusTampered: 1
+    });
+    assert.deepEqual(Helper.payload2homekit({ occupancy: false, tamper: false }).OccupancySensor, {
+        OccupancyDetected: 0,
+        StatusTampered: 0
+    });
+    assert.deepEqual(Helper.payload2homekit({ occupancy: true }).OccupancySensor, {
+        OccupancyDetected: 1
+    });
+});
+
 test('payload2homekit maps off lights and window positions', () => {
     const off = Helper.payload2homekit({
         state: 'OFF', brightness: 0, color_temp: 250, color: { hue: 0, saturation: 0 }
