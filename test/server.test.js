@@ -96,6 +96,88 @@ test('single output reads the selected multi-endpoint state property', (t) => {
     assert.deepEqual(output.messages[0].payload_raw, { state_l1: 'ON', state_l2: 'OFF' });
 });
 
+test('single output filters by selected properties and keeps the full payload', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', brightness: 80, linkquality: 20 });
+    const output = createFlowNode({
+        device_id: 'lamp',
+        filterProperties: 'state, brightness'
+    });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { filter: true });
+    server.devices_values['zigbee2mqtt/lamp'] = {
+        state: 'ON', brightness: 80, linkquality: 99
+    };
+    server.nodeSend(output, { filter: true });
+
+    assert.equal(output.messages.length, 1);
+    assert.deepEqual(output.messages[0].payload, {
+        state: 'ON', brightness: 80, linkquality: 20
+    });
+    assert.deepEqual(output.messages[0].payload_raw, {
+        state: 'ON', brightness: 80, linkquality: 20
+    });
+
+    server.devices_values['zigbee2mqtt/lamp'] = {
+        state: 'OFF', brightness: 80, linkquality: 99
+    };
+    server.nodeSend(output, { filter: true });
+
+    assert.equal(output.messages.length, 2);
+    assert.deepEqual(output.messages[1].payload, {
+        state: 'OFF', brightness: 80, linkquality: 99
+    });
+});
+
+test('single output keeps full-payload comparison when no properties are configured', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', linkquality: 20 });
+    const output = createFlowNode({ device_id: 'lamp' });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { filter: true });
+    server.devices_values['zigbee2mqtt/lamp'] = { state: 'ON', linkquality: 21 };
+    server.nodeSend(output, { filter: true });
+
+    assert.equal(output.messages.length, 2);
+});
+
+test('multiple output filters each device by selected properties', (t) => {
+    const { node: server } = createServer();
+    server.devices = [
+        { id: 1, friendly_name: 'lamp', ieee_address: '0x001', definition: { exposes: [] } },
+        { id: 2, friendly_name: 'sensor', ieee_address: '0x002', definition: { exposes: [] } }
+    ];
+    server.devices_values['zigbee2mqtt/lamp'] = { state: 'ON', linkquality: 20 };
+    server.devices_values['zigbee2mqtt/sensor'] = { state: 'ON', linkquality: 30 };
+    const output = createFlowNode({
+        enableMultiple: true,
+        device_id: ['0x001', '0x002'],
+        outputAtStartup: false,
+        filterProperties: ' state, state, '
+    });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { filter: true, retained: true });
+    assert.equal(output.messages.length, 0);
+
+    server.devices_values['zigbee2mqtt/lamp'] = { state: 'ON', linkquality: 99 };
+    server.nodeSend(output, { filter: true, retained: false });
+    assert.equal(output.messages.length, 0);
+
+    server.devices_values['zigbee2mqtt/sensor'] = { state: 'OFF', linkquality: 30 };
+    server.nodeSend(output, { filter: true, retained: false });
+
+    assert.equal(output.messages.length, 1);
+    assert.deepEqual(output.messages[0].payload['0x001'].payload, {
+        state: 'ON', linkquality: 99
+    });
+    assert.deepEqual(output.messages[0].payload['0x002'].payload, {
+        state: 'OFF', linkquality: 30
+    });
+});
+
 test('status-only device refresh does not warn before the initial state arrives', (t) => {
     const { node: server } = createServer();
     addLamp(server, null);

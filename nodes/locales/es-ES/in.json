@@ -14,13 +14,15 @@
         "on_update": "En cada actualización",
         "filter_changes": "Filtrar cambios",
         "filter_changes_help": "Enviar solo cuando cambie el valor",
+        "filter_properties": "Propiedades para comparar",
         "output": "Salida",
         "enable_multiple": "Varios dispositivos",
         "enable_multiple_help": "Recibir actualizaciones de cada dispositivo seleccionado."
     },
     "placeholder": {
         "name": "Nombre",
-        "friendly_name": "Nombre del dispositivo"
+        "friendly_name": "Nombre del dispositivo",
+        "filter_properties": "state, brightness"
     },
     "status": {
         "no_server": "no hay nodo servidor",
@@ -40,6 +42,7 @@
         "groups": "Grupos"
     },
     "tip": {
-        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos"
+        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos",
+        "filter_properties_help": "Nombres de propiedades separados por comas, por ejemplo state, brightness. Solo estas propiedades determinan cuándo se envía un mensaje; la salida conserva el payload completo. En el modo de varios dispositivos, se comparan para cada dispositivo. Déjalo vacío para comparar el payload completo."
     }
 }

@@ -13,6 +13,36 @@ function getVizInstance() {
     return vizInstancePromise;
 }
 
+function parseFilterProperties(value) {
+    const values = Array.isArray(value) ? value : (typeof value === 'string' ? value.split(',') : []);
+    return [...new Set(values
+        .filter((property) => typeof property === 'string')
+        .map((property) => property.trim())
+        .filter(Boolean))];
+}
+
+function selectFilterProperties(payload, properties) {
+    if (!properties.length || !payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return payload;
+    }
+
+    return Object.fromEntries(properties
+        .filter((property) => Object.prototype.hasOwnProperty.call(payload, property))
+        .map((property) => [property, payload[property]]));
+}
+
+function getComparisonValue(payload, properties, multiple = false) {
+    const selectedProperties = parseFilterProperties(properties);
+    if (!selectedProperties.length || !multiple) {
+        return selectFilterProperties(payload, selectedProperties);
+    }
+
+    return Object.fromEntries(Object.entries(payload).map(([deviceId, itemData]) => [
+        deviceId,
+        selectFilterProperties(itemData && itemData.payload, selectedProperties)
+    ]));
+}
+
 module.exports = function(RED) {
     class ServerNode {
         constructor(n) {
@@ -496,6 +526,7 @@ module.exports = function(RED) {
                 'key':node.config.device_id,
                 'msg': {},
                 'filter': false, //skip the same payload, send only changes
+                'filterProperties': node.config.filterProperties || '',
                 'retained': false //replayed from the broker's retained store, not a live event
             }, opts);
 
@@ -537,6 +568,7 @@ module.exports = function(RED) {
                 payload = payload_all;
             }
 
+            const comparisonValue = getComparisonValue(payload, opts.filterProperties);
 
             //add unit
             if (useProperty) {
@@ -562,11 +594,12 @@ module.exports = function(RED) {
                 // Retained message replayed by the broker on (re)connect - not a live event.
                 // Seed last_value so change-filtering still works, but do not emit.
                 node.last_value = payload;
+                node.last_filter_value = comparisonValue;
                 return;
             }
 
             if (opts.filter) {
-                if (opts.node_send && JSON.stringify(node.last_value) === JSON.stringify(payload)) {
+                if (opts.node_send && JSON.stringify(node.last_filter_value) === JSON.stringify(comparisonValue)) {
                     // console.log('Filtered the same value');
                     return;
                 }
@@ -598,6 +631,7 @@ module.exports = function(RED) {
                 // console.log(payload);
                 node.send(msg);
                 node.last_value = payload;
+                node.last_filter_value = comparisonValue;
             }
 
             let time = Zigbee2mqttHelper.statusUpdatedAt();
@@ -626,6 +660,7 @@ module.exports = function(RED) {
                 'msg': {},
                 'changed': null,
                 'filter': false, //skip the same payload, send only changes
+                'filterProperties': node.config.filterProperties || '',
                 'retained': false //replayed from the broker's retained store, not a live event
             }, opts);
 
@@ -656,6 +691,7 @@ module.exports = function(RED) {
             if (opts.changed !== null) {
                 msg.changed = opts.changed;
             }
+            const comparisonValue = getComparisonValue(payload, opts.filterProperties, true);
 
             if (!Object.keys(msg.payload).length) {
                 node.status({
@@ -671,30 +707,21 @@ module.exports = function(RED) {
                 // Retained message replayed by the broker on (re)connect - not a live event.
                 // Seed last_value so change-filtering still works, but do not emit.
                 node.last_value = payload;
+                node.last_filter_value = comparisonValue;
                 return;
             }
-            //
-            // if (opts.filter) {
-            //     if (opts.node_send && JSON.stringify(node.last_value) === JSON.stringify(payload)) {
-            //         // console.log('Filtered the same value');
-            //         return;
-            //     }
-            // }
 
-
-            // if ('last_value' in node) {
-            //     msg.changed = {
-            //         'old': node.last_value,
-            //         'new': payload//,
-            //         // 'diff': Zigbee2mqttHelper.objectsDiff(node.last_value, payload)
-            //     };
-            // }
+            if (opts.filter && opts.node_send
+                && JSON.stringify(node.last_filter_value) === JSON.stringify(comparisonValue)) {
+                return;
+            }
 
             if (opts.node_send) {
                 // console.log('SEND:');
                 // console.log(payload);
                 node.send(msg);
                 node.last_value = payload;
+                node.last_filter_value = comparisonValue;
             }
 
             let time = Zigbee2mqttHelper.statusUpdatedAt();

@@ -14,13 +14,15 @@
         "on_update": "Bei jeder Aktualisierung",
         "filter_changes": "Änderungen filtern",
         "filter_changes_help": "Nur bei geändertem Wert senden",
+        "filter_properties": "Eigenschaften vergleichen",
         "output": "Ausgabe",
         "enable_multiple": "Mehrere Geräte",
         "enable_multiple_help": "Aktualisierungen von jedem ausgewählten Gerät empfangen."
     },
     "placeholder": {
         "name": "Name",
-        "friendly_name": "Gerätename"
+        "friendly_name": "Gerätename",
+        "filter_properties": "state, brightness"
     },
     "status": {
         "no_server": "kein Server-Node",
@@ -40,6 +42,7 @@
         "groups": "Gruppen"
     },
     "tip": {
-        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden",
+        "filter_properties_help": "Kommagetrennte Eigenschaftsnamen, zum Beispiel state, brightness. Nur diese Eigenschaften bestimmen, wann eine Nachricht gesendet wird; der vollständige Payload bleibt erhalten. Im Modus für mehrere Geräte werden sie je Gerät verglichen. Leer lassen, um den vollständigen Payload zu vergleichen."
     }
 }

@@ -14,13 +14,15 @@
         "on_update": "On update",
         "filter_changes": "Filter",
         "filter_changes_help": "Send only if value changes",
+        "filter_properties": "Compare properties",
         "output": "Output",
         "enable_multiple": "Multiple devices",
         "enable_multiple_help": "Receive updates from each selected device."
     },
     "placeholder": {
         "name": "Name",
-        "friendly_name": "Friendly name"
+        "friendly_name": "Friendly name",
+        "filter_properties": "state, brightness"
     },
     "status": {
         "no_server": "no server",
@@ -40,6 +42,7 @@
         "groups": "Groups"
     },
     "tip": {
-        "deploy": "<b>Important:</b> deploy server node to get devices list"
+        "deploy": "<b>Important:</b> deploy server node to get devices list",
+        "filter_properties_help": "Comma-separated property names, for example state, brightness. Only these properties determine when to send; the full payload is still output. In multiple-device mode, they are compared on each device. Leave empty to compare the full payload."
     }
 }

@@ -40,14 +40,16 @@ function makeServer() {
 test('input node routes matching single-device, availability and multiple-device updates', () => {
     const server = makeServer();
     const single = instantiate(registerIn, 'zigbee2mqtt-in', {
-        server: 'server', device_id: '0x001', filterChanges: true
+        server: 'server', device_id: '0x001', filterChanges: true, filterProperties: 'state'
     }, server).node;
 
     server.emit('onMQTTMessage', {
         item: { ieee_address: '0x001' }, retained: true
     });
     assert.equal(server.calls[0].node, single);
-    assert.deepEqual(server.calls[0].options, { filter: true, retained: true });
+    assert.deepEqual(server.calls[0].options, {
+        filter: true, filterProperties: 'state', retained: true
+    });
 
     server.emit('onMQTTMessage', { item: { id: '1' }, retained: false });
     assert.equal(server.calls.length, 2);
@@ -56,12 +58,18 @@ test('input node routes matching single-device, availability and multiple-device
     assert.deepEqual(server.calls[2].options, { node_send: false });
 
     const multiple = instantiate(registerIn, 'zigbee2mqtt-in', {
-        server: 'server', enableMultiple: true, device_id: ['0x001', 2]
+        server: 'server', enableMultiple: true, device_id: ['0x001', 2],
+        filterChanges: true, filterProperties: 'state, brightness'
     }, server).node;
     const changed = { item: { id: 2 }, retained: true };
     server.emit('onMQTTMessage', changed);
     assert.equal(server.calls.at(-1).node, multiple);
-    assert.deepEqual(server.calls.at(-1).options, { changed, retained: true });
+    assert.deepEqual(server.calls.at(-1).options, {
+        filter: true,
+        filterProperties: 'state, brightness',
+        changed,
+        retained: true
+    });
 });
 
 test('input node restores its last status on reconnect and detaches listeners on close', () => {

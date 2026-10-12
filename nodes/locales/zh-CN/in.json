@@ -14,13 +14,15 @@
         "on_update": "每次更新时",
         "filter_changes": "筛选变化",
         "filter_changes_help": "仅在数值变化时发送",
+        "filter_properties": "比较属性",
         "output": "输出",
         "enable_multiple": "多个设备",
         "enable_multiple_help": "接收每个所选设备的更新。"
     },
     "placeholder": {
         "name": "名称",
-        "friendly_name": "设备名称"
+        "friendly_name": "设备名称",
+        "filter_properties": "state, brightness"
     },
     "status": {
         "no_server": "未配置服务器节点",
@@ -40,6 +42,7 @@
         "groups": "群组"
     },
     "tip": {
-        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表"
+        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表",
+        "filter_properties_help": "用逗号分隔属性名，例如 state, brightness。仅这些属性决定是否发送消息，输出仍保留完整 payload。多设备模式下会分别比较每个设备的这些属性。留空则比较完整 payload。"
     }
 }

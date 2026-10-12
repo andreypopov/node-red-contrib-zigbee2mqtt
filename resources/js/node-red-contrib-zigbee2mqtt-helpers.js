@@ -43,6 +43,9 @@ class Zigbee2MqttEditor {
                 that.buildDeviceOptionsHelpBlock();
             });
         }
+        that.getFilterChanges().off('change').on('change', () => {
+            that.updateFilterPropertiesVisibility();
+        });
         that.getEnableMultipleCheckbox().off('change').on('change', (e) => {
             // that.property = null;
             // that.refresh = true;
@@ -58,6 +61,7 @@ class Zigbee2MqttEditor {
             that.buildDevicePropertyInput();
             that.buildDeviceOptionsInput();
         });
+        that.updateFilterPropertiesVisibility();
         if (typeof that.config.onBuild === 'function') {
             that.config.onBuild(that.getDevice());
         }
@@ -66,7 +70,7 @@ class Zigbee2MqttEditor {
 
     async buildDeviceIdInput() {
         let that = this;
-        that.getFilterChanges().closest('.form-row').toggle(!that.isMultiple());
+        that.getFilterChanges().closest('.form-row').show();
         // console.log('BUILD buildDeviceIdInput');
 
         let params = {
@@ -191,6 +195,9 @@ class Zigbee2MqttEditor {
             that.getDevicePropertyInput().val(that.getDevicePropertyInput().find('option').eq(0).attr('value'));
         }
         that.getDevicePropertyInput().multipleSelect('refresh');
+        that.getDevicePropertyInput().off('change.filterProperties').on('change.filterProperties', () => {
+            that.updateFilterPropertiesVisibility();
+        });
     }
 
     buildDeviceOptionsInput() {
@@ -345,6 +352,22 @@ class Zigbee2MqttEditor {
 
     getFilterChanges() {
         return $('#node-input-filterChanges');
+    }
+
+    getFilterPropertiesInput() {
+        let $elem = $('#node-input-filterProperties');
+        return $elem.length?$elem:null;
+    }
+
+    updateFilterPropertiesVisibility() {
+        let input = this.getFilterPropertiesInput();
+        if (!input) return;
+
+        const state = this.isMultiple()
+            ? '0'
+            : (this.getDevicePropertyInput() ? this.getDevicePropertyInput().val() : '0');
+        const show = this.getFilterChanges().is(':checked') && (!state || state === '0');
+        input.closest('.form-row').toggle(show);
     }
 
     getEnableMultipleCheckbox() {
