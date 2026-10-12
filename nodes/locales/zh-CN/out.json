@@ -25,7 +25,6 @@
         "important": "重要：",
         "description": "说明：",
         "options": "选项：",
-        "endpoint_topic": "如需为每条消息选择目标，请将“设备”字段设为 msg.topic。已知设备名称、IEEE 地址、数字 ID、选择器值或设备主题均可识别设备。单独使用上述任一标识符时，节点会使用默认的 /set 主题。若要路由到端点，可使用相对主题 living_room/left/set 或完整主题 zigbee2mqtt/living_room/left/set。完整主题必须使用“服务器”节点配置的基础主题。端点是一个路径段，节点会原样传递，不会检查设备是否具有该端点。群组仅支持设备级主题，不支持端点路由。命令 JSON 仍由“命令”和 Payload 字段生成。",
         "command_homekit": "此功能仍属实验性质，目前仅支持 HomeKit 的 Lightbulb 和 Lock 服务。",
         "command_brightness_move": "除了设置固定亮度，也可以让亮度持续变化并在指定时间后停止。例如，payload 为 -5 时会以每秒 5 个单位的速度调低亮度。",
         "command_brightness_step": "除了设置固定亮度，也可以按步长增加或减少当前亮度。",

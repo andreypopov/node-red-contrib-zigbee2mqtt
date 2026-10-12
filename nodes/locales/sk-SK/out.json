@@ -25,7 +25,6 @@
         "important": "DÔLEŽITÉ:",
         "description": "Popis:",
         "options": "Možnosti:",
-        "endpoint_topic": "Nastavte pole Zariadenie na msg.topic, aby sa cieľ vyberal pre každú správu. Známy názov zariadenia, IEEE adresa, číselné ID, hodnota selektora alebo téma zariadenia identifikuje zariadenie. Ak sa niektorá z týchto hodnôt použije samostatne, uzol použije predvolenú tému /set. Na smerovanie ku koncovému bodu použite relatívnu tému living_room/left/set alebo úplnú tému zigbee2mqtt/living_room/left/set. Úplná téma musí používať základnú tému serverového uzla. Koncový bod tvorí jednu časť cesty a uzol ju odošle bez overenia, či ju zariadenie podporuje. Skupiny podporujú iba témy na úrovni zariadenia, nie smerovanie ku koncovým bodom. Polia Príkaz a Payload naďalej vytvárajú JSON príkazu.",
         "command_homekit": "Táto experimentálna funkcia zatiaľ funguje iba so službami Lightbulb a Lock v HomeKit.",
         "command_brightness_move": "Namiesto nastavenia pevnej úrovne jasu môžete jas meniť a po uplynutí určeného času zmenu zastaviť. Napríklad payload -5 začne znižovať jas rýchlosťou 5 jednotiek za sekundu.",
         "command_brightness_step": "Namiesto nastavenia pevnej úrovne jasu môžete aktuálnu hodnotu postupne zvýšiť alebo znížiť.",

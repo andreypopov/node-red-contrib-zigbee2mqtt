@@ -1,0 +1,27 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-out">
+    <p>MQTT-Befehl an dein Gerät senden.</p>
+    <h3>Konfiguration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">Zeichenfolge</span></dt><dd>Vergib einen Namen zur Identifikation dieses Nodes.</dd>
+        <dt>Server <span class="property-type">Objekt</span></dt><dd>Wähle die zu verwendende zigbee2mqtt-Serverinstanz.</dd>
+        <dt>Gerät <span class="property-type">Zeichenfolge</span></dt>
+        <dd>
+            Wähle dein Gerät. Setze „Gerät“ auf <code>msg.topic</code>, um das Ziel pro Nachricht auszuwählen.
+            <p>Bei Server-Basis-Topic <code>zigbee2mqtt</code>:</p>
+            <ul>
+                <li><code>living_room</code> oder <code>zigbee2mqtt/living_room</code> → <code>zigbee2mqtt/living_room/set</code></li>
+                <li><code>living_room/left/set</code> oder <code>zigbee2mqtt/living_room/left/set</code> → Endpunkt <code>left</code></li>
+            </ul>
+            Ein Gerätename, eine IEEE-Adresse, eine numerische ID, ein Selektorwert oder ein Geräte-Topic kann ebenfalls allein verwendet werden; dann nutzt der Node das Standard-Topic des Geräts <code>/set</code>. Vollständige Topics müssen das Basis-Topic des Server-Nodes verwenden. Ein Endpunkt ist ein Pfadsegment und wird ohne Prüfung übernommen. Gruppen unterstützen nur Topics auf Geräteebene. Befehl und Payload bilden die JSON-Anfrage.
+        </dd>
+        <dt>Befehl <span class="property-type">Zeichenfolge</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> vordefinierte Befehle</li>
+                <li><b>homekit:</b> für Daten eines HomeKit-Nodes auswählen</li>
+                <li><b>json:</b> eigene JSON-Daten</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">Zeichenfolge oder Objekt</span></dt><dd>Wähle die Payload-Quelle.</dd>
+    </dl>
+</script>

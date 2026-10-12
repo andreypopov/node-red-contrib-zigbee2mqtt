@@ -1,0 +1,27 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-out">
+    <p>向设备发送 MQTT 命令。</p>
+    <h3>配置</h3>
+    <dl class="message-properties">
+        <dt class="optional">名称 <span class="property-type">字符串</span></dt><dd>设置节点名称以便识别。</dd>
+        <dt>服务器 <span class="property-type">对象</span></dt><dd>选择要使用的 zigbee2mqtt 服务器实例。</dd>
+        <dt>设备 <span class="property-type">字符串</span></dt>
+        <dd>
+            选择设备。将“设备”设为 <code>msg.topic</code>，即可为每条消息选择目标。
+            <p>服务器基础主题为 <code>zigbee2mqtt</code> 时：</p>
+            <ul>
+                <li><code>living_room</code> 或 <code>zigbee2mqtt/living_room</code> → <code>zigbee2mqtt/living_room/set</code></li>
+                <li><code>living_room/left/set</code> 或 <code>zigbee2mqtt/living_room/left/set</code> → 端点 <code>left</code></li>
+            </ul>
+            也可单独使用设备名称、IEEE 地址、数字 ID、选择器值或设备主题；此时节点使用设备默认的 <code>/set</code> 主题。完整主题必须使用服务器基础主题。端点只能有一个路径段，节点会原样传递，不检查设备是否支持该端点。群组仅支持设备级主题。命令和 Payload 组成 JSON 请求。
+        </dd>
+        <dt>命令 <span class="property-type">字符串</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> 预定义命令</li>
+                <li><b>homekit:</b> 数据来自 HomeKit 节点时选择</li>
+                <li><b>json:</b> 自定义 JSON 数据</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">字符串或对象</span></dt><dd>选择 Payload 数据来源。</dd>
+    </dl>
+</script>

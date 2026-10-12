@@ -1,24 +1,27 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-out">
-    <p>Send mqtt command to your device.</p>
+    <p>Send an MQTT command to your device.</p>
     <h3>Configuration</h3>
     <dl class="message-properties">
-        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node</dd>
-        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use</dd>
-        <dt>Device <span class="property-type">string</span></dt><dd>Select your device</dd>
+        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose a name to identify this node.</dd>
+        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance.</dd>
+        <dt>Device <span class="property-type">string</span></dt>
+        <dd>
+            Select your device. To choose a target per message, set Device to <code>msg.topic</code>.
+            <p>With Server base topic <code>zigbee2mqtt</code>:</p>
+            <ul>
+                <li><code>living_room</code> or <code>zigbee2mqtt/living_room</code> → <code>zigbee2mqtt/living_room/set</code></li>
+                <li><code>living_room/left/set</code> or <code>zigbee2mqtt/living_room/left/set</code> → endpoint <code>left</code></li>
+            </ul>
+            A device name, IEEE address, numeric ID, selector value, or device topic can also be used alone; the node then uses the device's default <code>/set</code> topic. Full topics must use the Server base topic. An endpoint is one path segment and is passed through without checking that the device has it. Groups support device-level topics only. Command and Payload form the JSON request.
+        </dd>
         <dt>Command <span class="property-type">string</span></dt>
         <dd>
             <ul>
                 <li><b>zigbee2mqtt:</b> predefined commands</li>
-                <li><b>homekit:</b> select if data is from homekit node</li>
-                <li><b>json:</b> custom data in json format</li>
+                <li><b>homekit:</b> select for data from a HomeKit node</li>
+                <li><b>json:</b> custom JSON data</li>
             </ul>
         </dd>
-        <dt>Payload <span class="property-type">string or object</span></dt><dd>Select your payload data source</dd>
+        <dt>Payload <span class="property-type">string or object</span></dt><dd>Select the payload data source.</dd>
     </dl>
-
-<!--    <h3>Options</h3>-->
-<!--    <dl class="message-properties">-->
-<!--        <dt class="optional">Transition time <span class="property-type">int</span></dt><dd>Works with brightness.</dd>-->
-<!--    </dl>-->
 </script>
-

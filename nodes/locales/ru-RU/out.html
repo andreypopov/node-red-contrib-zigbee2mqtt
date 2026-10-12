@@ -1,0 +1,27 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-out">
+    <p>Отправляет MQTT-команду устройству.</p>
+    <h3>Настройка</h3>
+    <dl class="message-properties">
+        <dt class="optional">Имя <span class="property-type">строка</span></dt><dd>Задайте имя для узла.</dd>
+        <dt>Сервер <span class="property-type">объект</span></dt><dd>Выберите используемый сервер zigbee2mqtt.</dd>
+        <dt>Устройство <span class="property-type">строка</span></dt>
+        <dd>
+            Выберите устройство. Чтобы выбирать цель для каждого сообщения, установите в поле «Устройство» значение <code>msg.topic</code>.
+            <p>При базовом топике сервера <code>zigbee2mqtt</code>:</p>
+            <ul>
+                <li><code>living_room</code> или <code>zigbee2mqtt/living_room</code> → <code>zigbee2mqtt/living_room/set</code></li>
+                <li><code>living_room/left/set</code> или <code>zigbee2mqtt/living_room/left/set</code> → endpoint <code>left</code></li>
+            </ul>
+            Также можно отдельно указать имя устройства, IEEE-адрес, числовой ID, значение селектора или топик устройства — тогда используется стандартный топик устройства <code>/set</code>. Полный топик должен использовать базовый топик сервера. Endpoint — один сегмент пути; он передаётся без проверки наличия у устройства. Для групп доступны только топики уровня устройства. Команда и Payload формируют JSON-запрос.
+        </dd>
+        <dt>Команда <span class="property-type">строка</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> готовые команды</li>
+                <li><b>homekit:</b> выберите для данных из узла HomeKit</li>
+                <li><b>json:</b> произвольные данные JSON</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">строка или объект</span></dt><dd>Выберите источник Payload.</dd>
+    </dl>
+</script>

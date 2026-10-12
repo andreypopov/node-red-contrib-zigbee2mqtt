@@ -1,0 +1,27 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-out">
+    <p>Envía un comando MQTT a tu dispositivo.</p>
+    <h3>Configuración</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nombre <span class="property-type">cadena</span></dt><dd>Elige un nombre para identificar este nodo.</dd>
+        <dt>Servidor <span class="property-type">objeto</span></dt><dd>Elige la instancia del servidor zigbee2mqtt que quieres usar.</dd>
+        <dt>Dispositivo <span class="property-type">cadena</span></dt>
+        <dd>
+            Selecciona tu dispositivo. Configura «Dispositivo» como <code>msg.topic</code> para elegir el destino en cada mensaje.
+            <p>Con el tema base del servidor <code>zigbee2mqtt</code>:</p>
+            <ul>
+                <li><code>living_room</code> o <code>zigbee2mqtt/living_room</code> → <code>zigbee2mqtt/living_room/set</code></li>
+                <li><code>living_room/left/set</code> o <code>zigbee2mqtt/living_room/left/set</code> → endpoint <code>left</code></li>
+            </ul>
+            También se puede usar por sí solo el nombre del dispositivo, la dirección IEEE, el ID numérico, el valor del selector o el tema del dispositivo; en ese caso se utiliza el tema predeterminado <code>/set</code>. Los temas completos deben usar el tema base del servidor. El endpoint ocupa un segmento de ruta y se envía sin comprobar si existe en el dispositivo. Los grupos solo admiten temas de dispositivo. Comando y Payload forman la solicitud JSON.
+        </dd>
+        <dt>Comando <span class="property-type">cadena</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> comandos predefinidos</li>
+                <li><b>homekit:</b> selecciónalo si los datos proceden de un nodo HomeKit</li>
+                <li><b>json:</b> datos JSON personalizados</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">cadena u objeto</span></dt><dd>Selecciona el origen del payload.</dd>
+    </dl>
+</script>

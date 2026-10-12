@@ -25,7 +25,6 @@
         "important": "IMPORTANTE:",
         "description": "Descripción:",
         "options": "Opciones:",
-        "endpoint_topic": "Para elegir el destino de cada mensaje, configura el campo «Dispositivo» con msg.topic. Un nombre de dispositivo conocido, una dirección IEEE, un ID numérico, el valor del selector o el tema del dispositivo permiten identificarlo. Si se usa cualquiera de estos valores por sí solo, el nodo utiliza el tema predeterminado /set. Para dirigir el comando a un endpoint, usa el tema relativo living_room/left/set o el tema completo zigbee2mqtt/living_room/left/set. El tema completo debe usar el tema base del nodo «Servidor». El endpoint ocupa un solo segmento de la ruta y se pasa sin comprobar si existe en el dispositivo. Los grupos solo admiten temas de dispositivo, sin selección de endpoint. El JSON del comando sigue formándose con los campos «Comando» y Payload.",
         "command_homekit": "Esta función es experimental y, por ahora, solo funciona con los servicios Lightbulb y Lock de HomeKit.",
         "command_brightness_move": "En vez de fijar un nivel de brillo, puedes iniciar su cambio y detenerlo tras un tiempo. Por ejemplo, el payload -5 empieza a reducir el brillo a 5 unidades por segundo.",
         "command_brightness_step": "En vez de fijar un nivel de brillo, puedes aumentar o reducir el valor actual en un paso.",
