@@ -2,6 +2,26 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const EditorUtils = require('../resources/js/node-red-contrib-zigbee2mqtt-editor-utils');
 
+test("default Out labels describe the selected state action and device", () => {
+    const node = {
+        name: "",
+        friendly_name: "Desk lamp",
+        device_id: "desk_lamp",
+        commandType: "z2m_cmd",
+        command: "state",
+        payloadType: "z2m_payload",
+        payload: "on"
+    };
+
+    assert.equal(EditorUtils.getDefaultOutNodeLabel(node), "Turn on Desk lamp");
+    assert.equal(EditorUtils.getDefaultOutNodeLabel({ ...node, payload: "off" }), "Turn off Desk lamp");
+    assert.equal(EditorUtils.getDefaultOutNodeLabel({ ...node, payload: "toggle" }), "Toggle Desk lamp");
+    assert.equal(EditorUtils.getDefaultOutNodeLabel({ ...node, command: "state_l2" }), "Turn on Desk lamp (l2)");
+    assert.equal(EditorUtils.getDefaultOutNodeLabel({ ...node, payloadType: "msg" }), "Set state of Desk lamp");
+    assert.equal(EditorUtils.getDefaultOutNodeLabel({ ...node, command: "brightness" }), "Set brightness of Desk lamp");
+    assert.equal(EditorUtils.getDefaultOutNodeLabel({ ...node, name: "Custom name" }), "Custom name");
+});
+
 test('multi-endpoint state commands cover endpoints 1 through 9', () => {
     assert.deepEqual(
         EditorUtils.getStateCommandOptions().map(({ value }) => value),
