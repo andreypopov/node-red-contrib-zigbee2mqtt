@@ -23,6 +23,8 @@ Extra features:
 * groups support
 * network map generation
 
+The Server node has an optional **Flow label**. When set, it is appended to the labels of the Bridge, In, Get, and Out nodes that use that server, making multiple Zigbee2MQTT instances easier to distinguish in a flow. For example, set it to `Upstairs` to show `Lamp [Upstairs]`.
+
 ## Dynamic device and endpoint topics in the Out node
 
 To choose the target for each incoming message, set the Out node's **Device** field to `msg.topic`. The value is matched against devices and groups in the connected Zigbee2MQTT server node. A fixed **Device** selection takes precedence and ignores `msg.topic`.

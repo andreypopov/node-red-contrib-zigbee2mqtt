@@ -176,7 +176,8 @@
             if (this.name) {
                 label = this.name;
             }
-            return label;
+            const server = this.server ? RED.nodes.node(this.server) : null;
+            return Zigbee2mqttEditorUtils.appendServerFlowLabel(label, server);
         },
         oneditprepare: function () {
             var node = this;

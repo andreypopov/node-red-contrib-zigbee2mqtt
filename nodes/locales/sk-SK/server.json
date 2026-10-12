@@ -7,10 +7,12 @@
         "mqtt_username": "Používateľské meno MQTT",
         "mqtt_password": "Heslo MQTT",
         "use-tls": "Použiť TLS",
-        "tls-config": "Konfigurácia TLS"
+        "tls-config": "Konfigurácia TLS",
+        "flow_label": "Označenie toku"
     },
     "placeholder": {
-        "name": "Meno"
+        "name": "Meno",
+        "flow_label": "napr. poschodie"
     },
     "status": {
         "no_server": "žiadny server",
@@ -20,7 +22,8 @@
         "received": "prijaté"
     },
     "tip": {
-        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení"
+        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení",
+        "flow_label": "Pridá sa do hranatých zátvoriek k označeniam uzlov Bridge, In, Get a Out, ktoré používajú tento server. Ak chcete ponechať súčasné označenia, nechajte pole prázdne."
     },
     "editor": {
         "groups": "Skupiny",

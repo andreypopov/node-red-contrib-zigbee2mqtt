@@ -7,10 +7,12 @@
         "mqtt_username": "Usuario MQTT",
         "mqtt_password": "Contraseña MQTT",
         "use-tls": "Usar TLS",
-        "tls-config": "Configuración TLS"
+        "tls-config": "Configuración TLS",
+        "flow_label": "Etiqueta del flujo"
     },
     "placeholder": {
-        "name": "Nombre"
+        "name": "Nombre",
+        "flow_label": "p. ej., planta alta"
     },
     "status": {
         "no_server": "no hay nodo servidor",
@@ -20,7 +22,8 @@
         "received": "recibido"
     },
     "tip": {
-        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos"
+        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos",
+        "flow_label": "Se añade entre corchetes a las etiquetas de los nodos Bridge, In, Get y Out que usan este servidor. Déjala vacía para conservar las etiquetas actuales."
     },
     "editor": {
         "groups": "Grupos",

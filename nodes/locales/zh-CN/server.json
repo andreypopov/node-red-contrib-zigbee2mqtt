@@ -7,10 +7,12 @@
         "mqtt_username": "MQTT 用户名",
         "mqtt_password": "MQTT 密码",
         "use-tls": "使用 TLS",
-        "tls-config": "TLS 配置"
+        "tls-config": "TLS 配置",
+        "flow_label": "流程标签"
     },
     "placeholder": {
-        "name": "名称"
+        "name": "名称",
+        "flow_label": "例如：楼上"
     },
     "status": {
         "no_server": "未配置服务器节点",
@@ -20,7 +22,8 @@
         "received": "已接收"
     },
     "tip": {
-        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表"
+        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表",
+        "flow_label": "此标签会以方括号形式追加到使用此服务器的 Bridge、In、Get 和 Out 节点名称后。留空则保持原名称。"
     },
     "editor": {
         "groups": "群组",

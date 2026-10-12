@@ -79,7 +79,8 @@
                 label = this.device_id;
             }
 
-            return label;
+            const server = this.server ? RED.nodes.node(this.server) : null;
+            return Zigbee2mqttEditorUtils.appendServerFlowLabel(label, server);
         },
         oneditprepare: function () {
             let node = this;
