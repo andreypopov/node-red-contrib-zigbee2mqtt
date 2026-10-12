@@ -1,5 +1,5 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-get">
-    <p>Get last value of device.</p>
+    <p>Get the device's current state. If the requested state is not in the node's cache, it requests readable properties from Zigbee2MQTT and waits up to 15 seconds for a fresh response. If the device has no readable properties or does not respond, the node sends no message. For groups, it uses only cached state; Zigbee2MQTT does not provide a group <code>/get</code> request.</p>
     <h3>Configuration</h3>
     <dl class="message-properties">
         <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node</dd>
@@ -16,4 +16,3 @@
         <dt>device<span class="property-type">object</span></dt><dd>device info</dd>
     </dl>
 </script>
-

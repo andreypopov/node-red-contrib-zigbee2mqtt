@@ -4,6 +4,40 @@ var Viz = require('@viz-js/viz');
 var vizInstancePromise;
 const MAX_PENDING_MQTT_MESSAGES = 1000;
 const INITIAL_STATE_REQUEST_DELAY_MS = 1000;
+const DEVICE_STATE_REQUEST_TIMEOUT_MS = 15_000;
+
+function hasState(value) {
+    if (value === null || value === undefined) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    return typeof value !== 'object' || Object.keys(value).length > 0;
+}
+
+function hasRequestedState(node, device) {
+    if (!device || !hasState(device.current_values)) return false;
+    const state = node.config.state;
+    if (!state || state === '0') return true;
+
+    const property = state.split('homekit_').join('');
+    if (state.startsWith('homekit_')) {
+        return !!device.homekit && property in device.homekit
+            && device.homekit[property] !== null && device.homekit[property] !== undefined;
+    }
+    return typeof device.current_values === 'object' && property in device.current_values
+        && device.current_values[property] !== null && device.current_values[property] !== undefined;
+}
+
+function getDeviceGetPayload(device) {
+    const exposes = device && device.definition && device.definition.exposes;
+    if (!Array.isArray(exposes)) return null;
+
+    const payload = {};
+    for (const expose of exposes) {
+        if (expose && typeof expose.name === 'string' && expose.access && (expose.access & 0b100)) {
+            payload[expose.name] = '';
+        }
+    }
+    return Object.keys(payload).length ? payload : null;
+}
 
 function getVizInstance() {
     if (!vizInstancePromise) {
@@ -243,6 +277,88 @@ module.exports = function(RED) {
             return this._getItemByKey(key, 'devices');
         }
 
+        requestMissingDeviceStates(node, opts, devices) {
+            if (node._deviceStateRequestClosed) return;
+            if (node._deviceStateRequestClosed === undefined) {
+                node._deviceStateRequestClosed = false;
+                node.once('close', () => {
+                    node._deviceStateRequestClosed = true;
+                });
+            }
+
+            Promise.all(devices.map((device) => this.requestDeviceState(node, device)))
+                .then((received) => {
+                    if (node._deviceStateRequestClosed) return;
+                    if (received.every(Boolean)) {
+                        this.nodeSend(node, opts);
+                    } else {
+                        node.warn('Zigbee2MQTT did not return a readable device state; no output was sent.');
+                    }
+                });
+        }
+
+        requestDeviceState(node, device) {
+            const deviceName = device.friendly_name || device.ieee_address;
+            const topic = this.getTopic('/' + deviceName);
+            const getPayload = getDeviceGetPayload(device);
+            if (!getPayload) return Promise.resolve(false);
+
+            if (!node.pendingDeviceStateRequests) {
+                node.pendingDeviceStateRequests = new Map();
+            }
+            if (node.pendingDeviceStateRequests.has(topic)) {
+                return node.pendingDeviceStateRequests.get(topic);
+            }
+
+            let resolveRequest;
+            const request = new Promise((resolve) => {
+                resolveRequest = resolve;
+            });
+            node.pendingDeviceStateRequests.set(topic, request);
+
+            let timer;
+            let settled = false;
+            const finish = (received) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                this.removeListener('onMQTTMessage', onMessage);
+                node.removeListener('close', onClose);
+                if (node.pendingDeviceStateRequests.get(topic) === request) {
+                    node.pendingDeviceStateRequests.delete(topic);
+                }
+                resolveRequest(received);
+            };
+            const onMessage = (data) => {
+                // Ignore broker replay; this request waits for a fresh response to /get.
+                if (data.topic === topic && !data.retained
+                    && hasRequestedState(node, this.getDeviceByKey(deviceName))) {
+                    finish(true);
+                }
+            };
+            const onClose = () => finish(false);
+
+            this.on('onMQTTMessage', onMessage);
+            node.on('close', onClose);
+            timer = setTimeout(() => finish(false), DEVICE_STATE_REQUEST_TIMEOUT_MS);
+            if (typeof timer.unref === 'function') timer.unref();
+
+            try {
+                this.mqtt.publish(
+                    topic + '/get',
+                    JSON.stringify(getPayload),
+                    { qos: parseInt(this.config.mqtt_qos || 0) },
+                    (error) => {
+                        if (error) finish(false);
+                    }
+                );
+            } catch (error) {
+                finish(false);
+            }
+
+            return request;
+        }
+
         getGroupByKey(key) {
             return this._getItemByKey(key, 'groups');
         }
@@ -286,16 +402,8 @@ module.exports = function(RED) {
                         continue;
                     }
 
-                    const exposes = device.definition && device.definition.exposes;
-                    if (!Array.isArray(exposes)) continue;
-
-                    const getPayload = {};
-                    for (const expose of exposes) {
-                        if (expose && typeof expose.name === 'string' && expose.access && (expose.access & 0b100)) {
-                            getPayload[expose.name] = '';
-                        }
-                    }
-                    if (Object.keys(getPayload).length === 0) continue;
+                    const getPayload = getDeviceGetPayload(device);
+                    if (!getPayload) continue;
 
                     // A failed request should not be repeated every time the device list is republished.
                     node.initialStateRequests.add(topic);

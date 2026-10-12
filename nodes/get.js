@@ -1,4 +1,24 @@
 module.exports = function(RED) {
+    function hasState(value) {
+        return value !== null && value !== undefined
+            && !(Array.isArray(value) && value.length === 0)
+            && !(typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0);
+    }
+
+    function hasRequestedState(node, device) {
+        if (!device || !hasState(device.current_values)) return false;
+        const state = node.config.state;
+        if (!state || state === '0') return true;
+
+        const property = state.split('homekit_').join('');
+        if (state.startsWith('homekit_')) {
+            return !!device.homekit && property in device.homekit
+                && device.homekit[property] !== null && device.homekit[property] !== undefined;
+        }
+        return typeof device.current_values === 'object' && property in device.current_values
+            && device.current_values[property] !== null && device.current_values[property] !== undefined;
+    }
+
     class Zigbee2mqttNodeGet {
         constructor(config) {
             RED.nodes.createNode(this, config);
@@ -17,10 +37,20 @@ module.exports = function(RED) {
                         key = message_in.topic;
                     }
 
-                    node.server.nodeSend(node, {
+                    const options = {
                         'msg': message_in,
                         'key': key,
-                    });
+                    };
+                    const keys = node.config.enableMultiple && Array.isArray(key) ? key : [key];
+                    const missingDevices = keys
+                        .map((deviceKey) => node.server.getDeviceByKey(deviceKey))
+                        .filter((device) => device && !hasRequestedState(node, device));
+
+                    if (missingDevices.length && typeof node.server.requestMissingDeviceStates === 'function') {
+                        node.server.requestMissingDeviceStates(node, options, missingDevices);
+                    } else {
+                        node.server.nodeSend(node, options);
+                    }
                 });
 
             } else {
@@ -40,7 +70,3 @@ module.exports = function(RED) {
 
     RED.nodes.registerType('zigbee2mqtt-get', Zigbee2mqttNodeGet);
 };
-
-
-
-
