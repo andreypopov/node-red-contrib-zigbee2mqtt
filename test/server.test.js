@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createServer, createFlowNode } = require('./support/server');
+const registerIn = require('../nodes/in');
+const { instantiate } = require('./support/runtime');
 
 function addLamp(server, values = { state: 'ON', brightness: 80, battery: 52 }) {
     server.devices = [{
@@ -219,6 +221,61 @@ test('device MQTT updates are decoded and retained status is forwarded', () => {
     assert.equal(updates[0].retained, true);
     assert.equal(updates[0].item.friendly_name, 'lamp');
     assert.deepEqual(updates[0].item.current_values, { state: 'ON', brightness: 90 });
+});
+
+test('in node receives a retained state that arrives before device metadata', (t) => {
+    const { node: server } = createServer();
+    const input = instantiate(registerIn, 'zigbee2mqtt-in', {
+        server: 'server',
+        device_id: '0x001'
+    }, server).node;
+    const quietInput = instantiate(registerIn, 'zigbee2mqtt-in', {
+        server: 'server',
+        device_id: '0x001',
+        outputAtStartup: false
+    }, server).node;
+    t.after(() => {
+        input.emit('close');
+        quietInput.emit('close');
+        clearTimeout(input.cleanTimer);
+        clearTimeout(quietInput.cleanTimer);
+    });
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"ON"}'), { retain: true });
+
+    assert.equal(input.messages.length, 0);
+    assert.equal(server.pendingMQTTMessages.size, 1);
+
+    server.onMQTTMessage('zigbee2mqtt/bridge/devices', Buffer.from(JSON.stringify([{
+        id: 1,
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        definition: { exposes: [] }
+    }])));
+
+    assert.equal(input.messages.length, 1);
+    assert.deepEqual(input.messages[0].payload, { state: 'ON' });
+    assert.equal(input.messages[0].topic, 'zigbee2mqtt/lamp');
+    assert.equal(quietInput.messages.length, 0);
+    assert.deepEqual(quietInput.last_value, { state: 'ON' });
+    assert.equal(server.pendingMQTTMessages.size, 0);
+});
+
+test('unresolved MQTT messages are bounded and cleared after inventory loads', () => {
+    const { node: server } = createServer();
+
+    for (let index = 0; index <= 1000; index++) {
+        server.onMQTTMessage(`zigbee2mqtt/unlisted-${index}`, Buffer.from('{"state":"ON"}'));
+    }
+
+    assert.equal(server.pendingMQTTMessages.size, 1000);
+    assert.equal(server.pendingMQTTMessages.has('zigbee2mqtt/unlisted-0'), false);
+
+    server.onMQTTMessage('zigbee2mqtt/bridge/devices', Buffer.from('[]'));
+    assert.equal(server.pendingMQTTMessages.size, 1000);
+
+    server.onMQTTMessage('zigbee2mqtt/bridge/groups', Buffer.from('[]'));
+    assert.equal(server.pendingMQTTMessages.size, 0);
 });
 
 test('partial JSON MQTT updates preserve unchanged properties for GET nodes', (t) => {

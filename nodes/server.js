@@ -2,6 +2,7 @@ const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
 var mqtt = require('mqtt');
 var Viz = require('@viz-js/viz');
 var vizInstancePromise;
+const MAX_PENDING_MQTT_MESSAGES = 1000;
 
 function getVizInstance() {
     if (!vizInstancePromise) {
@@ -54,6 +55,7 @@ module.exports = function(RED) {
             node.groups = undefined;
             node.devices = undefined;
             node.devices_values = {};
+            node.pendingMQTTMessages = new Map();
             node.avaialability = {};
             node.bridge_info = null;
             node.bridge_state = null;
@@ -256,6 +258,29 @@ module.exports = function(RED) {
 
         getTopic(path) {
             return this.getBaseTopic() + path;
+        }
+
+        queuePendingMQTTMessage(message) {
+            const node = this;
+            node.pendingMQTTMessages.delete(message.topic);
+            if (node.pendingMQTTMessages.size >= MAX_PENDING_MQTT_MESSAGES) {
+                const oldestTopic = node.pendingMQTTMessages.keys().next().value;
+                node.pendingMQTTMessages.delete(oldestTopic);
+            }
+            node.pendingMQTTMessages.set(message.topic, message);
+        }
+
+        replayPendingMQTTMessages() {
+            const node = this;
+            for (const [topic, message] of node.pendingMQTTMessages) {
+                const item = node.getDeviceOrGroupByKey(topic);
+                if (item) {
+                    node.pendingMQTTMessages.delete(topic);
+                    node.emit('onMQTTMessage', { ...message, item });
+                } else if (node.devices !== undefined && node.groups !== undefined) {
+                    node.pendingMQTTMessages.delete(topic);
+                }
+            }
         }
 
         restart() {
@@ -805,6 +830,7 @@ module.exports = function(RED) {
                 if (node.getTopic('/bridge/devices') === topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         node.devices = JSON.parse(messageString);
+                        node.replayPendingMQTTMessages();
                         for (let ind in node.devices) {
                             let topic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
                             if (topic in node.devices_values) {
@@ -833,6 +859,7 @@ module.exports = function(RED) {
                 } else if (node.getTopic('/bridge/groups') === topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         node.groups = JSON.parse(messageString);
+                        node.replayPendingMQTTMessages();
                     }
                 } else if (node.getTopic('/bridge/state') === topic) {
                     let availabilityStatus = false;
@@ -921,12 +948,17 @@ module.exports = function(RED) {
                 //     'new':payload,
                 //     'timestamp': new Date().getTime()
                 // };
-                node.emit('onMQTTMessage', {
+                const update = {
                     topic: topic,
                     payload: payload,
                     item: node.getDeviceOrGroupByKey(topic),
                     retained: !!(packet && packet.retain)
-                });
+                };
+                if (!update.item && (node.devices === undefined || node.groups === undefined)) {
+                    node.queuePendingMQTTMessage(update);
+                } else {
+                    node.emit('onMQTTMessage', update);
+                }
 
             }
         }
@@ -935,6 +967,7 @@ module.exports = function(RED) {
             var node = this;
             node.unsubscribeMQTT();
             node.mqtt.end();
+            node.pendingMQTTMessages.clear();
             node.connection = false;
             node.emit('onClose');
             node.log('MQTT connection closed');
