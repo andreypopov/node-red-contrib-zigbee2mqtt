@@ -24,4 +24,7 @@
         </dd>
         <dt>Payload <span class="property-type">reťazec alebo objekt</span></dt><dd>Vyberte zdroj údajov Payload.</dd>
     </dl>
+    <h3>Výstup</h3>
+    <p>Voliteľné. Po zapnutí sa pridá jeden výstup. Po publikovaní príkazu uzol čaká najviac 30 sekúnd na ďalšiu živú aktualizáciu stavu zariadenia. Odošle kópiu vstupnej správy: pôvodný <code>msg.payload</code> bude v <code>msg.payload_in</code>, celý aktualizovaný stav v <code>msg.payload</code> a <code>msg.payload_raw</code> a téma stavu zariadenia v <code>msg.topic</code>. Ak aktualizácia nepríde, správa sa neodošle. Príkazy skupine nevytvoria výstup, pretože skupina nemá jeden spoločný stav zariadenia.</p>
+    <p>Aktualizácia stavu nie je priradená ku konkrétnemu príkazu; ide jednoducho o ďalšiu živú aktualizáciu daného zariadenia.</p>
 </script>

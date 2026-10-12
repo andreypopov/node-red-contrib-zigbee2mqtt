@@ -45,10 +45,15 @@
         </div>
     </div>
 
-	<div class="form-row">
+    <div class="form-row">
         <label for="node-input-optionsValue" class="l-width"><i class="fa fa-gears"></i> <span data-i18n="label.options"></span></label>
         <input type="text" id="node-input-optionsValue" style="width:70%">
         <input type="hidden" id="node-input-optionsType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-outputEnabled" class="l-width"><i class="fa fa-sign-out"></i> <span data-i18n="label.output_enabled"></span></label>
+        <input type="checkbox" id="node-input-outputEnabled" style="display: inline-block; width: auto; vertical-align: top;">
+        <input type="hidden" id="node-input-outputs">
     </div>
     <!--option description-->
     <div class="form-tips optionsType_description">
@@ -113,6 +118,9 @@
             optionsType: {
                 value: null,
             },
+            outputs: {
+                value: 0
+            },
             // enableMultiple: {
             //     value: false,
             //     required: true
@@ -122,6 +130,9 @@
         paletteLabel: 'out',
         inputs: 1,
         outputs: 0,
+        outputLabels: function(index) {
+            return index === 0 ? RED._("node-red-contrib-zigbee2mqtt/out:label.output_state") : null;
+        },
         icon: "icon.png",
         label: function() {
             const label = Zigbee2mqttEditorUtils.getDefaultOutNodeLabel(this);
@@ -130,6 +141,15 @@
         },
         oneditprepare: function() {
             let node = this;
+            const $outputEnabled = $('#node-input-outputEnabled');
+            const syncOutputCount = function() {
+                $('#node-input-outputs').val($outputEnabled.is(':checked') ? 1 : 0);
+            };
+
+            $outputEnabled.prop('checked', Number(node.outputs) > 0);
+            $outputEnabled.on('change', syncOutputCount);
+            syncOutputCount();
+
             let $inputCommand = $('#node-input-command');
             let $inputCommandType = $('#node-input-commandType');
             let currentDevice = null;
@@ -285,6 +305,7 @@
                 let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
                 this.device_id = device_id.length ? device_id[0] : null;
             }
+            this.outputs = $('#node-input-outputEnabled').is(':checked') ? 1 : 0;
         }
     });
 </script>

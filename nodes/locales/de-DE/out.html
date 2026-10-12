@@ -24,4 +24,7 @@
         </dd>
         <dt>Payload <span class="property-type">Zeichenfolge oder Objekt</span></dt><dd>Wähle die Payload-Quelle.</dd>
     </dl>
+    <h3>Ausgabe</h3>
+    <p>Optional. Aktiviert fügt der Node einen Ausgang hinzu. Nach dem Veröffentlichen eines Befehls wartet er bis zu 30 Sekunden auf die nächste Live-Zustandsmeldung des Geräts. Er sendet eine Kopie der Eingabenachricht: Das ursprüngliche <code>msg.payload</code> steht in <code>msg.payload_in</code>, der vollständige aktualisierte Zustand in <code>msg.payload</code> und <code>msg.payload_raw</code>, und das Geräte-Topic in <code>msg.topic</code>. Ohne Zustandsmeldung wird keine Nachricht ausgegeben. Gruppenbefehle erzeugen keine Ausgabe, da es für eine Gruppe keinen einzelnen Gerätezustand gibt.</p>
+    <p>Die Zustandsmeldung ist nicht mit dem Befehl verknüpft; verwendet wird einfach die nächste Live-Meldung dieses Geräts.</p>
 </script>

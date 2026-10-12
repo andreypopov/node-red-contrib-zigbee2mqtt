@@ -24,4 +24,7 @@
         </dd>
         <dt>Payload <span class="property-type">字符串或对象</span></dt><dd>选择 Payload 数据来源。</dd>
     </dl>
+    <h3>输出</h3>
+    <p>可选。启用后会添加一个输出端口。发布设备命令后，节点最多等待 30 秒，接收该设备的下一条实时状态更新。节点会发送输入消息的副本：原始 <code>msg.payload</code> 放入 <code>msg.payload_in</code>，完整的最新状态放入 <code>msg.payload</code> 和 <code>msg.payload_raw</code>，设备状态主题放入 <code>msg.topic</code>。如果没有收到更新，则不发送消息。群组命令不会产生输出，因为群组没有单一的设备状态。</p>
+    <p>状态更新不会与命令关联；节点只是使用该设备接收到的下一条实时更新。</p>
 </script>

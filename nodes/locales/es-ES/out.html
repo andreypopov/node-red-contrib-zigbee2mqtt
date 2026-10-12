@@ -24,4 +24,7 @@
         </dd>
         <dt>Payload <span class="property-type">cadena u objeto</span></dt><dd>Selecciona el origen del payload.</dd>
     </dl>
+    <h3>Salida</h3>
+    <p>Opcional. Al activarla, se añade una salida. Después de publicar un comando al dispositivo, el nodo espera hasta 30 segundos a recibir la siguiente actualización de estado en vivo de ese dispositivo. Envía una copia del mensaje de entrada: el <code>msg.payload</code> original pasa a <code>msg.payload_in</code>, el estado completo actualizado se incluye en <code>msg.payload</code> y <code>msg.payload_raw</code>, y el tema de estado del dispositivo se asigna a <code>msg.topic</code>. Si no llega ninguna actualización, no se envía nada. Los comandos a grupos no generan salida porque un grupo no tiene un estado único de dispositivo.</p>
+    <p>La actualización de estado no se vincula al comando; simplemente es la siguiente actualización en vivo de ese dispositivo.</p>
 </script>

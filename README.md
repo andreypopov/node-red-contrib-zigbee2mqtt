@@ -51,6 +51,16 @@ A bare device name or topic is supported and defaults to `/set`. An endpoint top
 
 `msg.topic` selects the MQTT destination. The Out node still builds the JSON command payload from its **Command** and **Payload** settings. For example, with command `state` and payload `on`, `zigbee2mqtt/living_room/left/set` is published with `{"state":"on"}`.
 
+## Optional Out node output
+
+Enable **Output after state update** to add an output port. After publishing a command to a device, the node waits for the next live state update from that device, for up to 30 seconds. The output is a copy of the input message with:
+
+- `msg.payload_in`: the original input `msg.payload`.
+- `msg.payload` and `msg.payload_raw`: the full state reported by the device after the update.
+- `msg.topic`: the device's state topic, without an endpoint or `/set` suffix.
+
+If no live update arrives within 30 seconds, the node warns and sends no output. Group commands do not produce an output because a group has no single device state. Zigbee2MQTT does not correlate state updates with commands, so the output represents the next live update from that device after publishing, not a confirmation that this command caused it.
+
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/1.png?raw=true">
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/2.png?raw=true">
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/3.png?raw=true">

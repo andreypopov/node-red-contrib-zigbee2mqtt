@@ -1,4 +1,5 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
+const OUTPUT_STATE_TIMEOUT = 30_000;
 
 function resolveDeviceTarget(server, key) {
     const device = server.getDeviceOrGroupByKey(key);
@@ -49,9 +50,61 @@ module.exports = function(RED) {
             node.config = config;
             node.cleanTimer = null;
             node.server = RED.nodes.getNode(node.config.server);
+            node.pendingOutputs = [];
+            node.outputEnabled = Number(node.config.outputs) > 0;
+
+            node.removePendingOutput = function(pending) {
+                clearTimeout(pending.timeout);
+                const index = node.pendingOutputs.indexOf(pending);
+                if (index !== -1) {
+                    node.pendingOutputs.splice(index, 1);
+                }
+            };
+
+            node.listener_onMQTTMessage = function(data) {
+                if (!node.outputEnabled || !data || data.retained || typeof data.topic !== 'string') {
+                    return;
+                }
+
+                const index = node.pendingOutputs.findIndex((pending) => pending.stateTopic === data.topic);
+                if (index === -1) {
+                    return;
+                }
+
+                const [pending] = node.pendingOutputs.splice(index, 1);
+                clearTimeout(pending.timeout);
+
+                const item = data.item || pending.device;
+                const state = data.payload !== undefined ? data.payload : item.current_values;
+                const response = RED.util.cloneMessage(pending.message);
+                response.payload_in = pending.message.payload;
+                response.payload = state;
+                response.payload_raw = state;
+                response.topic = data.topic;
+                response.item = item;
+                response.homekit = item.homekit;
+                response.format = item.format;
+                response.selector = Zigbee2mqttHelper.generateSelector(data.topic);
+                node.send(response);
+            };
+
+            node.on('close', function() {
+                clearTimeout(node.cleanTimer);
+                if (node.server && node.listener_onMQTTMessage) {
+                    node.server.removeListener('onMQTTMessage', node.listener_onMQTTMessage);
+                }
+                for (const pending of node.pendingOutputs) {
+                    clearTimeout(pending.timeout);
+                }
+                node.pendingOutputs = [];
+            });
 
             if (node.server) {
                 node.status({}); //clean
+
+                if (node.outputEnabled) {
+                    node.server.on('onMQTTMessage', node.listener_onMQTTMessage);
+                }
 
                 node.on('input', function(message) {
                     clearTimeout(node.cleanTimer);
@@ -287,11 +340,35 @@ module.exports = function(RED) {
                             }
 
                             const topic = target.topic || node.server.getTopic('/'+device.friendly_name + '/set');
+                            let pendingOutput = null;
+                            if (node.outputEnabled) {
+                                const isDevice = (node.server.devices || []).includes(device);
+                                if (isDevice) {
+                                    const stateTopic = node.server.getTopic('/' + (device.friendly_name || device.ieee_address));
+                                    pendingOutput = {
+                                        stateTopic,
+                                        device,
+                                        message: RED.util.cloneMessage(message),
+                                        timeout: null
+                                    };
+                                    pendingOutput.timeout = setTimeout(function() {
+                                        node.removePendingOutput(pendingOutput);
+                                        node.warn(`No state update received from ${device.friendly_name || device.ieee_address} within 30 seconds`);
+                                    }, OUTPUT_STATE_TIMEOUT);
+                                    node.pendingOutputs.push(pendingOutput);
+                                } else {
+                                    node.warn('The optional output is available for devices, not groups');
+                                }
+                            }
+
                             node.log('Published to mqtt topic: ' + topic + ' : ' + JSON.stringify(toSend));
                             node.server.mqtt.publish(topic, JSON.stringify(toSend),
                                 {'qos':parseInt(node.server.config.mqtt_qos||0)},
                                 function(err) {
                                     if (err) {
+                                        if (pendingOutput) {
+                                            node.removePendingOutput(pendingOutput);
+                                        }
                                         node.error(err);
                                     }
                             });
@@ -400,7 +477,5 @@ module.exports = function(RED) {
 
     RED.nodes.registerType('zigbee2mqtt-out', Zigbee2mqttNodeOut);
 };
-
-
 
 

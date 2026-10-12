@@ -42,6 +42,7 @@ function createRuntime({ nodes = {}, evaluateNodeProperty } = {}) {
             }
         },
         util: {
+            cloneMessage: (message) => structuredClone(message),
             evaluateNodeProperty: evaluateNodeProperty || ((property, type, node, message, done) => {
                 done(null, type === 'msg' ? message[property] : property);
             })
