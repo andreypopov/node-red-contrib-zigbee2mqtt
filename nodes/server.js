@@ -507,7 +507,7 @@ module.exports = function(RED) {
 
             if (item) {
                 payload_all = item.current_values;
-                if (payload_all == null) {
+                if (payload_all == null && opts.node_send) {
                     node.warn('You need to turn on the "retain" option for the device in Zigbee2MQTT to be able to read it before a state change.')
                 }
             } else {

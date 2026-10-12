@@ -96,6 +96,25 @@ test('single output reads the selected multi-endpoint state property', (t) => {
     assert.deepEqual(output.messages[0].payload_raw, { state_l1: 'ON', state_l2: 'OFF' });
 });
 
+test('status-only device refresh does not warn before the initial state arrives', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, null);
+    const output = createFlowNode({ device_id: '0x001' });
+    const warnings = [];
+    output.warn = (warning) => warnings.push(warning);
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { node_send: false, key: '0x001' });
+
+    assert.deepEqual(warnings, []);
+    assert.equal(output.messages.length, 0);
+
+    server.nodeSend(output, { key: '0x001' });
+
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /turn on the "retain" option/);
+});
+
 test('Graphviz renders the bridge map as SVG', async () => {
     const { node } = createServer();
 
