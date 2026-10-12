@@ -2,12 +2,12 @@
     "label": {
         "base_topic": "Základná téma",
         "name": "Meno",
-        "host": "MQTT Host",
-        "mqtt_port": "MQTT Port",
-        "mqtt_username": "MQTT Užívateľské meno",
-        "mqtt_password": "MQTT Heslo",
+        "host": "Hostiteľ MQTT",
+        "mqtt_port": "Port MQTT",
+        "mqtt_username": "Používateľské meno MQTT",
+        "mqtt_password": "Heslo MQTT",
         "use-tls": "Použiť TLS",
-        "tls-config": "TLS konfigurácia"
+        "tls-config": "Konfigurácia TLS"
     },
     "placeholder": {
         "name": "Meno"
@@ -17,10 +17,10 @@
         "no_device": "žiadne zariadenie",
         "no_connection": "žiadne pripojenie",
         "no_value": "žiadna hodnota",
-        "received": "ok"
+        "received": "prijaté"
     },
     "tip": {
-        "deploy": "<b>Dôležité:</b> nasadiť serverový uzol na získanie zoznamu zariadení"
+        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení"
     },
     "editor": {
         "groups": "Skupiny",
@@ -28,9 +28,9 @@
         "selected": "vybrané",
         "nothing": "Nič",
         "select_device": "Vybrať zariadenie",
-        "msg_topic": "msg.téma",
-        "complete_payload": "Kompletná záťaž",
+        "msg_topic": "msg.topic",
+        "complete_payload": "Kompletný payload",
         "zigbee2mqtt": "zigbee2mqtt",
-        "homekit": "Apple Homekit"
+        "homekit": "Apple HomeKit"
     }
 }

@@ -5,13 +5,15 @@
         "topic": "Zariadenie",
         "state": "Výstup dát",
         "refresh": "Obnoviť",
-        "legacy_api": "Stará API",
+        "legacy_api": "Legacy API",
         "refresh_devices_list": "Obnoviť zoznam zariadení",
         "enable_multiple": "Viacero zariadení",
-        "enable_multiple_help": "Získať hodnoty jedného alebo viacerých vybraných zariadení"
+        "enable_multiple_help": "Získať hodnoty jedného alebo viacerých vybraných zariadení.",
+        "friendly_name": "Názov zariadenia"
     },
     "placeholder": {
-        "name": "Meno"
+        "name": "Meno",
+        "friendly_name": "Názov zariadenia"
     },
     "multiselect": {
         "devices": "Zariadenia",
