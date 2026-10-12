@@ -9,7 +9,9 @@
         "options": "选项",
         "transition": "过渡时间（秒）",
         "refresh": "刷新",
-        "refresh_devices_list": "刷新设备列表"
+        "refresh_devices_list": "刷新设备列表",
+        "output_enabled": "状态更新后输出",
+        "output_state": "更新后的状态"
     },
     "placeholder": {
         "name": "名称",

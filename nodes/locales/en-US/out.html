@@ -24,4 +24,7 @@
         </dd>
         <dt>Payload <span class="property-type">string or object</span></dt><dd>Select the payload data source.</dd>
     </dl>
+    <h3>Output</h3>
+    <p>Optional. When enabled, adds one output. After publishing a command to a device, the node waits for that device's next live state update, for up to 30 seconds. It sends a copy of the input message with the original <code>msg.payload</code> in <code>msg.payload_in</code>, the full updated state in <code>msg.payload</code> and <code>msg.payload_raw</code>, and the device state topic in <code>msg.topic</code>. If no update arrives, no output is sent. Group commands do not produce output because a group has no single device state.</p>
+    <p>The state update is not correlated with the command; it is simply the next live update from that device.</p>
 </script>

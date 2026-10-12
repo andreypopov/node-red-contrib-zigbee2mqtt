@@ -9,7 +9,9 @@
         "options": "Параметры",
         "transition": "Переход, с",
         "refresh": "Обновить",
-        "refresh_devices_list": "Обновить список устройств"
+        "refresh_devices_list": "Обновить список устройств",
+        "output_enabled": "Вывод после обновления состояния",
+        "output_state": "обновлённое состояние"
     },
     "placeholder": {
         "name": "Имя",

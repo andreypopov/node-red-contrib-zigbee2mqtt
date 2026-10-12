@@ -9,7 +9,9 @@
         "options": "Options",
         "transition": "Transition, sec",
         "refresh": "Refresh",
-        "refresh_devices_list": "Refresh Devices List"
+        "refresh_devices_list": "Refresh Devices List",
+        "output_enabled": "Output after state update",
+        "output_state": "updated state"
     },
     "placeholder": {
         "name": "Name",

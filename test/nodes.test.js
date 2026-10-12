@@ -18,7 +18,12 @@ function makeServer() {
     server.groups = [];
     server.mqtt = {
         publications: [],
-        publish(...args) { this.publications.push(args); }
+        publish(...args) {
+            this.publications.push(args);
+            if (this.publishError && typeof args.at(-1) === 'function') {
+                args.at(-1)(this.publishError);
+            }
+        }
     };
     server.config = { mqtt_qos: '1' };
     server.bridge_info = { log_level: 'info', permit_join: false };
@@ -120,11 +125,118 @@ test('output node translates commands and publishes with configured MQTT QoS', (
 
     node.emit('input', {});
 
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
+    assert.equal(node.messages.length, 0);
     assert.equal(server.mqtt.publications.length, 1);
     assert.equal(server.mqtt.publications[0][0], 'zigbee2mqtt/lamp/set');
     assert.equal(server.mqtt.publications[0][1], '{"state":"close"}');
     assert.deepEqual(server.mqtt.publications[0][2], { qos: 1 });
     assert.equal(node.lastStatus.fill, 'green');
+});
+
+test('output node optionally sends input and updated full device state', (t) => {
+    const server = makeServer();
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
+        commandType: 'z2m_cmd', command: 'state', outputs: 1
+    }, server);
+    const input = { payload: { source: 'original input' }, extra: 'preserved' };
+    t.after(() => node.emit('close'));
+
+    node.emit('input', input);
+    assert.equal(node.messages.length, 0);
+
+    server.emit('onMQTTMessage', {
+        topic: 'zigbee2mqtt/lamp',
+        payload: { state: 'ON', brightness: 42 },
+        item: server.devices[0],
+        retained: true
+    });
+    assert.equal(node.messages.length, 0);
+
+    server.emit('onMQTTMessage', {
+        topic: 'zigbee2mqtt/other-device',
+        payload: { state: 'OFF' },
+        item: { friendly_name: 'other-device' },
+        retained: false
+    });
+    assert.equal(node.messages.length, 0);
+
+    const state = { state: 'ON', brightness: 42, linkquality: 80 };
+    server.emit('onMQTTMessage', {
+        topic: 'zigbee2mqtt/lamp', payload: state, item: server.devices[0], retained: false
+    });
+
+    assert.equal(node.messages.length, 1);
+    assert.deepEqual(node.messages[0], {
+        payload: state,
+        payload_in: { source: 'original input' },
+        payload_raw: state,
+        extra: 'preserved',
+        topic: 'zigbee2mqtt/lamp',
+        item: server.devices[0],
+        homekit: undefined,
+        format: undefined,
+        selector: 'zigbee2mqtt_lamp'
+    });
+    assert.deepEqual(input, { payload: { source: 'original input' }, extra: 'preserved' });
+
+    node.emit('close');
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
+});
+
+test('output node publishes group commands without an entity-state output', (t) => {
+    const server = makeServer();
+    const group = { friendly_name: 'downstairs' };
+    server.groups = [group];
+    server.getDeviceOrGroupByKey = (key) => key === 'downstairs' ? group : null;
+    const { node, logs } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'downstairs', payloadType: 'str', payload: 'on',
+        commandType: 'z2m_cmd', command: 'state', outputs: 1
+    }, server);
+    t.after(() => node.emit('close'));
+
+    node.emit('input', {});
+
+    assert.equal(server.mqtt.publications.length, 1);
+    assert.equal(server.mqtt.publications[0][0], 'zigbee2mqtt/downstairs/set');
+    assert.equal(node.pendingOutputs.length, 0);
+    assert.equal(logs.some((entry) => entry.level === 'warn' && entry.args[0].includes('not groups')), true);
+});
+
+test('output node clears a pending state output when MQTT publish fails', (t) => {
+    const server = makeServer();
+    server.mqtt.publishError = new Error('publish failed');
+    const { node, logs } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
+        commandType: 'z2m_cmd', command: 'state', outputs: 1
+    }, server);
+    t.after(() => node.emit('close'));
+
+    node.emit('input', { payload: 'original' });
+
+    assert.equal(node.pendingOutputs.length, 0);
+    assert.equal(logs.some((entry) => entry.level === 'error'), true);
+    server.emit('onMQTTMessage', {
+        topic: 'zigbee2mqtt/lamp', payload: { state: 'ON' }, item: server.devices[0], retained: false
+    });
+    assert.equal(node.messages.length, 0);
+});
+
+test('output node removes its state listener and pending timer on close', (t) => {
+    const server = makeServer();
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
+        commandType: 'z2m_cmd', command: 'state', outputs: 1
+    }, server);
+
+    node.emit('input', { payload: 'original' });
+    assert.equal(node.pendingOutputs.length, 1);
+    assert.equal(server.listenerCount('onMQTTMessage'), 1);
+
+    node.emit('close');
+    assert.equal(node.pendingOutputs.length, 0);
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
 });
 
 test('output node targets an endpoint when msg.topic contains its full set topic', (t) => {

@@ -9,7 +9,9 @@
         "options": "Optionen",
         "transition": "Übergang, s",
         "refresh": "Aktualisieren",
-        "refresh_devices_list": "Geräteliste aktualisieren"
+        "refresh_devices_list": "Geräteliste aktualisieren",
+        "output_enabled": "Ausgabe nach Zustandsaktualisierung",
+        "output_state": "aktualisierter Zustand"
     },
     "placeholder": {
         "name": "Name",
