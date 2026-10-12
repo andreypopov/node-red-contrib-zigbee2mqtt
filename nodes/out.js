@@ -1,5 +1,45 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
 
+function resolveDeviceTarget(server, key) {
+    const device = server.getDeviceOrGroupByKey(key);
+    if (device) {
+        return { device, topic: null };
+    }
+
+    if (typeof key !== 'string' || !key) {
+        return null;
+    }
+
+    const aliases = [];
+    for (const item of [...(server.devices || []), ...(server.groups || [])]) {
+        const names = new Set([item.friendly_name, item.ieee_address].filter((name) => typeof name === 'string' && name));
+        for (const name of names) {
+            const topic = server.getTopic('/' + name);
+            aliases.push({ prefix: topic, topic, item });
+            aliases.push({ prefix: name, topic, item });
+        }
+    }
+    aliases.sort((left, right) => right.prefix.length - left.prefix.length);
+
+    for (const alias of aliases) {
+        if (!key.startsWith(alias.prefix + '/')) {
+            continue;
+        }
+
+        const suffix = key.slice(alias.prefix.length + 1);
+        if (suffix === 'set') {
+            return { device: alias.item, topic: alias.topic + '/set' };
+        }
+
+        const endpoint = suffix.match(/^([^/]+)\/set$/);
+        if (endpoint && alias.item.ieee_address) {
+            return { device: alias.item, topic: alias.topic + '/' + endpoint[1] + '/set' };
+        }
+    }
+
+    return null;
+}
+
 module.exports = function(RED) {
     class Zigbee2mqttNodeOut {
         constructor(config) {
@@ -20,7 +60,8 @@ module.exports = function(RED) {
                     if ((!key || key === 'msg.topic') && message.topic) {
                         key = message.topic;
                     }
-                    let device = node.server.getDeviceOrGroupByKey(key);
+                    const target = resolveDeviceTarget(node.server, key);
+                    let device = target && target.device;
                     if (device) {
                         let payload;
                         let options = {};
@@ -245,8 +286,9 @@ module.exports = function(RED) {
                                 text = command+': '+payload;
                             }
 
-                            node.log('Published to mqtt topic: ' + node.server.getTopic('/'+device.friendly_name + '/set') + ' : ' + JSON.stringify(toSend));
-                            node.server.mqtt.publish(node.server.getTopic('/'+device.friendly_name + '/set'), JSON.stringify(toSend),
+                            const topic = target.topic || node.server.getTopic('/'+device.friendly_name + '/set');
+                            node.log('Published to mqtt topic: ' + topic + ' : ' + JSON.stringify(toSend));
+                            node.server.mqtt.publish(topic, JSON.stringify(toSend),
                                 {'qos':parseInt(node.server.config.mqtt_qos||0)},
                                 function(err) {
                                     if (err) {
@@ -358,7 +400,6 @@ module.exports = function(RED) {
 
     RED.nodes.registerType('zigbee2mqtt-out', Zigbee2mqttNodeOut);
 };
-
 
 
 

@@ -9,6 +9,13 @@ const { instantiate } = require('./support/runtime');
 
 function makeServer() {
     const server = new EventEmitter();
+    const lamp = {
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        current_values: { position: 25, lock_state: 'locked', color: {} }
+    };
+    server.devices = [lamp];
+    server.groups = [];
     server.mqtt = {
         publications: [],
         publish(...args) { this.publications.push(args); }
@@ -19,10 +26,7 @@ function makeServer() {
     server.calls = [];
     server.getTopic = (path) => `zigbee2mqtt${path}`;
     server.getDeviceAvailabilityColor = () => 'green';
-    server.getDeviceOrGroupByKey = (key) => key === 'lamp' ? {
-        friendly_name: 'lamp',
-        current_values: { position: 25, lock_state: 'locked', color: {} }
-    } : null;
+    server.getDeviceOrGroupByKey = (key) => ['lamp', '0x001', 'zigbee2mqtt/lamp', 'zigbee2mqtt/0x001'].includes(key) ? lamp : null;
     server.nodeSend = (node, options) => server.calls.push({ node, options });
     server.setDeviceOptions = (...args) => server.calls.push({ method: 'setDeviceOptions', args });
     return server;
@@ -121,6 +125,36 @@ test('output node translates commands and publishes with configured MQTT QoS', (
     assert.equal(server.mqtt.publications[0][1], '{"state":"close"}');
     assert.deepEqual(server.mqtt.publications[0][2], { qos: 1 });
     assert.equal(node.lastStatus.fill, 'green');
+});
+
+test('output node targets an endpoint when msg.topic contains its full set topic', (t) => {
+    const server = makeServer();
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'msg.topic', payloadType: 'msg', payload: 'payload',
+        commandType: 'z2m_cmd', command: 'state'
+    }, server);
+    t.after(() => clearTimeout(node.cleanTimer));
+
+    node.emit('input', { topic: 'zigbee2mqtt/0x001/left/set', payload: 'on' });
+
+    assert.equal(server.mqtt.publications.length, 1);
+    assert.equal(server.mqtt.publications[0][0], 'zigbee2mqtt/0x001/left/set');
+    assert.equal(server.mqtt.publications[0][1], '{"state":"on"}');
+    assert.deepEqual(server.mqtt.publications[0][2], { qos: 1 });
+});
+
+test('output node keeps default topics when msg.topic names only a device', (t) => {
+    const server = makeServer();
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'msg.topic', payloadType: 'msg', payload: 'payload',
+        commandType: 'z2m_cmd', command: 'state'
+    }, server);
+    t.after(() => clearTimeout(node.cleanTimer));
+
+    node.emit('input', { topic: 'lamp', payload: 'on' });
+
+    assert.equal(server.mqtt.publications[0][0], 'zigbee2mqtt/lamp/set');
+    assert.equal(server.mqtt.publications[0][1], '{"state":"on"}');
 });
 
 test('output node publishes numeric tilt commands for Venetian blinds', (t) => {
