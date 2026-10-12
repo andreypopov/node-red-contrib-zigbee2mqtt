@@ -54,5 +54,38 @@
         return values.map((option) => ({ ...option }));
     }
 
-    return { formatExposeLabel, getStateCommandOptions, getStatePayloadOptions, isStateCommand };
+    function getDefaultOutNodeLabel(node) {
+        if (!node || typeof node !== "object") return "z2m-out";
+        if (node.name) return node.name;
+
+        const deviceName = typeof node.friendly_name === "string" && node.friendly_name.length
+            ? node.friendly_name
+            : (typeof node.device_id === "string" ? node.device_id : null);
+        if (!deviceName) return "z2m-out";
+        if (node.commandType !== "z2m_cmd" || typeof node.command !== "string" || !node.command) {
+            return deviceName;
+        }
+
+        if (isStateCommand(node.command)) {
+            const stateActionLabels = {
+                on: "Turn on",
+                off: "Turn off",
+                toggle: "Toggle",
+                lock: "Lock",
+                unlock: "Unlock",
+                open: "Open",
+                close: "Close"
+            };
+            const payload = typeof node.payload === "string" ? node.payload.toLowerCase() : "";
+            const action = node.payloadType === "z2m_payload" ? stateActionLabels[payload] : null;
+            const endpoint = node.command === "state" ? "" : ` (${node.command.slice("state_".length)})`;
+            return action
+                ? `${action} ${deviceName}${endpoint}`
+                : `Set state of ${deviceName}${endpoint}`;
+        }
+
+        return `Set ${node.command.replace(/_/g, " ")} of ${deviceName}`;
+    }
+
+    return { formatExposeLabel, getStateCommandOptions, getStatePayloadOptions, getDefaultOutNodeLabel, isStateCommand };
 });

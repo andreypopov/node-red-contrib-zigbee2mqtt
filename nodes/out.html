@@ -124,16 +124,7 @@
         outputs: 0,
         icon: "icon.png",
         label: function() {
-            var label = 'z2m-out';
-
-            if (this.name) {
-                label = this.name;
-            } else if (typeof(this.friendly_name) == 'string' && this.friendly_name.length) {
-                label = this.friendly_name;
-            } else if (typeof(this.device_id) == 'string') {
-                label = this.device_id;
-            }
-            return label;
+            return Zigbee2mqttEditorUtils.getDefaultOutNodeLabel(this);
         },
         oneditprepare: function() {
             let node = this;
