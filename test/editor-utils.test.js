@@ -22,6 +22,13 @@ test("default Out labels describe the selected state action and device", () => {
     assert.equal(EditorUtils.getDefaultOutNodeLabel({ ...node, name: "Custom name" }), "Custom name");
 });
 
+test('server flow labels are appended when configured and omitted when blank', () => {
+    assert.equal(EditorUtils.appendServerFlowLabel('Turn on Desk lamp', { flow_label: 'Upstairs' }), 'Turn on Desk lamp [Upstairs]');
+    assert.equal(EditorUtils.appendServerFlowLabel('Custom name', { flow_label: '  House A  ' }), 'Custom name [House A]');
+    assert.equal(EditorUtils.appendServerFlowLabel('Desk lamp', { flow_label: '  ' }), 'Desk lamp');
+    assert.equal(EditorUtils.appendServerFlowLabel('Desk lamp', null), 'Desk lamp');
+});
+
 test('multi-endpoint state commands cover endpoints 1 through 9', () => {
     assert.deepEqual(
         EditorUtils.getStateCommandOptions().map(({ value }) => value),

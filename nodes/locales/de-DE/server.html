@@ -1,0 +1,13 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-server">
+    <p>Verbindung zu Ihrer Zigbee2MQTT-Bridge</p>
+    <h3>Konfiguration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">Zeichenfolge</span></dt><dd>Wählen Sie einen beliebigen Namen zur Identifizierung dieses Nodes.</dd>
+        <dt class="optional">Flow-Kennzeichnung <span class="property-type">Zeichenfolge</span></dt><dd>Optionale Kennzeichnung mit bis zu 24 Zeichen. Sie wird in eckigen Klammern an die Beschriftungen der Bridge-, In-, Get- und Out-Nodes angehängt, die diesen Server verwenden. Beispiel: <code>Lampe [Obergeschoss]</code>. Leer lassen, damit die bisherigen Beschriftungen erhalten bleiben.</dd>
+        <dt>MQTT-Host <span class="property-type">Zeichenfolge</span></dt><dd>IP-Adresse oder MQTT-Host Ihrer Zigbee2MQTT-Instanz. Beispiele: <code>127.0.0.1</code>, <code>192.168.1.100</code>, <code>myzigbee2mqtt.dydns.com</code></dd>
+        <dt class="required">Basis-Topic <span class="property-type">Zeichenfolge</span></dt><dd>Wie in Ihrer <code>configuration.yaml</code>.</dd>
+        <dt class="optional">MQTT-Port <span class="property-type">Zahl</span></dt><dd>Der Standardport für MQTT ist 1883.</dd>
+        <dt class="optional">MQTT-Benutzername <span class="property-type">Zeichenfolge</span></dt><dd></dd>
+        <dt class="optional">MQTT-Passwort <span class="property-type">Zeichenfolge</span></dt><dd></dd>
+    </dl>
+</script>

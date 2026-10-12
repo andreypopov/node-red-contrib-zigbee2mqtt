@@ -7,10 +7,12 @@
         "mqtt_username": "Имя пользователя MQTT",
         "mqtt_password": "Пароль MQTT",
         "use-tls": "Использовать TLS",
-        "tls-config": "Настройка TLS"
+        "tls-config": "Настройка TLS",
+        "flow_label": "Метка потока"
     },
     "placeholder": {
-        "name": "Имя"
+        "name": "Имя",
+        "flow_label": "Например, Верхний этаж"
     },
     "status": {
         "no_server": "нет серверного узла",

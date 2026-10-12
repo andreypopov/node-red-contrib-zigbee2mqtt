@@ -7,10 +7,12 @@
         "mqtt_username": "MQTT-Benutzername",
         "mqtt_password": "MQTT-Passwort",
         "use-tls": "TLS verwenden",
-        "tls-config": "TLS-Konfiguration"
+        "tls-config": "TLS-Konfiguration",
+        "flow_label": "Flow-Kennzeichnung"
     },
     "placeholder": {
-        "name": "Name"
+        "name": "Name",
+        "flow_label": "z. B. Obergeschoss"
     },
     "status": {
         "no_server": "kein Server-Node",

@@ -7,10 +7,12 @@
         "mqtt_username": "MQTT 用户名",
         "mqtt_password": "MQTT 密码",
         "use-tls": "使用 TLS",
-        "tls-config": "TLS 配置"
+        "tls-config": "TLS 配置",
+        "flow_label": "流程标签"
     },
     "placeholder": {
-        "name": "名称"
+        "name": "名称",
+        "flow_label": "例如：楼上"
     },
     "status": {
         "no_server": "未配置服务器节点",

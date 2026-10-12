@@ -7,10 +7,12 @@
         "mqtt_username": "Používateľské meno MQTT",
         "mqtt_password": "Heslo MQTT",
         "use-tls": "Použiť TLS",
-        "tls-config": "Konfigurácia TLS"
+        "tls-config": "Konfigurácia TLS",
+        "flow_label": "Označenie toku"
     },
     "placeholder": {
-        "name": "Meno"
+        "name": "Meno",
+        "flow_label": "napr. poschodie"
     },
     "status": {
         "no_server": "žiadny server",

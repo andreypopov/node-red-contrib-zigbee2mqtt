@@ -133,6 +133,13 @@
         return `Set ${node.command.replace(/_/g, " ")} of ${deviceName}`;
     }
 
+    function appendServerFlowLabel(label, server) {
+        const marker = server && typeof server.flow_label === 'string'
+            ? server.flow_label.trim()
+            : '';
+        return marker ? `${label} [${marker}]` : label;
+    }
+
     return {
         formatExposeLabel,
         getWritableExposeOptions,
@@ -140,6 +147,7 @@
         getStateCommandOptions,
         getStatePayloadOptions,
         getDefaultOutNodeLabel,
+        appendServerFlowLabel,
         isStateCommand
     };
 });
