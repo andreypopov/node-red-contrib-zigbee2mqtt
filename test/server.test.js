@@ -218,7 +218,11 @@ test('bridge settings normalize log level and publish control messages', () => {
     node.setLogLevel('invalid');
     assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { options: { advanced: { log_level: 'info' } } });
     node.setPermitJoin(true);
-    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { options: { permit_join: true } });
+    assert.equal(client.publications.at(-1)[0], 'zigbee2mqtt/bridge/request/permit_join');
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { time: 180 });
+    node.setPermitJoin(false);
+    assert.equal(client.publications.at(-1)[0], 'zigbee2mqtt/bridge/request/permit_join');
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { time: 0 });
     node.restart();
     assert.equal(client.publications.at(-1)[0], 'zigbee2mqtt/bridge/request/restart');
 });

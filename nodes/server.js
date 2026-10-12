@@ -209,11 +209,9 @@ module.exports = function(RED) {
         setPermitJoin(val) {
             let node = this;
             let payload = {
-                'options': {
-                    'permit_join': val,
-                },
+                'time': val ? 180 : 0,
             };
-            node.mqtt.publish(node.getTopic('/bridge/request/options'), JSON.stringify(payload));
+            node.mqtt.publish(node.getTopic('/bridge/request/permit_join'), JSON.stringify(payload));
             node.log('Permit Join was set to: ' + val);
         }
 
