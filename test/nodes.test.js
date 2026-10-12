@@ -150,6 +150,21 @@ test('output node preserves floating-point values for device parameters', (t) =>
     assert.equal(server.mqtt.publications[0][1], '{"sensitivity":4.5}');
 });
 
+test('output node wraps color objects when the command comes from the message', (t) => {
+    const server = makeServer();
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'lamp', payloadType: 'msg', payload: 'payload',
+        commandType: 'msg', command: 'command'
+    }, server);
+    t.after(() => clearTimeout(node.cleanTimer));
+
+    node.emit('input', { command: 'color', payload: { hue: 240, saturation: 100 } });
+    assert.equal(server.mqtt.publications.at(-1)[1], '{"color":{"hue":240,"saturation":100}}');
+
+    node.emit('input', { command: 'color', payload: { color: { hue: 240, saturation: 100 } } });
+    assert.equal(server.mqtt.publications.at(-1)[1], '{"color":{"hue":240,"saturation":100}}');
+});
+
 test('output node supports lock, color and HomeKit commands', (t) => {
     const server = makeServer();
     const lock = instantiate(registerOut, 'zigbee2mqtt-out', {

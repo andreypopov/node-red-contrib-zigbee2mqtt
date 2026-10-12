@@ -95,6 +95,10 @@ module.exports = function(RED) {
 
                             case 'msg': {
                                 command = message[node.config.command];
+                                if (command === 'color' && payload && typeof payload === 'object' && !Array.isArray(payload)
+                                    && !Object.prototype.hasOwnProperty.call(payload, 'color')) {
+                                    payload = { color: payload };
+                                }
                                 break;
                             }
                             case 'z2m_cmd':
