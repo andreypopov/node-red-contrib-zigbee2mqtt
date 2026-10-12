@@ -10,4 +10,12 @@
         <dt class="optional">MQTT 用户名 <span class="property-type">字符串</span></dt><dd></dd>
         <dt class="optional">MQTT 密码 <span class="property-type">字符串</span></dt><dd></dd>
     </dl>
+    <h3>设备初始状态</h3>
+    <p>连接时，节点会短暂等待 MQTT 保留的设备状态。如果仍缺少状态，只会向未禁用且未被 Zigbee2MQTT 可用性功能报告为离线的设备请求可读取的属性。设备列表每次更新时不会重复失败的请求；设备恢复在线、重新启用、重新加入列表或 MQTT 连接恢复后，才会再次尝试。</p>
+    <p>要检测离线设备，必须启用 Zigbee2MQTT 的可用性功能。</p>
+    <p>如需在重新连接时由 MQTT broker 下发设备最近一次状态，请在 Zigbee2MQTT 的 <code>configuration.yaml</code> 中为设备启用 retain：</p>
+    <pre><code>devices:
+  '0x00158d0001abcdef':
+    retain: true</code></pre>
+    <p>保留的数据是设备最近一次发布的状态。启用 retain 后，设备再次发布状态时才会保存该值。</p>
 </script>

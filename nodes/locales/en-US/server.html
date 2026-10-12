@@ -10,4 +10,12 @@
         <dt class="optional">MQTT Username <span class="property-type">string</span></dt><dd></dd>
         <dt class="optional">MQTT Password <span class="property-type">string</span></dt><dd></dd>
     </dl>
+    <h3>Initial device state</h3>
+    <p>On connection, the node waits briefly for retained device states. If a state is still missing, it requests readable values only from devices not marked disabled or reported offline by Zigbee2MQTT's availability feature. It does not repeat a failed request on each device-list update; another attempt is made after the device comes online, is re-enabled or re-added, or the MQTT connection reconnects.</p>
+    <p>Offline detection requires Zigbee2MQTT's availability feature to be enabled.</p>
+    <p>To restore the last state from the MQTT broker after reconnecting, enable retain for the device in Zigbee2MQTT's <code>configuration.yaml</code>:</p>
+    <pre><code>devices:
+  '0x00158d0001abcdef':
+    retain: true</code></pre>
+    <p>Retained data is the last state published by the device. Enabling retain does not create a value until the device publishes again.</p>
 </script>

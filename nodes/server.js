@@ -3,6 +3,7 @@ var mqtt = require('mqtt');
 var Viz = require('@viz-js/viz');
 var vizInstancePromise;
 const MAX_PENDING_MQTT_MESSAGES = 1000;
+const INITIAL_STATE_REQUEST_DELAY_MS = 1000;
 
 function getVizInstance() {
     if (!vizInstancePromise) {
@@ -57,6 +58,8 @@ module.exports = function(RED) {
             node.devices_values = {};
             node.pendingMQTTMessages = new Map();
             node.avaialability = {};
+            node.initialStateRequests = new Set();
+            node.initialStateRequestTimer = null;
             node.bridge_info = null;
             node.bridge_state = null;
             node.map = null;
@@ -258,6 +261,47 @@ module.exports = function(RED) {
 
         getTopic(path) {
             return this.getBaseTopic() + path;
+        }
+
+        getDeviceStateTopic(device) {
+            const name = device && (device.friendly_name || device.ieee_address);
+            return name ? this.getTopic('/' + name) : null;
+        }
+
+        queueInitialStateRequests() {
+            const node = this;
+            if (node.initialStateRequestTimer !== null) return;
+
+            node.initialStateRequestTimer = setTimeout(() => {
+                node.initialStateRequestTimer = null;
+                if (!Array.isArray(node.devices)) return;
+
+                for (const device of node.devices) {
+                    if (!device || device.disabled === true) continue;
+                    const topic = node.getDeviceStateTopic(device);
+                    if (!topic
+                        || Object.prototype.hasOwnProperty.call(node.devices_values, topic)
+                        || node.avaialability[topic] === false
+                        || node.initialStateRequests.has(topic)) {
+                        continue;
+                    }
+
+                    const exposes = device.definition && device.definition.exposes;
+                    if (!Array.isArray(exposes)) continue;
+
+                    const getPayload = {};
+                    for (const expose of exposes) {
+                        if (expose && typeof expose.name === 'string' && expose.access && (expose.access & 0b100)) {
+                            getPayload[expose.name] = '';
+                        }
+                    }
+                    if (Object.keys(getPayload).length === 0) continue;
+
+                    // A failed request should not be repeated every time the device list is republished.
+                    node.initialStateRequests.add(topic);
+                    node.mqtt.publish(topic + '/get', JSON.stringify(getPayload));
+                }
+            }, INITIAL_STATE_REQUEST_DELAY_MS);
         }
 
         queuePendingMQTTMessage(message) {
@@ -768,6 +812,7 @@ module.exports = function(RED) {
         onMQTTConnect() {
             var node = this;
             node.connection = true;
+            node.initialStateRequests.clear();
             node.log('MQTT Connected');
             node.emit('onMQTTConnect');
             node.subscribeMQTT();
@@ -829,32 +874,28 @@ module.exports = function(RED) {
             if (topic.includes('/bridge/')) {
                 if (node.getTopic('/bridge/devices') === topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
+                        const previousDevices = new Map((Array.isArray(node.devices) ? node.devices : [])
+                            .map((device) => [node.getDeviceStateTopic(device), device])
+                            .filter(([deviceTopic]) => deviceTopic));
                         node.devices = JSON.parse(messageString);
                         node.replayPendingMQTTMessages();
-                        for (let ind in node.devices) {
-                            let topic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
-                            if (topic in node.devices_values) {
-                                // getDeviceOrGroupByKey will add up-to-date information from node.device_values
-                            } else {
-                                // force get data
-                                // definition.exposes[].access has to be 0b1xx to support get
-                                // special devices, like "Coordinator", don't have a definition
-                                // Zigbee2MQTT seems to answer with the full state, not just the ones marked with gettable (but if we just send an empty/dummy payload, there won't be an answer)
-                                if (node.devices[ind].definition) {
-                                    let getPayload = {}
-                                    let isEmpty = true
-                                    for (let exp of node.devices[ind].definition.exposes) {
-                                        if (exp.access && (exp.access & 0b100)) {
-                                            getPayload[exp.name] = ""
-                                            isEmpty = false
-                                        }
-                                    }
-                                    if (!isEmpty) {
-                                        node.mqtt.publish(topic + '/get', JSON.stringify(getPayload))
-                                    }
-                                }
+                        const currentDeviceTopics = new Set();
+                        for (const device of Array.isArray(node.devices) ? node.devices : []) {
+                            const deviceTopic = node.getDeviceStateTopic(device);
+                            if (!deviceTopic) continue;
+                            currentDeviceTopics.add(deviceTopic);
+
+                            const previousDevice = previousDevices.get(deviceTopic);
+                            if (previousDevice && previousDevice.disabled === true && device.disabled !== true) {
+                                node.initialStateRequests.delete(deviceTopic);
                             }
                         }
+                        for (const requestedTopic of node.initialStateRequests) {
+                            if (!currentDeviceTopics.has(requestedTopic)) {
+                                node.initialStateRequests.delete(requestedTopic);
+                            }
+                        }
+                        node.queueInitialStateRequests();
                     }
                 } else if (node.getTopic('/bridge/groups') === topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
@@ -909,12 +950,19 @@ module.exports = function(RED) {
                         availabilityStatus = messageString === 'online';
                     }
 
-                    node.avaialability[topic.split('/availability').join('')] = availabilityStatus;
+                    const deviceTopic = topic.split('/availability').join('');
+                    const wasOffline = node.avaialability[deviceTopic] === false;
+                    node.avaialability[deviceTopic] = availabilityStatus;
+
+                    if (wasOffline && availabilityStatus) {
+                        node.initialStateRequests.delete(deviceTopic);
+                        node.queueInitialStateRequests();
+                    }
 
                     node.emit('onMQTTAvailability', {
                         topic: topic,
                         payload: availabilityStatus,
-                        item: node.getDeviceOrGroupByKey(topic.split('/availability').join(''))
+                        item: node.getDeviceOrGroupByKey(deviceTopic)
                     });
                     return;
                 }
@@ -965,6 +1013,11 @@ module.exports = function(RED) {
 
         onClose() {
             var node = this;
+            if (node.initialStateRequestTimer !== null) {
+                clearTimeout(node.initialStateRequestTimer);
+                node.initialStateRequestTimer = null;
+            }
+            node.initialStateRequests.clear();
             node.unsubscribeMQTT();
             node.mqtt.end();
             node.pendingMQTTMessages.clear();

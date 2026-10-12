@@ -10,4 +10,12 @@
         <dt class="optional">MQTT-Benutzername <span class="property-type">Zeichenfolge</span></dt><dd></dd>
         <dt class="optional">MQTT-Passwort <span class="property-type">Zeichenfolge</span></dt><dd></dd>
     </dl>
+    <h3>Anfangszustand der Geräte</h3>
+    <p>Beim Verbinden wartet der Node kurz auf gespeicherte MQTT-Zustände. Fehlt danach ein Zustand, fragt er lesbare Werte nur bei Geräten ab, die nicht deaktiviert und von der Zigbee2MQTT-Verfügbarkeitsfunktion nicht als offline gemeldet sind. Eine fehlgeschlagene Anfrage wird nicht bei jeder Aktualisierung der Geräteliste wiederholt. Ein neuer Versuch erfolgt, wenn das Gerät wieder online, erneut aktiviert oder wieder hinzugefügt wird oder die MQTT-Verbindung erneut hergestellt wird.</p>
+    <p>Für die Offline-Erkennung muss die Verfügbarkeitsfunktion von Zigbee2MQTT aktiviert sein.</p>
+    <p>Damit der MQTT-Broker den letzten Zustand nach einer erneuten Verbindung sendet, aktivieren Sie für das Gerät in der Zigbee2MQTT-<code>configuration.yaml</code> retain:</p>
+    <pre><code>devices:
+  '0x00158d0001abcdef':
+    retain: true</code></pre>
+    <p>Gespeicherte Daten entsprechen dem zuletzt vom Gerät veröffentlichten Zustand. Ein Wert wird erst gespeichert, nachdem das Gerät erneut einen Zustand veröffentlicht hat.</p>
 </script>

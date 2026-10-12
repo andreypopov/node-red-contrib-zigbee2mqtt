@@ -10,4 +10,12 @@
         <dt class="optional">MQTT Užívateľské meno <span class="property-type">reťazec</span></dt><dd></dd>
         <dt class="optional">MQTT Heslo <span class="property-type">reťazec</span></dt><dd></dd>
     </dl>
+    <h3>Počiatočný stav zariadení</h3>
+    <p>Pri pripojení uzol krátko počká na uchované MQTT stavy. Ak stav stále chýba, vyžiada čitateľné hodnoty iba od zariadení, ktoré nie sú vypnuté ani označené ako nedostupné funkciou dostupnosti v Zigbee2MQTT. Neúspešnú požiadavku neopakuje pri každej aktualizácii zoznamu zariadení. Skúsi to znova až po návrate zariadenia do online stavu, jeho opätovnom povolení alebo pridaní, prípadne po obnovení MQTT spojenia.</p>
+    <p>Na zisťovanie nedostupných zariadení musí byť v Zigbee2MQTT zapnutá funkcia dostupnosti.</p>
+    <p>Ak chcete, aby MQTT broker po opätovnom pripojení poslal posledný stav, zapnite retain pre zariadenie v súbore Zigbee2MQTT <code>configuration.yaml</code>:</p>
+    <pre><code>devices:
+  '0x00158d0001abcdef':
+    retain: true</code></pre>
+    <p>Uchovaný údaj predstavuje posledný stav publikovaný zariadením. Zapnutie retain nevytvorí hodnotu, kým zariadenie znova nepublikuje svoj stav.</p>
 </script>
