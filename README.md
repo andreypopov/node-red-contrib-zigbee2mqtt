@@ -23,6 +23,32 @@ Extra features:
 * groups support
 * network map generation
 
+## Dynamic device and endpoint topics in the Out node
+
+To choose the target for each incoming message, set the Out node's **Device** field to `msg.topic`. The value is matched against devices and groups in the connected Zigbee2MQTT server node. A fixed **Device** selection takes precedence and ignores `msg.topic`.
+
+The following device identifiers select the device's default command topic (`<base topic>/<device>/set`):
+
+- The device's `friendly_name`, for example `living_room`.
+- Its IEEE address, for example `0x00158d0003a27716`.
+- Its numeric Zigbee2MQTT device ID, if present, for example `1`.
+- The device topic itself, either relative to the base topic (`living_room`) or fully qualified (`zigbee2mqtt/living_room`). The fully qualified form must use the server node's configured base topic.
+- The normalized selector value used by the Device list, for example `zigbee2mqtt_living_room`.
+
+You can also pass a command topic explicitly:
+
+| `msg.topic` value | Result |
+| --- | --- |
+| `living_room/set` or `zigbee2mqtt/living_room/set` | Selects the device and publishes to its default `/set` topic. |
+| `living_room/left/set` or `zigbee2mqtt/living_room/left/set` | Selects the `left` endpoint and publishes to that endpoint topic. |
+| `0x00158d0003a27716/2/set` or `zigbee2mqtt/0x00158d0003a27716/2/set` | Selects endpoint `2`. Endpoint names such as `left`, `right`, or `l1` work the same way. |
+
+Relative command topics are combined with the server node's configured base topic; fully qualified topics must use that base topic. The device or group must exist in the server node's current inventory. Groups support device-only routing (including `/set`); endpoint routing is for devices. An endpoint is one path segment before `/set`. The node passes that segment through and does not check whether the device actually has that endpoint.
+
+A bare device name or topic is supported and defaults to `/set`. An endpoint topic must include `/set`: `living_room/left` is not recognized. If the device or group cannot be resolved, the Out node reports `no device` and does not publish.
+
+`msg.topic` selects the MQTT destination. The Out node still builds the JSON command payload from its **Command** and **Payload** settings. For example, with command `state` and payload `on`, `zigbee2mqtt/living_room/left/set` is published with `{"state":"on"}`.
+
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/1.png?raw=true">
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/2.png?raw=true">
 <img src="https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/blob/master/readme/3.png?raw=true">

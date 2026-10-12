@@ -23,7 +23,7 @@
         "important": "IMPORTANT:",
         "description": "Description:",
         "options": "Options:",
-        "endpoint_topic": "Set Device to msg.topic and pass a full topic such as zigbee2mqtt/0x00158d0003a27716/left/set to target a device endpoint.",
+        "endpoint_topic": "Set Device to msg.topic to route each message dynamically. A device name, IEEE address, numeric device ID, selector value, or device topic selects its default /set topic, even when msg.topic contains only the device name. Append /set to a device topic, or /<endpoint>/set to route to an endpoint (for example zigbee2mqtt/0x00158d0003a27716/left/set). The endpoint must be a single path segment; the node does not verify that it exists. Command and Payload still form the JSON request.",
         "command_homekit": "This is experimental feature, works only with Lightbulb, Lock Services for now. ",
         "command_brightness_move": "Instead of setting a brightness by value, you can also move it and stop it after a certain time. Example: -5 payload will start moving the brightness down at 5 units per second.",
         "command_brightness_step": "Instead of setting a brightness by value, you can also change current value up or down.",
