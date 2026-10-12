@@ -61,6 +61,20 @@ test('device lookup supports names, IEEE addresses, ids, topics and selectors', 
     assert.equal(node.getDeviceOrGroupByKey('missing'), null);
 });
 
+test("plain-text MQTT states do not crash device lookup", () => {
+    const { node } = createServer();
+    addLamp(node);
+    const updates = [];
+    node.on("onMQTTMessage", (data) => updates.push(data));
+
+    assert.doesNotThrow(() => node.onMQTTMessage("zigbee2mqtt/lamp", Buffer.from("ON")));
+
+    assert.equal(node.devices_values["zigbee2mqtt/lamp"], "ON");
+    assert.equal(updates.length, 1);
+    assert.deepEqual(updates[0].item.homekit, {});
+    assert.deepEqual(updates[0].item.format, {});
+});
+
 test('single output reads the selected multi-endpoint state property', (t) => {
     const { node: server } = createServer();
     server.devices = [{

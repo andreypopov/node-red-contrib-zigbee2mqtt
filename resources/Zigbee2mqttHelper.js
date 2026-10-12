@@ -195,7 +195,7 @@ class Zigbee2mqttHelper {
     static payload2homekit(payload) {
         var msg = {};
 
-        if (!payload) return msg;
+        if (!payload || typeof payload !== "object" || Array.isArray(payload)) return msg;
 
         //Lightbulb
         if ("brightness" in payload) {
@@ -390,8 +390,10 @@ class Zigbee2mqttHelper {
         var node = this;
         var result = {};
 
+        if (!payload || typeof payload !== "object" || Array.isArray(payload)) return result;
+
         //convert XY to RGB, HSV
-        if (payload && "color" in payload && "x" in payload.color) {
+        if ("color" in payload && "x" in payload.color) {
             var bri = "brightness" in payload ? payload.brightness : 255;
             var rgb = Zigbee2mqttHelper.cie2rgb(payload.color.x, payload.color.y, bri);
             var hsv = Zigbee2mqttHelper.rgb2hsv(rgb.r, rgb.g, rgb.b);
