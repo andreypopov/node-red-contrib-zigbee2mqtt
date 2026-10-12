@@ -1,0 +1,84 @@
+{
+    "label": {
+        "name": "名称",
+        "server": "服务器",
+        "permit_join": "允许设备加入",
+        "permit_join_help": "搜索设备，持续 3 分钟",
+        "permit_join_cancel_help": "停止搜索",
+        "log_level": "日志级别",
+        "log_level_info": "信息",
+        "log_level_debug": "调试",
+        "log_level_warning": "警告",
+        "log_level_error": "错误",
+        "version": "版本",
+        "restart_required": "需要重启",
+        "no_legacy_api": "已停用旧版 API",
+        "coordinator": "协调器",
+        "turn_off_legacy_api": "应处于关闭状态",
+        "restart_needed": "需要重启",
+        "ok": "确定",
+        "advanced_output": "JSON 输出格式",
+        "should_be_json": "应为 'json'",
+        "restart_zigbee2mqtt": "重启 Zigbee2MQTT",
+        "retain_disabled_error": "force_disable_retain 必须为 FALSE",
+        "mqtt_disable_retain": "保留 MQTT 消息",
+        "restart": "重启",
+        "disabled": "已禁用",
+        "last_seen": "上次发现时间",
+        "availability": "可用性",
+        "sure_restart": "确定要重启吗？",
+        "refresh": "刷新",
+        "refresh_all": "刷新所有数据"
+    },
+    "placeholder": {
+        "name": "名称"
+    },
+    "status": {
+        "no_server": "未配置服务器节点",
+        "no_device": "未找到设备",
+        "no_value": "没有值",
+        "no_connection": "连接断开",
+        "searching": "正在搜索设备…",
+        "paired": "设备已配对！",
+        "online": "在线",
+        "offline": "离线",
+        "pairing": "正在配对…",
+        "connected": "已连接",
+        "failed": "失败！"
+    },
+    "tabs": {
+        "bridge": "网桥",
+        "devices": "设备",
+        "groups": "群组",
+        "map": "网络图"
+    },
+    "devices": {
+        "ieee_addr": "IEEE 地址",
+        "friendly_name": "设备名称",
+        "model": "型号",
+        "device": "设备",
+        "set": "保存",
+        "remove": "移除",
+        "sure_remove": "确定要移除此设备吗？"
+    },
+    "groups": {
+        "id": "ID",
+        "friendly_name": "群组名称",
+        "devices": "设备",
+        "set": "保存",
+        "remove": "移除",
+        "add": "添加群组",
+        "enter_group_name": "输入群组名称",
+        "sure_remove": "确定要移除此群组吗？"
+    },
+    "map": {
+        "refresh": "刷新网络图",
+        "fullscreen": "全屏打开",
+        "loading": "正在加载…"
+    },
+    "tokeninput": {
+        "searching": "正在搜索…",
+        "type_to_search": "输入设备名称进行搜索",
+        "no_results": "没有结果"
+    }
+}

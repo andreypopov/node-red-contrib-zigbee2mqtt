@@ -1,0 +1,45 @@
+{
+    "label": {
+        "name": "Name",
+        "server": "Server",
+        "friendly_name": "Gerätename",
+        "topic": "Gerät",
+        "state": "Payload-Ausgabe",
+        "refresh": "Aktualisieren",
+        "refresh_devices_list": "Geräteliste aktualisieren",
+        "start_output": "Bei Start ausgeben",
+        "start_output_help": "Wert beim Start senden",
+        "always": "Immer",
+        "on_state_change": "Bei Statusänderung",
+        "on_update": "Bei jeder Aktualisierung",
+        "filter_changes": "Änderungen filtern",
+        "filter_changes_help": "Nur bei geändertem Wert senden",
+        "output": "Ausgabe",
+        "enable_multiple": "Mehrere Geräte",
+        "enable_multiple_help": "Aktualisierungen von jedem ausgewählten Gerät empfangen."
+    },
+    "placeholder": {
+        "name": "Name",
+        "friendly_name": "Gerätename"
+    },
+    "status": {
+        "no_server": "kein Server-Node",
+        "no_device": "Gerät nicht gefunden",
+        "no_connection": "keine Verbindung",
+        "connected": "verbunden",
+        "received": "empfangen"
+    },
+    "multiselect": {
+        "devices": "Geräte",
+        "filter_devices": "Geräte filtern…",
+        "refresh": "Geräteliste aktualisieren",
+        "none_selected": "Nichts ausgewählt",
+        "complete_payload": "Vollständiger Status",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "Gruppen"
+    },
+    "tip": {
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
+    }
+}

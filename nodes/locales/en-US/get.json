@@ -2,16 +2,18 @@
     "label": {
         "name": "Name",
         "server": "Server",
+        "friendly_name": "Friendly name",
         "topic": "Device",
         "state": "Payload output",
         "refresh": "Refresh",
         "legacy_api": "Legacy API",
         "refresh_devices_list": "Refresh Devices List",
-        "enable_multiple": "Multiple input",
-        "enable_multiple_help": "Listen multiple devices"
+        "enable_multiple": "Multiple devices",
+        "enable_multiple_help": "Get values from one or more selected devices."
     },
     "placeholder": {
-        "name": "Name"
+        "name": "Name",
+        "friendly_name": "Friendly name"
     },
     "multiselect": {
         "devices": "Devices",

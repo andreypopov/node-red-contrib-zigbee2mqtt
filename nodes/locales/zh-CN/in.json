@@ -1,0 +1,45 @@
+{
+    "label": {
+        "name": "名称",
+        "server": "服务器",
+        "friendly_name": "设备名称",
+        "topic": "设备",
+        "state": "Payload 输出",
+        "refresh": "刷新",
+        "refresh_devices_list": "刷新设备列表",
+        "start_output": "启动时输出",
+        "start_output_help": "启动时发送数值",
+        "always": "始终",
+        "on_state_change": "状态变化时",
+        "on_update": "每次更新时",
+        "filter_changes": "筛选变化",
+        "filter_changes_help": "仅在数值变化时发送",
+        "output": "输出",
+        "enable_multiple": "多个设备",
+        "enable_multiple_help": "接收每个所选设备的更新。"
+    },
+    "placeholder": {
+        "name": "名称",
+        "friendly_name": "设备名称"
+    },
+    "status": {
+        "no_server": "未配置服务器节点",
+        "no_device": "未找到设备",
+        "no_connection": "连接断开",
+        "connected": "已连接",
+        "received": "已接收"
+    },
+    "multiselect": {
+        "devices": "设备",
+        "filter_devices": "筛选设备…",
+        "refresh": "刷新设备列表",
+        "none_selected": "未选择任何项",
+        "complete_payload": "完整状态",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "群组"
+    },
+    "tip": {
+        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表"
+    }
+}

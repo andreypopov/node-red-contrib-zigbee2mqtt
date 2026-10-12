@@ -2,23 +2,33 @@
     "label": {
         "name": "Meno",
         "server": "Server",
+        "friendly_name": "Názov zariadenia",
         "topic": "Zariadenie",
-        "state": "Výstup dát",
+        "command": "Príkaz",
+        "payload": "Payload",
+        "options": "Možnosti",
+        "transition": "Prechod, s",
         "refresh": "Obnoviť",
-        "legacy_api": "Stará API",
         "refresh_devices_list": "Obnoviť zoznam zariadení"
     },
     "placeholder": {
-        "name": "Meno"
+        "name": "Meno",
+        "friendly_name": "Názov zariadenia",
+        "transition": "v sekundách"
     },
-    "multiselect": {
-        "devices": "Zariadenia",
-        "filter_devices": "Filtrovať zariadenia...",
-        "refresh": "Obnoviť zoznam zariadení",
-        "none_selected": "Žiadne vybrané",
-        "complete_payload": "Úplné dátové výstupy"
+    "status": {
+        "no_server": "žiadny server",
+        "no_device": "zariadenie sa nenašlo",
+        "no_payload": "chýba payload"
     },
     "help": {
-        "endpoint_topic": "Nastavte Zariadenie na msg.topic, aby sa cieľ vyberal dynamicky pre každú správu. Názov zariadenia, IEEE adresa, číselné ID, hodnota selektora alebo téma zariadenia použije predvolenú tému /set; stačí aj samotný názov zariadenia. Pridajte /set za tému zariadenia alebo /<koncový bod>/set, napríklad zigbee2mqtt/0x00158d0003a27716/left/set. Názov koncového bodu musí byť jedna časť témy; uzol nekontroluje, či existuje. Polia Command a Payload naďalej vytvárajú JSON príkaz."
+        "important": "DÔLEŽITÉ:",
+        "description": "Popis:",
+        "options": "Možnosti:",
+        "endpoint_topic": "Nastavte pole Zariadenie na msg.topic, aby sa cieľ vyberal pre každú správu. Známy názov zariadenia, IEEE adresa, číselné ID, hodnota selektora alebo téma zariadenia identifikuje zariadenie. Ak sa niektorá z týchto hodnôt použije samostatne, uzol použije predvolenú tému /set. Na smerovanie ku koncovému bodu použite relatívnu tému living_room/left/set alebo úplnú tému zigbee2mqtt/living_room/left/set. Úplná téma musí používať základnú tému serverového uzla. Koncový bod tvorí jednu časť cesty a uzol ju odošle bez overenia, či ju zariadenie podporuje. Skupiny podporujú iba témy na úrovni zariadenia, nie smerovanie ku koncovým bodom. Polia Príkaz a Payload naďalej vytvárajú JSON príkazu.",
+        "command_homekit": "Táto experimentálna funkcia zatiaľ funguje iba so službami Lightbulb a Lock v HomeKit.",
+        "command_brightness_move": "Namiesto nastavenia pevnej úrovne jasu môžete jas meniť a po uplynutí určeného času zmenu zastaviť. Napríklad payload -5 začne znižovať jas rýchlosťou 5 jednotiek za sekundu.",
+        "command_brightness_step": "Namiesto nastavenia pevnej úrovne jasu môžete aktuálnu hodnotu postupne zvýšiť alebo znížiť.",
+        "option_transition": "Počet sekúnd potrebných na prechod do tohto stavu. Neplatí pri brightness=0 ani state=toggle."
     }
 }

@@ -1,0 +1,34 @@
+{
+    "label": {
+        "name": "Name",
+        "server": "Server",
+        "friendly_name": "Gerätename",
+        "topic": "Gerät",
+        "command": "Befehl",
+        "payload": "Payload",
+        "options": "Optionen",
+        "transition": "Übergang, s",
+        "refresh": "Aktualisieren",
+        "refresh_devices_list": "Geräteliste aktualisieren"
+    },
+    "placeholder": {
+        "name": "Name",
+        "friendly_name": "Gerätename",
+        "transition": "in Sekunden"
+    },
+    "status": {
+        "no_server": "kein Server-Node",
+        "no_device": "Gerät nicht gefunden",
+        "no_payload": "kein Payload"
+    },
+    "help": {
+        "important": "WICHTIG:",
+        "description": "Beschreibung:",
+        "options": "Optionen:",
+        "endpoint_topic": "Setze das Feld „Gerät“ auf msg.topic, um das Ziel jeder Nachricht auszuwählen. Ein bekannter Gerätename, eine IEEE-Adresse, eine numerische ID, ein Auswahlwert oder ein Geräte-Topic identifizieren das Gerät. Wird einer dieser Werte allein verwendet, nutzt der Node das Standard-Topic /set. Für einen Endpunkt verwende das relative Topic living_room/left/set oder das vollständige Topic zigbee2mqtt/living_room/left/set. Das vollständige Topic muss das Basis-Topic des Server-Nodes verwenden. Der Endpunkt ist ein Pfadsegment und wird ohne Prüfung übernommen, ob das Gerät ihn besitzt. Gruppen unterstützen nur Topics auf Geräteebene, keine Endpunkt-Auswahl. Das JSON des Befehls wird weiterhin aus den Feldern „Befehl“ und Payload gebildet.",
+        "command_homekit": "Diese Funktion ist experimentell und funktioniert derzeit nur mit den HomeKit-Diensten Lightbulb und Lock.",
+        "command_brightness_move": "Statt einen festen Helligkeitswert zu setzen, kannst du die Helligkeit ändern und nach einer bestimmten Zeit anhalten. Der Payload -5 startet zum Beispiel das Dimmen um 5 Einheiten pro Sekunde.",
+        "command_brightness_step": "Statt einen festen Helligkeitswert zu setzen, kannst du den aktuellen Wert schrittweise erhöhen oder verringern.",
+        "option_transition": "Dauer des Übergangs zu diesem Zustand in Sekunden. Keine Wirkung bei brightness=0 oder state=toggle."
+    }
+}

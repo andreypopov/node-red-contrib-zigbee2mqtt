@@ -1,0 +1,84 @@
+{
+    "label": {
+        "name": "Name",
+        "server": "Server",
+        "permit_join": "Gerätebeitritt erlauben",
+        "permit_join_help": "Drei Minuten lang nach Geräten suchen",
+        "permit_join_cancel_help": "Suche beenden",
+        "log_level": "Protokollstufe",
+        "log_level_info": "Information",
+        "log_level_debug": "Debugging",
+        "log_level_warning": "Warnung",
+        "log_level_error": "Fehler",
+        "version": "Version",
+        "restart_required": "Neustart erforderlich",
+        "no_legacy_api": "Legacy-API deaktiviert",
+        "coordinator": "Koordinator",
+        "turn_off_legacy_api": "Sollte deaktiviert sein",
+        "restart_needed": "Neustart erforderlich",
+        "ok": "OK",
+        "advanced_output": "Ausgabeformat JSON",
+        "should_be_json": "Sollte 'json' sein",
+        "restart_zigbee2mqtt": "Zigbee2MQTT neu starten",
+        "retain_disabled_error": "force_disable_retain muss FALSE sein",
+        "mqtt_disable_retain": "MQTT-Nachrichten behalten",
+        "restart": "Neustart",
+        "disabled": "Deaktiviert",
+        "last_seen": "Zuletzt gesehen",
+        "availability": "Verfügbarkeit",
+        "sure_restart": "Möchtest du wirklich neu starten?",
+        "refresh": "Aktualisieren",
+        "refresh_all": "Alle Daten aktualisieren"
+    },
+    "placeholder": {
+        "name": "Name"
+    },
+    "status": {
+        "no_server": "kein Server-Node",
+        "no_device": "Gerät nicht gefunden",
+        "no_value": "kein Wert",
+        "no_connection": "keine Verbindung",
+        "searching": "Geräte werden gesucht…",
+        "paired": "Gerät gekoppelt!",
+        "online": "online",
+        "offline": "offline",
+        "pairing": "Kopplung läuft…",
+        "connected": "verbunden",
+        "failed": "fehlgeschlagen!"
+    },
+    "tabs": {
+        "bridge": "Bridge",
+        "devices": "Geräte",
+        "groups": "Gruppen",
+        "map": "Karte"
+    },
+    "devices": {
+        "ieee_addr": "IEEE-Adresse",
+        "friendly_name": "Gerätename",
+        "model": "Modell",
+        "device": "Gerät",
+        "set": "Speichern",
+        "remove": "Entfernen",
+        "sure_remove": "Möchtest du dieses Gerät entfernen?"
+    },
+    "groups": {
+        "id": "ID",
+        "friendly_name": "Gruppenname",
+        "devices": "Geräte",
+        "set": "Speichern",
+        "remove": "Entfernen",
+        "add": "Gruppe hinzufügen",
+        "enter_group_name": "Gruppennamen eingeben",
+        "sure_remove": "Möchtest du diese Gruppe entfernen?"
+    },
+    "map": {
+        "refresh": "Karte aktualisieren",
+        "fullscreen": "Im Vollbild öffnen",
+        "loading": "Wird geladen…"
+    },
+    "tokeninput": {
+        "searching": "Suche läuft…",
+        "type_to_search": "Gerätenamen zum Suchen eingeben",
+        "no_results": "Keine Ergebnisse"
+    }
+}

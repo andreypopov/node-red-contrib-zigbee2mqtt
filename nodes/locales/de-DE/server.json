@@ -1,0 +1,36 @@
+{
+    "label": {
+        "base_topic": "Basis-Topic",
+        "name": "Name",
+        "host": "MQTT-Host",
+        "mqtt_port": "MQTT-Port",
+        "mqtt_username": "MQTT-Benutzername",
+        "mqtt_password": "MQTT-Passwort",
+        "use-tls": "TLS verwenden",
+        "tls-config": "TLS-Konfiguration"
+    },
+    "placeholder": {
+        "name": "Name"
+    },
+    "status": {
+        "no_server": "kein Server-Node",
+        "no_device": "Gerät nicht gefunden",
+        "no_connection": "keine Verbindung",
+        "no_value": "kein Wert",
+        "received": "empfangen"
+    },
+    "tip": {
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
+    },
+    "editor": {
+        "groups": "Gruppen",
+        "devices": "Geräte",
+        "selected": "ausgewählt",
+        "nothing": "Nichts",
+        "select_device": "Gerät auswählen",
+        "msg_topic": "msg.topic",
+        "complete_payload": "Vollständiger Payload",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "homekit": "Apple HomeKit"
+    }
+}
