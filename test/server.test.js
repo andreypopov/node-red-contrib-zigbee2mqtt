@@ -238,6 +238,27 @@ test('cached device listing returns devices and groups without waiting', () => {
     assert.deepEqual(result, [node.devices, node.groups]);
 });
 
+test('forced device refresh requests the retained device and group lists', (t) => {
+    const { node, client } = createServer();
+    node.devices = [{ friendly_name: 'old lamp' }];
+    node.groups = [];
+    let result;
+
+    node.getDevices((items) => { result = items; }, true, true);
+
+    const topics = ['zigbee2mqtt/bridge/devices', 'zigbee2mqtt/bridge/groups'];
+    assert.deepEqual(client.subscriptions[0][0], topics);
+    assert.equal(result, undefined);
+
+    node.onMQTTMessage(topics[0], Buffer.from('[{"friendly_name":"new lamp"}]'));
+    assert.equal(result, undefined);
+    node.onMQTTMessage(topics[1], Buffer.from('[]'));
+
+    assert.deepEqual(result, [[{ friendly_name: 'new lamp' }], []]);
+    assert.deepEqual(client.unsubscriptions[0][0], topics);
+    t.after(() => clearTimeout(node.cleanTimer));
+});
+
 test('single output suppresses retained startup values but seeds change filtering', (t) => {
     const { node: server } = createServer();
     addLamp(server, { state: 'ON' });

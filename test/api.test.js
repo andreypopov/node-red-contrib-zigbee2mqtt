@@ -10,7 +10,10 @@ class ServerNode {
         this.calls = [];
     }
 
-    getDevices(callback, withGroups) { callback([{ id: 1 }, withGroups ? [{ id: 2 }] : undefined]); }
+    getDevices(callback, withGroups, refresh) {
+        this.getDevicesArgs = [withGroups, refresh];
+        callback([{ id: 1 }, withGroups ? [{ id: 2 }] : undefined]);
+    }
     restart() { this.calls.push(['restart']); }
     setPermitJoin(value) { this.calls.push(['setPermitJoin', value]); }
     setLogLevel(value) { this.calls.push(['setLogLevel', value]); }
@@ -62,6 +65,10 @@ test('admin API returns controller data and routes actions to the server node', 
 
     const devices = request('getDevices', { controllerID: 'server' });
     assert.deepEqual(devices.response.body, [{ id: 1 }, [{ id: 2 }]]);
+    assert.deepEqual(controller.getDevicesArgs, [true, false]);
+    const refreshedDevices = request('getDevices', { controllerID: 'server', refresh: 'true' });
+    assert.deepEqual(refreshedDevices.response.body, [{ id: 1 }, [{ id: 2 }]]);
+    assert.deepEqual(controller.getDevicesArgs, [true, true]);
     assert.deepEqual(request('getConfig', { controllerID: 'server' }).response.body, { log_level: 'info' });
     assert.deepEqual(request('renameDevice', {
         controllerID: 'server', ieee_address: '0x001', newName: 'lamp'

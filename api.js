@@ -12,7 +12,7 @@ module.exports = function(RED) {
                 } else {
                     res.status(404).end();
                 }
-            }, true);
+            }, true, config.refresh === 'true');
         } else {
             res.json([{},{}]);
         }
