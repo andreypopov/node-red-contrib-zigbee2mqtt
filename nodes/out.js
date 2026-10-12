@@ -47,7 +47,7 @@ module.exports = function(RED) {
                                 break;
 
                             case 'num': {
-                                payload = parseInt(node.config.payload);
+                                payload = parseFloat(node.config.payload);
                                 break;
                             }
 
@@ -354,7 +354,6 @@ module.exports = function(RED) {
 
     RED.nodes.registerType('zigbee2mqtt-out', Zigbee2mqttNodeOut);
 };
-
 
 
 

@@ -27,6 +27,52 @@
         return `${name}${endpointSuffix}${unit}`;
     }
 
+    function getWritableExposeOptions(device) {
+        const exposes = device && device.definition && device.definition.exposes;
+        if (!Array.isArray(exposes)) return [];
+
+        const options = [];
+        const properties = new Set();
+        function addExpose(expose, parent = null) {
+            if (!expose || typeof expose !== 'object') return;
+
+            if (Array.isArray(expose.features)) {
+                expose.features.forEach((feature) => addExpose(feature, expose));
+            }
+
+            if (typeof expose.property !== 'string'
+                || !(Number(expose.access) & 0b010)
+                || properties.has(expose.property)) return;
+
+            properties.add(expose.property);
+            options.push({
+                value: expose.property,
+                label: formatExposeLabel(expose, parent),
+                expose
+            });
+        }
+
+        exposes.forEach((expose) => addExpose(expose));
+        return options;
+    }
+
+    function getWritableExposePayloadOptions(device, property) {
+        const option = getWritableExposeOptions(device).find((item) => item.value === property);
+        if (!option) return [];
+
+        const expose = option.expose;
+        let values = [];
+        if (expose.type === 'enum' && Array.isArray(expose.values)) {
+            values = expose.values;
+        } else if (expose.type === 'binary' && 'value_on' in expose && 'value_off' in expose) {
+            values = [expose.value_on, expose.value_off];
+        }
+
+        return [...new Set(values)]
+            .filter((value) => typeof value === 'string')
+            .map((value) => ({ value, label: value }));
+    }
+
     function getStateCommandOptions() {
         return stateCommands.map((command) => ({
             value: command,
@@ -87,5 +133,13 @@
         return `Set ${node.command.replace(/_/g, " ")} of ${deviceName}`;
     }
 
-    return { formatExposeLabel, getStateCommandOptions, getStatePayloadOptions, getDefaultOutNodeLabel, isStateCommand };
+    return {
+        formatExposeLabel,
+        getWritableExposeOptions,
+        getWritableExposePayloadOptions,
+        getStateCommandOptions,
+        getStatePayloadOptions,
+        getDefaultOutNodeLabel,
+        isStateCommand
+    };
 });
