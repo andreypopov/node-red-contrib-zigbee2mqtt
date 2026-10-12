@@ -38,6 +38,11 @@ test('payload2homekit returns empty state for absent payload', () => {
     assert.deepEqual(Helper.payload2homekit(null), {});
 });
 
+test("payload conversion helpers ignore plain-text MQTT states", () => {
+    assert.deepEqual(Helper.payload2homekit("ON"), {});
+    assert.deepEqual(Helper.formatPayload("ON"), {});
+});
+
 test('payload2homekit maps lights, temperature, battery and lock state', () => {
     const result = Helper.payload2homekit({
         state: 'ON',
