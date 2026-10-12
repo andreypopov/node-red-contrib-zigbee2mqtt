@@ -1,0 +1,45 @@
+{
+    "label": {
+        "name": "Nombre",
+        "server": "Servidor",
+        "friendly_name": "Nombre del dispositivo",
+        "topic": "Dispositivo",
+        "state": "Salida de payload",
+        "refresh": "Actualizar",
+        "refresh_devices_list": "Actualizar lista de dispositivos",
+        "start_output": "Enviar al iniciar",
+        "start_output_help": "Enviar el valor al iniciar",
+        "always": "Siempre",
+        "on_state_change": "Al cambiar el estado",
+        "on_update": "En cada actualización",
+        "filter_changes": "Filtrar cambios",
+        "filter_changes_help": "Enviar solo cuando cambie el valor",
+        "output": "Salida",
+        "enable_multiple": "Varios dispositivos",
+        "enable_multiple_help": "Recibir actualizaciones de cada dispositivo seleccionado."
+    },
+    "placeholder": {
+        "name": "Nombre",
+        "friendly_name": "Nombre del dispositivo"
+    },
+    "status": {
+        "no_server": "no hay nodo servidor",
+        "no_device": "dispositivo no encontrado",
+        "no_connection": "sin conexión",
+        "connected": "conectado",
+        "received": "recibido"
+    },
+    "multiselect": {
+        "devices": "Dispositivos",
+        "filter_devices": "Filtrar dispositivos…",
+        "refresh": "Actualizar lista de dispositivos",
+        "none_selected": "Ninguno seleccionado",
+        "complete_payload": "Estado completo",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "Grupos"
+    },
+    "tip": {
+        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos"
+    }
+}

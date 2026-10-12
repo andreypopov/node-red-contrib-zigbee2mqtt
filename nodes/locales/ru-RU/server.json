@@ -1,0 +1,36 @@
+{
+    "label": {
+        "base_topic": "Базовый топик",
+        "name": "Имя",
+        "host": "Хост MQTT",
+        "mqtt_port": "Порт MQTT",
+        "mqtt_username": "Имя пользователя MQTT",
+        "mqtt_password": "Пароль MQTT",
+        "use-tls": "Использовать TLS",
+        "tls-config": "Настройка TLS"
+    },
+    "placeholder": {
+        "name": "Имя"
+    },
+    "status": {
+        "no_server": "нет серверного узла",
+        "no_device": "устройство не найдено",
+        "no_connection": "нет соединения",
+        "no_value": "нет значения",
+        "received": "получено"
+    },
+    "tip": {
+        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств"
+    },
+    "editor": {
+        "groups": "Группы",
+        "devices": "Устройства",
+        "selected": "выбрано",
+        "nothing": "Нет",
+        "select_device": "Выберите устройство",
+        "msg_topic": "msg.topic",
+        "complete_payload": "Полный payload",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "homekit": "Apple HomeKit"
+    }
+}

@@ -1,0 +1,45 @@
+{
+    "label": {
+        "name": "Имя",
+        "server": "Сервер",
+        "friendly_name": "Имя устройства",
+        "topic": "Устройство",
+        "state": "Вывод payload",
+        "refresh": "Обновить",
+        "refresh_devices_list": "Обновить список устройств",
+        "start_output": "Выводить при запуске",
+        "start_output_help": "Отправить значение при запуске",
+        "always": "Всегда",
+        "on_state_change": "При изменении состояния",
+        "on_update": "При каждом обновлении",
+        "filter_changes": "Фильтровать изменения",
+        "filter_changes_help": "Отправлять только при изменении значения",
+        "output": "Вывод",
+        "enable_multiple": "Несколько устройств",
+        "enable_multiple_help": "Получать обновления от каждого выбранного устройства."
+    },
+    "placeholder": {
+        "name": "Имя",
+        "friendly_name": "Имя устройства"
+    },
+    "status": {
+        "no_server": "нет серверного узла",
+        "no_device": "устройство не найдено",
+        "no_connection": "нет соединения",
+        "connected": "подключено",
+        "received": "получено"
+    },
+    "multiselect": {
+        "devices": "Устройства",
+        "filter_devices": "Фильтр устройств…",
+        "refresh": "Обновить список устройств",
+        "none_selected": "Ничего не выбрано",
+        "complete_payload": "Полное состояние",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "Группы"
+    },
+    "tip": {
+        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств"
+    }
+}

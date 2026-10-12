@@ -1,0 +1,36 @@
+{
+    "label": {
+        "base_topic": "基础主题",
+        "name": "名称",
+        "host": "MQTT 主机",
+        "mqtt_port": "MQTT 端口",
+        "mqtt_username": "MQTT 用户名",
+        "mqtt_password": "MQTT 密码",
+        "use-tls": "使用 TLS",
+        "tls-config": "TLS 配置"
+    },
+    "placeholder": {
+        "name": "名称"
+    },
+    "status": {
+        "no_server": "未配置服务器节点",
+        "no_device": "未找到设备",
+        "no_connection": "连接断开",
+        "no_value": "没有值",
+        "received": "已接收"
+    },
+    "tip": {
+        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表"
+    },
+    "editor": {
+        "groups": "群组",
+        "devices": "设备",
+        "selected": "已选",
+        "nothing": "无",
+        "select_device": "选择设备",
+        "msg_topic": "msg.topic",
+        "complete_payload": "完整 Payload",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "homekit": "Apple HomeKit"
+    }
+}

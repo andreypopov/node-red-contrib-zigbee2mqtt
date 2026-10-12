@@ -1,0 +1,84 @@
+{
+    "label": {
+        "name": "Имя",
+        "server": "Сервер",
+        "permit_join": "Разрешить подключение устройств",
+        "permit_join_help": "Искать устройства в течение 3 минут",
+        "permit_join_cancel_help": "Остановить поиск",
+        "log_level": "Уровень журнала",
+        "log_level_info": "Информация",
+        "log_level_debug": "Отладка",
+        "log_level_warning": "Предупреждение",
+        "log_level_error": "Ошибка",
+        "version": "Версия",
+        "restart_required": "Требуется перезапуск",
+        "no_legacy_api": "Legacy API отключён",
+        "coordinator": "Координатор",
+        "turn_off_legacy_api": "Должен быть выключен",
+        "restart_needed": "Требуется перезапуск",
+        "ok": "ОК",
+        "advanced_output": "Формат выходных данных (JSON)",
+        "should_be_json": "Должно быть 'json'",
+        "restart_zigbee2mqtt": "Перезапустить Zigbee2MQTT",
+        "retain_disabled_error": "Параметр force_disable_retain должен быть FALSE",
+        "mqtt_disable_retain": "Сохранять сообщения MQTT",
+        "restart": "Перезапуск",
+        "disabled": "Отключено",
+        "last_seen": "Последний раз замечено",
+        "availability": "Доступность",
+        "sure_restart": "Вы уверены, что хотите перезапустить?",
+        "refresh": "Обновить",
+        "refresh_all": "Обновить все данные"
+    },
+    "placeholder": {
+        "name": "Имя"
+    },
+    "status": {
+        "no_server": "нет серверного узла",
+        "no_device": "устройство не найдено",
+        "no_value": "нет значения",
+        "no_connection": "нет соединения",
+        "searching": "поиск устройств…",
+        "paired": "устройство сопряжено!",
+        "online": "в сети",
+        "offline": "не в сети",
+        "pairing": "сопряжение…",
+        "connected": "подключено",
+        "failed": "ошибка!"
+    },
+    "tabs": {
+        "bridge": "Мост",
+        "devices": "Устройства",
+        "groups": "Группы",
+        "map": "Карта"
+    },
+    "devices": {
+        "ieee_addr": "IEEE-адрес",
+        "friendly_name": "Имя устройства",
+        "model": "Модель",
+        "device": "Устройство",
+        "set": "Сохранить",
+        "remove": "Удалить",
+        "sure_remove": "Удалить это устройство?"
+    },
+    "groups": {
+        "id": "ID",
+        "friendly_name": "Имя группы",
+        "devices": "Устройства",
+        "set": "Сохранить",
+        "remove": "Удалить",
+        "add": "Добавить группу",
+        "enter_group_name": "Введите имя группы",
+        "sure_remove": "Удалить эту группу?"
+    },
+    "map": {
+        "refresh": "Обновить карту",
+        "fullscreen": "Открыть на весь экран",
+        "loading": "Загрузка…"
+    },
+    "tokeninput": {
+        "searching": "Поиск…",
+        "type_to_search": "Введите имя устройства для поиска",
+        "no_results": "Нет результатов"
+    }
+}

@@ -2,6 +2,7 @@
     "label": {
         "name": "Name",
         "server": "Server",
+        "friendly_name": "Friendly name",
         "topic": "Device",
         "state": "Payload output",
         "refresh": "Refresh",
@@ -14,11 +15,12 @@
         "filter_changes": "Filter",
         "filter_changes_help": "Send only if value changes",
         "output": "Output",
-        "enable_multiple": "Multiple input",
-        "enable_multiple_help": "Listen multiple devices"
+        "enable_multiple": "Multiple devices",
+        "enable_multiple_help": "Receive updates from each selected device."
     },
     "placeholder": {
-        "name": "Name"
+        "name": "Name",
+        "friendly_name": "Friendly name"
     },
     "status": {
         "no_server": "no server",

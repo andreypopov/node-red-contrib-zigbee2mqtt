@@ -19,6 +19,6 @@
         "complete_payload": "Úplné dátové výstupy"
     },
     "help": {
-        "endpoint_topic": "Nastavte Zariadenie na msg.topic, aby sa cieľ vyberal dynamicky pre každú správu. Názov zariadenia, IEEE adresa, číselné ID, hodnota selektora alebo téma zariadenia použije predvolenú tému /set; stačí aj samotný názov zariadenia. Pridajte /set za tému zariadenia alebo /<koncový bod>/set, napríklad zigbee2mqtt/0x00158d0003a27716/left/set. Názov koncového bodu musí byť jedna časť témy; uzol nekontroluje, či existuje. Polia Command a Payload naďalej vytvárajú JSON príkaz."
+        "endpoint_topic": "Nastavte pole Zariadenie na msg.topic, aby sa cieľ vyberal pre každú správu. Známy názov zariadenia, IEEE adresa, číselné ID, hodnota selektora alebo téma zariadenia identifikuje zariadenie. Ak sa niektorá z týchto hodnôt použije samostatne, uzol použije predvolenú tému /set. Na smerovanie ku koncovému bodu použite relatívnu tému living_room/left/set alebo úplnú tému zigbee2mqtt/living_room/left/set. Úplná téma musí používať základnú tému serverového uzla. Koncový bod je jedna časť cesty a uzol ju odošle bez overenia, či ju zariadenie podporuje. Skupiny podporujú iba témy na úrovni zariadenia, nie smerovanie ku koncovým bodom. Polia Command a Payload naďalej vytvárajú JSON príkaz."
     }
 }

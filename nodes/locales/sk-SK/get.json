@@ -6,7 +6,9 @@
         "state": "Výstup dát",
         "refresh": "Obnoviť",
         "legacy_api": "Stará API",
-        "refresh_devices_list": "Obnoviť zoznam zariadení"
+        "refresh_devices_list": "Obnoviť zoznam zariadení",
+        "enable_multiple": "Viacero zariadení",
+        "enable_multiple_help": "Získať hodnoty jedného alebo viacerých vybraných zariadení"
     },
     "placeholder": {
         "name": "Meno"

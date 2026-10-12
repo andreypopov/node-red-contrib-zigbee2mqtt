@@ -1,0 +1,84 @@
+{
+    "label": {
+        "name": "Nombre",
+        "server": "Servidor",
+        "permit_join": "Permitir la incorporación de dispositivos",
+        "permit_join_help": "Buscar dispositivos durante 3 minutos",
+        "permit_join_cancel_help": "Detener la búsqueda",
+        "log_level": "Nivel de registro",
+        "log_level_info": "Información",
+        "log_level_debug": "Depuración",
+        "log_level_warning": "Advertencia",
+        "log_level_error": "Error",
+        "version": "Versión",
+        "restart_required": "Se requiere reiniciar",
+        "no_legacy_api": "API heredada desactivada",
+        "coordinator": "Coordinador",
+        "turn_off_legacy_api": "Debe estar desactivada",
+        "restart_needed": "Es necesario reiniciar",
+        "ok": "Aceptar",
+        "advanced_output": "Formato de salida JSON",
+        "should_be_json": "Debe ser 'json'",
+        "restart_zigbee2mqtt": "Reiniciar Zigbee2MQTT",
+        "retain_disabled_error": "force_disable_retain debe ser FALSE",
+        "mqtt_disable_retain": "Conservar los mensajes MQTT",
+        "restart": "Reiniciar",
+        "disabled": "Desactivado",
+        "last_seen": "Visto por última vez",
+        "availability": "Disponibilidad",
+        "sure_restart": "¿Seguro que quieres reiniciar?",
+        "refresh": "Actualizar",
+        "refresh_all": "Actualizar todos los datos"
+    },
+    "placeholder": {
+        "name": "Nombre"
+    },
+    "status": {
+        "no_server": "no hay nodo servidor",
+        "no_device": "dispositivo no encontrado",
+        "no_value": "sin valor",
+        "no_connection": "sin conexión",
+        "searching": "buscando dispositivos…",
+        "paired": "¡dispositivo emparejado!",
+        "online": "en línea",
+        "offline": "sin conexión",
+        "pairing": "emparejando…",
+        "connected": "conectado",
+        "failed": "¡error!"
+    },
+    "tabs": {
+        "bridge": "Bridge",
+        "devices": "Dispositivos",
+        "groups": "Grupos",
+        "map": "Mapa"
+    },
+    "devices": {
+        "ieee_addr": "Dirección IEEE",
+        "friendly_name": "Nombre del dispositivo",
+        "model": "Modelo",
+        "device": "Dispositivo",
+        "set": "Guardar",
+        "remove": "Eliminar",
+        "sure_remove": "¿Quieres eliminar este dispositivo?"
+    },
+    "groups": {
+        "id": "ID",
+        "friendly_name": "Nombre del grupo",
+        "devices": "Dispositivos",
+        "set": "Guardar",
+        "remove": "Eliminar",
+        "add": "Añadir grupo",
+        "enter_group_name": "Introduce el nombre del grupo",
+        "sure_remove": "¿Quieres eliminar este grupo?"
+    },
+    "map": {
+        "refresh": "Actualizar mapa",
+        "fullscreen": "Abrir a pantalla completa",
+        "loading": "Cargando…"
+    },
+    "tokeninput": {
+        "searching": "Buscando…",
+        "type_to_search": "Escribe para buscar un dispositivo",
+        "no_results": "No hay resultados"
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "label": {
+        "name": "名称",
+        "server": "服务器",
+        "friendly_name": "设备名称",
+        "topic": "设备",
+        "state": "Payload 输出",
+        "refresh": "刷新",
+        "legacy_api": "旧版 API",
+        "refresh_devices_list": "刷新设备列表",
+        "enable_multiple": "多个设备",
+        "enable_multiple_help": "读取一个或多个所选设备的数值。"
+    },
+    "placeholder": {
+        "name": "名称",
+        "friendly_name": "设备名称"
+    },
+    "multiselect": {
+        "devices": "设备",
+        "filter_devices": "筛选设备…",
+        "refresh": "刷新设备列表",
+        "none_selected": "未选择任何项",
+        "complete_payload": "完整状态 Payload"
+    }
+}
