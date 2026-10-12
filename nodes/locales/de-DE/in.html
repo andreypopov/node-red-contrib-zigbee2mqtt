@@ -1,0 +1,21 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-in">
+    <p>Dieser Node empfängt MQTT-Nachrichten von einer Zigbee2MQTT-Bridge.</p>
+    <h3>Konfiguration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">Zeichenfolge</span></dt><dd>Wählen Sie einen Namen zur Identifizierung des Nodes.</dd>
+        <dt>Server <span class="property-type">Objekt</span></dt><dd>Wählen Sie den zu verwendenden Zigbee2MQTT-Server.</dd>
+        <dt>Gerät <span class="property-type">Zeichenfolge</span></dt><dd>Wählen Sie die Geräte aus, die überwacht werden sollen.</dd>
+        <dt class="optional">Payload-Ausgabe <span class="property-type">Zeichenfolge</span></dt><dd>Wählen Sie den Wert für <code>msg.payload</code>.</dd>
+        <dt class="optional">Bei Start ausgeben <span class="property-type">boolesch</span></dt><dd>Sendet beim Start des Nodes den aktuellen Zustand.</dd>
+        <dt class="optional">Änderungen filtern <span class="property-type">boolesch</span></dt><dd>Sendet nur bei Änderung des ausgewählten Werts. Für Taster deaktivieren.</dd>
+        <dt class="optional">Eigenschaften vergleichen <span class="property-type">Liste</span></dt><dd>Bei aktiviertem Filter werden nur diese Statuseigenschaften verglichen; ausgegeben wird weiterhin der vollständige Payload. Leer lassen, um den gesamten Payload zu vergleichen.</dd>
+        <dt class="optional">Mehrere Geräte <span class="property-type">boolesch</span></dt><dd>Empfängt Aktualisierungen von jedem ausgewählten Gerät.</dd>
+        <dt class="optional">In Home Assistant anzeigen <span class="property-type">boolesch</span></dt><dd>Erstellt einen Home-Assistant-Schalter für diesen Eingangs-Node. Ausschalten pausiert dessen Nachrichten. Das Zigbee2MQTT-Abonnement bleibt aktiv. Während der Pause empfangene Nachrichten werden danach nicht nachgereicht. Home Assistant muss MQTT Discovery über denselben Broker verwenden.</dd>
+    </dl>
+    <h3>Ausgaben</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">Zeichenfolge | Objekt</span></dt><dd>Der ausgewählte Wert oder der vollständige Zustand, abhängig von der Payload-Ausgabe.</dd>
+        <dt>payload_raw <span class="property-type">Objekt</span></dt><dd>Der vollständige Gerätezustand.</dd>
+        <dt>item <span class="property-type">Objekt</span></dt><dd>Informationen zum Gerät oder zur Gruppe.</dd>
+    </dl>
+</script>

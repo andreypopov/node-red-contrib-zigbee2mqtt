@@ -1,24 +1,21 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-in">
-    <p>This node listens for mqtt messages sent from your zigbee2mqtt bridge.</p>
+    <p>This node listens for MQTT messages from a Zigbee2MQTT bridge.</p>
     <h3>Configuration</h3>
     <dl class="message-properties">
-        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose any name to identify your node</dd>
-        <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use</dd>
-        <dt>Device <span class="property-type">string</span></dt><dd>Select device to listen to</dd>
-        <dt class="optional">Payload output <span class="property-type">string</span></dt><dd>Choose option which you want to send to payload</dd>
-        <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Output state at startup.<br>
-        <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Send only if value changes. Uncheck it for buttons.<br>
-        <b><i>notice #1:</i></b> set <code>retain: true</code> in zigbee2mqtt configuration.yaml for every device (z2m plugin sets it automatically on device add)<br>
-        <b><i>notice #2:</i></b> does not output on "Deploy only modified nodes" while there are no changes in current node
-        </dd>
+        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose a name to identify this node.</dd>
+        <dt>Server <span class="property-type">object</span></dt><dd>Select the Zigbee2MQTT server to use.</dd>
+        <dt>Device <span class="property-type">string</span></dt><dd>Select the device or devices to listen to.</dd>
+        <dt class="optional">Payload output <span class="property-type">string</span></dt><dd>Choose which value to send in <code>msg.payload</code>.</dd>
+        <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Send the current state when the node starts.</dd>
+        <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Send only when the selected value changes. Disable this for buttons.</dd>
+        <dt class="optional">Compare properties <span class="property-type">array</span></dt><dd>When Filter is enabled, compare only these state properties. The full payload is still output. Leave empty to compare the complete payload.</dd>
+        <dt class="optional">Multiple devices <span class="property-type">boolean</span></dt><dd>Receive updates from each selected device.</dd>
+        <dt class="optional">Expose to Home Assistant <span class="property-type">boolean</span></dt><dd>Creates a Home Assistant switch for this input node. Turn it off to pause messages from this node. The Zigbee2MQTT subscription stays active. Messages received while off are not replayed. Home Assistant must use MQTT Discovery on the same broker.</dd>
     </dl>
-
     <h3>Outputs</h3>
-    <h5>Output</h5>
     <dl class="message-properties">
-        <dt>payload <span class="property-type">string | object</span></dt><dd>current value depends on output state settings formatting</dd>
-        <dt>payload_raw <span class="property-type">sobject</span></dt><dd>data as it is</dd>
-        <dt>device<span class="property-type">object</span></dt><dd>device info</dd>
+        <dt>payload <span class="property-type">string | object</span></dt><dd>The selected state value or complete state, depending on Payload output.</dd>
+        <dt>payload_raw <span class="property-type">object</span></dt><dd>The complete device state.</dd>
+        <dt>item <span class="property-type">object</span></dt><dd>Device or group information.</dd>
     </dl>
 </script>
-

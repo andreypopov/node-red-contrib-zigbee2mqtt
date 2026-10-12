@@ -29,6 +29,12 @@ Enable **Filter** to send a message only when the selected value changes. When *
 
 The Server node has an optional **Flow label**. When set, it is appended to the labels of the Bridge, In, Get, and Out nodes that use that server, making multiple Zigbee2MQTT instances easier to distinguish in a flow. For example, set it to `Upstairs` to show `Lamp [Upstairs]`.
 
+## Control an In node from Home Assistant
+
+Enable **Expose to Home Assistant** on an In node to create an MQTT switch for it through Home Assistant MQTT Discovery. Home Assistant and the Server node must use the same MQTT broker. If Home Assistant uses a custom discovery prefix, set it in the Server node's **Home Assistant discovery prefix** field.
+
+Turning the switch off pauses messages from that In node. Its MQTT subscription and the Zigbee2MQTT device remain active; messages received while paused are not replayed when it is enabled again. The option is off by default. The switch state is retained by MQTT; its discovery entry and retained state are cleared when exposure is disabled or the In node is removed.
+
 ## Dynamic device and endpoint topics in the Out node
 
 To choose the target for each incoming message, set the Out node's **Device** field to `msg.topic`. The value is matched against devices and groups in the connected Zigbee2MQTT server node. A fixed **Device** selection takes precedence and ignores `msg.topic`.

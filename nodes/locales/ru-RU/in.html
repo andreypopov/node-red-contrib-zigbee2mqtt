@@ -1,0 +1,21 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-in">
+    <p>Эта нода получает MQTT-сообщения от моста Zigbee2MQTT.</p>
+    <h3>Настройки</h3>
+    <dl class="message-properties">
+        <dt class="optional">Имя <span class="property-type">строка</span></dt><dd>Укажите имя ноды.</dd>
+        <dt>Сервер <span class="property-type">объект</span></dt><dd>Выберите сервер Zigbee2MQTT.</dd>
+        <dt>Устройство <span class="property-type">строка</span></dt><dd>Выберите одно или несколько устройств для прослушивания.</dd>
+        <dt class="optional">Вывод payload <span class="property-type">строка</span></dt><dd>Выберите значение для <code>msg.payload</code>.</dd>
+        <dt class="optional">Вывод при запуске <span class="property-type">логическое</span></dt><dd>Отправлять текущее состояние при запуске ноды.</dd>
+        <dt class="optional">Фильтр <span class="property-type">логическое</span></dt><dd>Отправлять сообщение только при изменении выбранного значения. Для кнопок отключите фильтр.</dd>
+        <dt class="optional">Свойства для сравнения <span class="property-type">список</span></dt><dd>При включенном фильтре сравниваются только эти свойства состояния, но отправляется полный payload. Оставьте список пустым, чтобы сравнивать весь payload.</dd>
+        <dt class="optional">Несколько устройств <span class="property-type">логическое</span></dt><dd>Получать обновления от каждого выбранного устройства.</dd>
+        <dt class="optional">Добавить в Home Assistant <span class="property-type">логическое</span></dt><dd>Создает в Home Assistant переключатель для этой входной ноды. Выключите его, чтобы приостановить передачу сообщений от ноды. Подписка Zigbee2MQTT продолжит работать. Сообщения, полученные во время паузы, не воспроизводятся после включения. Для обнаружения Home Assistant должен использовать MQTT Discovery на том же брокере.</dd>
+    </dl>
+    <h3>Выходы</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">строка | объект</span></dt><dd>Выбранное значение или полное состояние устройства — в зависимости от настройки вывода payload.</dd>
+        <dt>payload_raw <span class="property-type">объект</span></dt><dd>Полное состояние устройства.</dd>
+        <dt>item <span class="property-type">объект</span></dt><dd>Информация об устройстве или группе.</dd>
+    </dl>
+</script>

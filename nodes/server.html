@@ -19,6 +19,11 @@
         <input type="text" id="node-config-input-base_topic" placeholder="zigbee2mqtt">
     </div>
     <div class="form-row">
+        <label for="node-config-input-homeassistant_discovery_prefix" class="l-width"><i class="fa fa-home"></i> <span data-i18n="label.homeassistant_discovery_prefix"></span></label>
+        <input type="text" id="node-config-input-homeassistant_discovery_prefix" placeholder="homeassistant">
+    </div>
+    <div class="form-tips" data-i18n="tip.homeassistant_discovery_prefix"></div>
+    <div class="form-row">
         <label for="node-config-input-mqtt_port" class="l-width"><i class="fa fa-asterisk"></i> <span data-i18n="label.mqtt_port"></span></label>
         <input type="text" id="node-config-input-mqtt_port" placeholder="1883">
     </div>
@@ -88,6 +93,10 @@
             base_topic: {
                 value: 'zigbee2mqtt',
                 required: true
+            },
+            homeassistant_discovery_prefix: {
+                value: 'homeassistant',
+                required: false
             },
         },
         label: function() {

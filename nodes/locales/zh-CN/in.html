@@ -1,0 +1,21 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-in">
+    <p>此节点监听来自 Zigbee2MQTT 网桥的 MQTT 消息。</p>
+    <h3>配置</h3>
+    <dl class="message-properties">
+        <dt class="optional">名称 <span class="property-type">字符串</span></dt><dd>为此节点指定一个便于识别的名称。</dd>
+        <dt>服务器 <span class="property-type">对象</span></dt><dd>选择要使用的 Zigbee2MQTT 服务器。</dd>
+        <dt>设备 <span class="property-type">字符串</span></dt><dd>选择要监听的一个或多个设备。</dd>
+        <dt class="optional">Payload 输出 <span class="property-type">字符串</span></dt><dd>选择要写入 <code>msg.payload</code> 的值。</dd>
+        <dt class="optional">启动时输出 <span class="property-type">布尔值</span></dt><dd>节点启动时发送当前状态。</dd>
+        <dt class="optional">筛选变化 <span class="property-type">布尔值</span></dt><dd>仅在所选值变化时发送。按钮设备应关闭此选项。</dd>
+        <dt class="optional">比较属性 <span class="property-type">数组</span></dt><dd>启用筛选后，仅比较这些状态属性，但仍输出完整 payload。留空则比较完整 payload。</dd>
+        <dt class="optional">多个设备 <span class="property-type">布尔值</span></dt><dd>接收每个所选设备的更新。</dd>
+        <dt class="optional">在 Home Assistant 中显示 <span class="property-type">布尔值</span></dt><dd>为此输入节点在 Home Assistant 中创建一个开关。关闭开关会暂停此节点传递消息，但 Zigbee2MQTT 订阅仍保持活动。关闭期间收到的消息不会在重新开启后补发。Home Assistant 必须通过同一个 broker 使用 MQTT Discovery。</dd>
+    </dl>
+    <h3>输出</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">字符串 | 对象</span></dt><dd>所选状态值或完整状态，取决于 Payload 输出设置。</dd>
+        <dt>payload_raw <span class="property-type">对象</span></dt><dd>设备的完整状态。</dd>
+        <dt>item <span class="property-type">对象</span></dt><dd>设备或群组信息。</dd>
+    </dl>
+</script>

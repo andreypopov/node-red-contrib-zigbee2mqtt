@@ -823,6 +823,14 @@ module.exports = function(RED) {
         onMQTTMessage(topic, message, packet) {
             var node = this;
             var messageString = message.toString();
+            if (topic.startsWith('node-red-contrib-zigbee2mqtt/')) {
+                node.emit('onMQTTHomeAssistantMessage', {
+                    topic: topic,
+                    payload: messageString,
+                    retained: !!(packet && packet.retain)
+                });
+                return;
+            }
             // console.log(topic);
             // console.log(messageString);
             //bridge
