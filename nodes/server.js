@@ -1,7 +1,17 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
 var mqtt = require('mqtt');
-var Viz = require('viz.js');
-var {Module, render} = require('viz.js/full.render.js');
+var Viz = require('@viz-js/viz');
+var vizInstancePromise;
+
+function getVizInstance() {
+    if (!vizInstancePromise) {
+        vizInstancePromise = Viz.instance().catch((error) => {
+            vizInstancePromise = null;
+            throw error;
+        });
+    }
+    return vizInstancePromise;
+}
 
 module.exports = function(RED) {
     class ServerNode {
@@ -421,7 +431,7 @@ module.exports = function(RED) {
             var options = {
                 format: 'svg', engine: engine ? engine : 'circo',
             };
-            var viz = new Viz({Module, render});
+            var viz = await getVizInstance();
             return node.map = await viz.renderString(payload, options);
         }
 
@@ -850,4 +860,3 @@ module.exports = function(RED) {
 
     RED.nodes.registerType('zigbee2mqtt-server', ServerNode, {});
 };
-

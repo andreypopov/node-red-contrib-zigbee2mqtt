@@ -61,6 +61,36 @@ test('device lookup supports names, IEEE addresses, ids, topics and selectors', 
     assert.equal(node.getDeviceOrGroupByKey('missing'), null);
 });
 
+test('single output reads the selected multi-endpoint state property', (t) => {
+    const { node: server } = createServer();
+    server.devices = [{
+        id: 2,
+        friendly_name: 'multi-switch',
+        ieee_address: '0x002',
+        definition: { exposes: [
+            { name: 'State', property: 'state_l1' },
+            { name: 'State', property: 'state_l2' }
+        ] }
+    }];
+    server.devices_values['zigbee2mqtt/multi-switch'] = { state_l1: 'ON', state_l2: 'OFF' };
+    const output = createFlowNode({ device_id: 'multi-switch', state: 'state_l2' });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { key: 'multi-switch' });
+
+    assert.equal(output.messages[0].payload, 'OFF');
+    assert.deepEqual(output.messages[0].payload_raw, { state_l1: 'ON', state_l2: 'OFF' });
+});
+
+test('Graphviz renders the bridge map as SVG', async () => {
+    const { node } = createServer();
+
+    const svg = await node.graphviz('digraph { a -> b }');
+
+    assert.match(svg, /<svg\b/);
+    assert.equal(node.map, svg);
+});
+
 test('device MQTT updates are decoded and retained status is forwarded', () => {
     const { node } = createServer();
     addLamp(node, { state: 'OFF' });
