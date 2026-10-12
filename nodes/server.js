@@ -820,8 +820,19 @@ module.exports = function(RED) {
 
                 let payload = null;
                 if (Zigbee2mqttHelper.isJson(messageString)) {
-                    payload = {};
-                    Object.assign(payload, JSON.parse(messageString)); //clone object for payload output
+                    const parsedPayload = JSON.parse(messageString);
+                    if (parsedPayload && typeof parsedPayload === 'object' && !Array.isArray(parsedPayload)) {
+                        const previousPayload = node.devices_values[topic];
+                        payload = {
+                            ...(previousPayload && typeof previousPayload === 'object' && !Array.isArray(previousPayload)
+                                ? previousPayload
+                                : {}),
+                            ...parsedPayload
+                        };
+                    } else {
+                        payload = {};
+                        Object.assign(payload, parsedPayload); //clone object for payload output
+                    }
                 } else {
                     payload = messageString;
                 }

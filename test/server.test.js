@@ -120,6 +120,25 @@ test('device MQTT updates are decoded and retained status is forwarded', () => {
     assert.deepEqual(updates[0].item.current_values, { state: 'ON', brightness: 90 });
 });
 
+test('partial JSON MQTT updates preserve unchanged properties for GET nodes', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', brightness: 80 });
+    const output = createFlowNode({ device_id: 'lamp', state: 'state' });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"brightness":4}'));
+
+    assert.deepEqual(server.devices_values['zigbee2mqtt/lamp'], { state: 'ON', brightness: 4 });
+    server.nodeSend(output, { key: 'lamp' });
+    assert.equal(output.messages[0].payload, 'ON');
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"OFF"}'));
+
+    assert.deepEqual(server.devices_values['zigbee2mqtt/lamp'], { state: 'OFF', brightness: 4 });
+    server.nodeSend(output, { key: 'lamp' });
+    assert.equal(output.messages[1].payload, 'OFF');
+});
+
 test('set-topic messages are ignored', () => {
     const { node } = createServer();
     let messages = 0;
