@@ -123,6 +123,20 @@ test('output node translates commands and publishes with configured MQTT QoS', (
     assert.equal(node.lastStatus.fill, 'green');
 });
 
+test('output node publishes numeric tilt commands for Venetian blinds', (t) => {
+    const server = makeServer();
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id: 'lamp', payloadType: 'str', payload: '45',
+        commandType: 'z2m_cmd', command: 'tilt'
+    }, server);
+    t.after(() => clearTimeout(node.cleanTimer));
+
+    node.emit('input', {});
+
+    assert.equal(server.mqtt.publications[0][0], 'zigbee2mqtt/lamp/set');
+    assert.equal(server.mqtt.publications[0][1], '{"tilt":45}');
+});
+
 test('output node supports lock, color and HomeKit commands', (t) => {
     const server = makeServer();
     const lock = instantiate(registerOut, 'zigbee2mqtt-out', {
