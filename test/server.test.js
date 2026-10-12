@@ -1,0 +1,253 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createServer, createFlowNode } = require('./support/server');
+
+function addLamp(server, values = { state: 'ON', brightness: 80, battery: 52 }) {
+    server.devices = [{
+        id: 1,
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        power_source: 'Battery',
+        definition: { exposes: [] }
+    }];
+    server.devices_values['zigbee2mqtt/lamp'] = values;
+}
+
+test('MQTT connection uses configured authentication and subscribes on connect', () => {
+    const { node, client, connection } = createServer({
+        mqtt_port: 1884,
+        mqtt_username: 'user',
+        mqtt_password: 'pass',
+        mqtt_qos: '1'
+    });
+
+    assert.equal(connection.url, 'mqtt://localhost');
+    assert.equal(connection.options.port, 1884);
+    assert.equal(connection.options.username, 'user');
+    assert.equal(connection.options.password, 'pass');
+    assert.match(connection.options.clientId, /^NodeRed-server-id-/);
+
+    client.emit('connect');
+    assert.equal(node.connection, true);
+    assert.equal(client.subscriptions[0][0], 'zigbee2mqtt/#');
+    assert.deepEqual(client.subscriptions[0][1], { qos: 1 });
+    assert.equal(typeof client.subscriptions[0][2], 'function');
+});
+
+test('topic and availability helpers use the configured base topic', () => {
+    const { node } = createServer();
+
+    assert.equal(node.getBaseTopic(), 'zigbee2mqtt');
+    assert.equal(node.getTopic('/bridge/state'), 'zigbee2mqtt/bridge/state');
+    assert.equal(node.getDeviceAvailabilityColor('zigbee2mqtt/lamp'), 'blue');
+    node.avaialability['zigbee2mqtt/lamp'] = false;
+    assert.equal(node.getDeviceAvailabilityColor('zigbee2mqtt/lamp'), 'red');
+    node.avaialability['zigbee2mqtt/lamp'] = true;
+    assert.equal(node.getDeviceAvailabilityColor('zigbee2mqtt/lamp'), 'green');
+});
+
+test('device lookup supports names, IEEE addresses, ids, topics and selectors', () => {
+    const { node } = createServer();
+    addLamp(node);
+
+    const byName = node.getDeviceByKey('lamp');
+    assert.equal(byName.friendly_name, 'lamp');
+    assert.deepEqual(byName.current_values, { state: 'ON', brightness: 80, battery: 52 });
+    assert.ok(byName.homekit.Switch);
+    assert.deepEqual(node.getDeviceByKey('0x001').current_values, byName.current_values);
+    assert.equal(node.getDeviceByKey(1).friendly_name, 'lamp');
+    assert.equal(node.getDeviceByKey('zigbee2mqtt/lamp').friendly_name, 'lamp');
+    assert.equal(node.getDeviceByKey('zigbee2mqtt_lamp').friendly_name, 'lamp');
+    assert.equal(node.getDeviceOrGroupByKey('missing'), null);
+});
+
+test('device MQTT updates are decoded and retained status is forwarded', () => {
+    const { node } = createServer();
+    addLamp(node, { state: 'OFF' });
+    const updates = [];
+    node.on('onMQTTMessage', (data) => updates.push(data));
+
+    node.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"ON","brightness":90}'), { retain: true });
+
+    assert.deepEqual(node.devices_values['zigbee2mqtt/lamp'], { state: 'ON', brightness: 90 });
+    assert.equal(updates.length, 1);
+    assert.equal(updates[0].retained, true);
+    assert.equal(updates[0].item.friendly_name, 'lamp');
+    assert.deepEqual(updates[0].item.current_values, { state: 'ON', brightness: 90 });
+});
+
+test('set-topic messages are ignored', () => {
+    const { node } = createServer();
+    let messages = 0;
+    node.on('onMQTTMessage', () => messages++);
+
+    node.onMQTTMessage('zigbee2mqtt/lamp/set', Buffer.from('{"state":"ON"}'), { retain: true });
+
+    assert.equal(messages, 0);
+    assert.deepEqual(node.devices_values, {});
+});
+
+test('availability accepts plain and JSON bridge states', () => {
+    const { node } = createServer();
+    addLamp(node);
+    const updates = [];
+    node.on('onMQTTAvailability', (data) => updates.push(data));
+
+    node.onMQTTMessage('zigbee2mqtt/lamp/availability', Buffer.from('online'));
+    node.onMQTTMessage('zigbee2mqtt/lamp/availability', Buffer.from('{"state":"offline"}'));
+
+    assert.equal(updates[0].payload, true);
+    assert.equal(updates[1].payload, false);
+    assert.equal(updates[0].item.friendly_name, 'lamp');
+    assert.equal(node.avaialability['zigbee2mqtt/lamp'], false);
+});
+
+test('bridge messages update state, inventory, groups, and request initial device values', () => {
+    const { node, client } = createServer();
+    const bridgeStates = [];
+    const bridgeMessages = [];
+    node.on('onMQTTBridgeState', (data) => bridgeStates.push(data.payload));
+    node.on('onMQTTMessageBridge', (data) => bridgeMessages.push(data));
+
+    node.onMQTTMessage('zigbee2mqtt/bridge/state', Buffer.from('{"state":"online"}'));
+    node.onMQTTMessage('zigbee2mqtt/bridge/info', Buffer.from('{"log_level":"debug"}'));
+    node.onMQTTMessage('zigbee2mqtt/bridge/groups', Buffer.from('[{"id":1,"friendly_name":"room"}]'));
+    node.onMQTTMessage('zigbee2mqtt/bridge/devices', Buffer.from(JSON.stringify([{
+        id: 1,
+        friendly_name: 'lamp',
+        definition: { exposes: [{ name: 'state', access: 5 }] }
+    }])));
+
+    assert.deepEqual(bridgeStates, [true]);
+    assert.equal(node.bridge_state, true);
+    assert.deepEqual(node.bridge_info, { log_level: 'debug' });
+    assert.equal(node.groups[0].friendly_name, 'room');
+    assert.equal(node.devices[0].friendly_name, 'lamp');
+    assert.equal(client.publications[0][0], 'zigbee2mqtt/lamp/get');
+    assert.deepEqual(JSON.parse(client.publications[0][1]), { state: '' });
+    assert.equal(bridgeMessages.length, 4);
+});
+
+test('admin commands publish expected payloads and validate missing devices', () => {
+    const { node, client } = createServer();
+    addLamp(node);
+
+    assert.deepEqual(node.renameDevice('0x001', 'desk lamp'), { success: true, description: 'command sent' });
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { from: 'lamp', to: 'desk lamp' });
+    assert.deepEqual(node.renameDevice('missing', 'new name'), { error: true, description: 'no such device' });
+    assert.deepEqual(node.renameDevice('0x001', ''), { error: true, description: 'can not be empty' });
+
+    assert.deepEqual(node.setDeviceOptions('0x001', { retain: true }), { success: true, description: 'command sent' });
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { id: '0x001', options: { retain: true } });
+    assert.deepEqual(node.removeDevice('0x001'), { success: true, description: 'command sent' });
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { id: '0x001', force: true });
+    assert.deepEqual(node.removeDevice('missing'), { error: true, description: 'no such device' });
+});
+
+test('group commands validate ids and publish expected MQTT topics', () => {
+    const { node, client } = createServer();
+    addLamp(node);
+    node.groups = [{ id: 2, friendly_name: 'room' }];
+
+    assert.deepEqual(node.renameGroup(2, 'office'), { success: true, description: 'command sent' });
+    assert.equal(client.publications.at(-1)[0], 'zigbee2mqtt/bridge/request/group/rename');
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { from: 'room', to: 'office' });
+    assert.deepEqual(node.removeGroup(2), { success: true, description: 'command sent' });
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { id: 2 });
+    assert.deepEqual(node.removeGroup(9), { error: true, description: 'no such group' });
+
+    assert.deepEqual(node.addGroup('office'), { success: true, description: 'command sent' });
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { friendly_name: 'office' });
+    assert.deepEqual(node.addDeviceToGroup('lamp', 2), { success: true, description: 'command sent' });
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { group: 2, device: 'lamp' });
+    assert.deepEqual(node.removeDeviceFromGroup('lamp', 2), { success: true, description: 'command sent' });
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { group: 2, device: 'lamp' });
+    assert.deepEqual(node.removeDeviceFromGroup('lamp', 9), { error: true, description: 'no such group' });
+});
+
+test('bridge settings normalize log level and publish control messages', () => {
+    const { node, client } = createServer();
+
+    node.setLogLevel('debug');
+    assert.equal(client.publications.at(-1)[0], 'zigbee2mqtt/bridge/request/options');
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { options: { advanced: { log_level: 'debug' } } });
+    node.setLogLevel('invalid');
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { options: { advanced: { log_level: 'info' } } });
+    node.setPermitJoin(true);
+    assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { options: { permit_join: true } });
+    node.restart();
+    assert.equal(client.publications.at(-1)[0], 'zigbee2mqtt/bridge/request/restart');
+});
+
+test('cached device listing returns devices and groups without waiting', () => {
+    const { node } = createServer();
+    node.devices = [{ friendly_name: 'lamp' }];
+    node.groups = [{ friendly_name: 'room' }];
+    let result;
+
+    node.getDevices((items) => { result = items; }, true);
+
+    assert.deepEqual(result, [node.devices, node.groups]);
+});
+
+test('single output suppresses retained startup values but seeds change filtering', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON' });
+    const output = createFlowNode({ device_id: 'lamp', state: 'state', outputAtStartup: false });
+    output.last_value = null;
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { retained: true, filter: true });
+    assert.equal(output.messages.length, 0);
+    assert.equal(output.last_value, 'ON');
+
+    server.nodeSend(output, { retained: false, filter: true });
+    assert.equal(output.messages.length, 0);
+
+    server.devices_values['zigbee2mqtt/lamp'] = { state: 'OFF' };
+    server.nodeSend(output, { retained: false, filter: true, msg: { payload: 'input' } });
+    assert.equal(output.messages.length, 1);
+    assert.equal(output.messages[0].payload, 'OFF');
+    assert.equal(output.messages[0].payload_in, 'input');
+    assert.deepEqual(output.messages[0].changed, { old: 'ON', new: 'OFF' });
+});
+
+test('multiple output builds values and math, suppressing retained startup output', (t) => {
+    const { node: server } = createServer();
+    server.devices = [
+        { id: 1, friendly_name: 'lamp', ieee_address: '0x001', definition: { exposes: [] } },
+        { id: 2, friendly_name: 'sensor', ieee_address: '0x002', definition: { exposes: [] } }
+    ];
+    server.devices_values['zigbee2mqtt/lamp'] = { brightness: 100, temperature: 20 };
+    server.devices_values['zigbee2mqtt/sensor'] = { brightness: 200, temperature: 22 };
+    const output = createFlowNode({
+        enableMultiple: true,
+        device_id: ['lamp', 'sensor'],
+        outputAtStartup: false
+    });
+    output.last_value = null;
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { retained: true });
+    assert.equal(output.messages.length, 0);
+    assert.deepEqual(Object.keys(output.last_value), ['lamp', 'sensor']);
+
+    server.nodeSend(output, { retained: false, msg: { payload: 'original' } });
+    assert.equal(output.messages.length, 1);
+    assert.deepEqual(output.messages[0].math.temperature, {
+        count: 2, avg: 21, min: 20, max: 22, sum: 42
+    });
+    assert.equal(output.messages[0].payload_in, 'original');
+});
+
+test('close unsubscribes and ends the MQTT client', () => {
+    const { node, client } = createServer();
+    node.devices_values['zigbee2mqtt/lamp'] = { state: 'ON' };
+
+    node.onClose();
+
+    assert.equal(client.unsubscriptions[0][0], 'zigbee2mqtt/#');
+    assert.equal(client.ended, true);
+    assert.equal(node.connection, false);
+    assert.deepEqual(node.devices_values, {});
+});
