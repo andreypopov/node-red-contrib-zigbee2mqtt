@@ -60,3 +60,49 @@ test('expose labels distinguish endpoint properties while retaining names and un
     assert.equal(EditorUtils.formatExposeLabel({ property: 'state_l3' }), 'state_l3');
     assert.equal(EditorUtils.formatExposeLabel(null), '');
 });
+
+test('writable expose options include settable parameters and their selectable values', () => {
+    const device = {
+        definition: {
+            exposes: [
+                {
+                    type: 'enum', name: 'Mode', property: 'mode', access: 2,
+                    values: ['off', 'eco', 'comfort']
+                },
+                {
+                    type: 'light',
+                    features: [
+                        {
+                            type: 'binary', name: 'State', property: 'state', access: 3,
+                            value_on: 'ON', value_off: 'OFF'
+                        },
+                        { type: 'numeric', name: 'Battery', property: 'battery', access: 1, unit: '%' },
+                        {
+                            type: 'enum', name: 'Duplicate mode', property: 'mode', access: 2,
+                            values: ['duplicate']
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    assert.deepEqual(
+        EditorUtils.getWritableExposeOptions(device).map(({value, label}) => ({value, label})),
+        [
+            { value: 'mode', label: 'Mode' },
+            { value: 'state', label: 'State' }
+        ]
+    );
+    assert.deepEqual(EditorUtils.getWritableExposePayloadOptions(device, 'mode'), [
+        { value: 'off', label: 'off' },
+        { value: 'eco', label: 'eco' },
+        { value: 'comfort', label: 'comfort' }
+    ]);
+    assert.deepEqual(EditorUtils.getWritableExposePayloadOptions(device, 'state'), [
+        { value: 'ON', label: 'ON' },
+        { value: 'OFF', label: 'OFF' }
+    ]);
+    assert.deepEqual(EditorUtils.getWritableExposePayloadOptions(device, 'battery'), []);
+    assert.deepEqual(EditorUtils.getWritableExposeOptions(null), []);
+});

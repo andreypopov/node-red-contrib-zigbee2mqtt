@@ -47,7 +47,7 @@ module.exports = function(RED) {
                                 break;
 
                             case 'num': {
-                                payload = parseInt(node.config.payload);
+                                payload = parseFloat(node.config.payload);
                                 break;
                             }
 

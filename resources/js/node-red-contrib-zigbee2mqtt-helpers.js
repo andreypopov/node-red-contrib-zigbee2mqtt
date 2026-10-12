@@ -58,6 +58,9 @@ class Zigbee2MqttEditor {
             that.buildDevicePropertyInput();
             that.buildDeviceOptionsInput();
         });
+        if (typeof that.config.onBuild === 'function') {
+            that.config.onBuild(that.getDevice());
+        }
         that.bind();
     }
 
