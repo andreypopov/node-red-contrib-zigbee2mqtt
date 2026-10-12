@@ -23,6 +23,20 @@ Extra features:
 * groups support
 * network map generation
 
+## Initial device state
+
+When the Server node connects, it waits briefly for retained device messages before requesting missing state. It skips devices marked disabled and devices reported offline by Zigbee2MQTT's availability feature. A failed request is not repeated on each device-list update; another attempt is made after the device comes online, is re-enabled or re-added, or the MQTT connection reconnects. To have the MQTT broker replay a device's last published state after reconnecting, enable retain for that device in Zigbee2MQTT's `configuration.yaml`:
+
+Offline detection requires Zigbee2MQTT's availability feature to be enabled.
+
+```yaml
+devices:
+  '0x00158d0001abcdef':
+    retain: true
+```
+
+Retained state is the last value published by the device; enabling retain stores a value after the device publishes again.
+
 ## Filtering In node output
 
 Enable **Filter** to send a message only when the selected value changes. When **Payload output** is set to the complete state, or **Multiple devices** is enabled, **Compare properties** lets you select exposed state properties for the selected device or devices. Changes to other fields such as linkquality will not trigger output, while the emitted message still contains the complete payload. In multiple-device mode, the selected fields are compared separately for each device. Leave the selection empty to compare the full payload.

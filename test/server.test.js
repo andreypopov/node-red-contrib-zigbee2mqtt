@@ -323,8 +323,10 @@ test('availability accepts plain and JSON bridge states', () => {
     assert.equal(node.avaialability['zigbee2mqtt/lamp'], false);
 });
 
-test('bridge messages update state, inventory, groups, and request initial device values', () => {
+test('bridge messages update state, inventory, groups, and defer initial device requests', (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
     const { node, client } = createServer();
+    t.after(() => node.emit('close'));
     const bridgeStates = [];
     const bridgeMessages = [];
     node.on('onMQTTBridgeState', (data) => bridgeStates.push(data.payload));
@@ -344,9 +346,123 @@ test('bridge messages update state, inventory, groups, and request initial devic
     assert.deepEqual(node.bridge_info, { log_level: 'debug' });
     assert.equal(node.groups[0].friendly_name, 'room');
     assert.equal(node.devices[0].friendly_name, 'lamp');
+    assert.equal(client.publications.length, 0);
+    t.mock.timers.tick(1000);
     assert.equal(client.publications[0][0], 'zigbee2mqtt/lamp/get');
     assert.deepEqual(JSON.parse(client.publications[0][1]), { state: '' });
     assert.equal(bridgeMessages.length, 4);
+});
+
+test('initial state requests wait for retained values and skip disabled or offline devices', (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const { node: server, client } = createServer();
+    t.after(() => server.emit('close'));
+    const devices = [
+        { friendly_name: 'retained-before', definition: { exposes: [{ name: 'state', access: 5 }] } },
+        { friendly_name: 'retained-after', definition: { exposes: [{ name: 'state', access: 5 }] } },
+        { friendly_name: 'online', definition: { exposes: [{ name: 'state', access: 5 }] } },
+        { friendly_name: 'offline', definition: { exposes: [{ name: 'state', access: 5 }] } },
+        { friendly_name: 'disabled', disabled: true, definition: { exposes: [{ name: 'state', access: 5 }] } }
+    ];
+
+    server.onMQTTMessage('zigbee2mqtt/retained-before', Buffer.from('{"state":"ON"}'), { retain: true });
+    server.onMQTTMessage('zigbee2mqtt/offline/availability', Buffer.from('{"state":"offline"}'), { retain: true });
+    server.onMQTTMessage('zigbee2mqtt/bridge/devices', Buffer.from(JSON.stringify(devices)), { retain: true });
+    server.onMQTTMessage('zigbee2mqtt/retained-after', Buffer.from('{"state":"OFF"}'), { retain: true });
+
+    assert.equal(client.publications.length, 0);
+    t.mock.timers.tick(999);
+    assert.equal(client.publications.length, 0);
+    t.mock.timers.tick(1);
+
+    assert.deepEqual(client.publications.map(([topic, payload]) => [topic, JSON.parse(payload)]), [
+        ['zigbee2mqtt/online/get', { state: '' }]
+    ]);
+});
+
+test('initial state requests are not repeated until an offline or disabled device changes', (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const { node: server, client } = createServer();
+    t.after(() => server.emit('close'));
+    const devices = [
+        { friendly_name: 'online', definition: { exposes: [{ name: 'state', access: 5 }] } },
+        { friendly_name: 'offline', definition: { exposes: [{ name: 'state', access: 5 }] } },
+        { friendly_name: 'disabled', disabled: true, definition: { exposes: [{ name: 'state', access: 5 }] } }
+    ];
+    const publishDevices = () => server.onMQTTMessage('zigbee2mqtt/bridge/devices', Buffer.from(JSON.stringify(devices)));
+
+    server.onMQTTMessage('zigbee2mqtt/offline/availability', Buffer.from('offline'), { retain: true });
+    publishDevices();
+    t.mock.timers.tick(1000);
+    assert.deepEqual(client.publications.map(([topic]) => topic), ['zigbee2mqtt/online/get']);
+
+    publishDevices();
+    t.mock.timers.tick(1000);
+    assert.deepEqual(client.publications.map(([topic]) => topic), ['zigbee2mqtt/online/get']);
+
+    server.onMQTTMessage('zigbee2mqtt/offline/availability', Buffer.from('online'));
+    t.mock.timers.tick(1000);
+    assert.deepEqual(client.publications.map(([topic]) => topic), [
+        'zigbee2mqtt/online/get',
+        'zigbee2mqtt/offline/get'
+    ]);
+
+    server.onMQTTMessage('zigbee2mqtt/offline/availability', Buffer.from('online'));
+    publishDevices();
+    t.mock.timers.tick(1000);
+    assert.deepEqual(client.publications.map(([topic]) => topic), [
+        'zigbee2mqtt/online/get',
+        'zigbee2mqtt/offline/get'
+    ]);
+
+    devices.find((device) => device.friendly_name === 'disabled').disabled = false;
+    publishDevices();
+    t.mock.timers.tick(1000);
+    assert.deepEqual(client.publications.map(([topic]) => topic), [
+        'zigbee2mqtt/online/get',
+        'zigbee2mqtt/offline/get',
+        'zigbee2mqtt/disabled/get'
+    ]);
+});
+
+test('retained device states on MQTT reconnect prevent another initial request', (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const { node: server, client } = createServer();
+    t.after(() => server.emit('close'));
+    const devices = [{ friendly_name: 'lamp', definition: { exposes: [{ name: 'state', access: 5 }] } }];
+    const publishDevices = () => server.onMQTTMessage('zigbee2mqtt/bridge/devices', Buffer.from(JSON.stringify(devices)));
+
+    publishDevices();
+    t.mock.timers.tick(1000);
+    assert.deepEqual(client.publications.map(([topic]) => topic), ['zigbee2mqtt/lamp/get']);
+
+    server.onMQTTConnect();
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"ON"}'), { retain: true });
+    publishDevices();
+    t.mock.timers.tick(1000);
+
+    assert.deepEqual(client.publications.map(([topic]) => topic), ['zigbee2mqtt/lamp/get']);
+    assert.deepEqual(server.devices_values['zigbee2mqtt/lamp'], { state: 'ON' });
+});
+
+test('a device can be queried again after it leaves and reappears in the inventory', (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const { node: server, client } = createServer();
+    t.after(() => server.emit('close'));
+    const device = { friendly_name: 'lamp', definition: { exposes: [{ name: 'state', access: 5 }] } };
+    const publishDevices = (devices) => server.onMQTTMessage('zigbee2mqtt/bridge/devices', Buffer.from(JSON.stringify(devices)));
+
+    publishDevices([device]);
+    t.mock.timers.tick(1000);
+    publishDevices([]);
+    t.mock.timers.tick(1000);
+    publishDevices([device]);
+    t.mock.timers.tick(1000);
+
+    assert.deepEqual(client.publications.map(([topic]) => topic), [
+        'zigbee2mqtt/lamp/get',
+        'zigbee2mqtt/lamp/get'
+    ]);
 });
 
 test('admin commands publish expected payloads and validate missing devices', () => {

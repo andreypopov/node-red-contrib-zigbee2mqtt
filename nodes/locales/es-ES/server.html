@@ -10,4 +10,12 @@
         <dt class="optional">Usuario MQTT <span class="property-type">cadena</span></dt><dd></dd>
         <dt class="optional">Contraseña MQTT <span class="property-type">cadena</span></dt><dd></dd>
     </dl>
+    <h3>Estado inicial de los dispositivos</h3>
+    <p>Al conectarse, el nodo espera brevemente los estados MQTT retenidos. Si falta algún estado, solo solicita los valores legibles de dispositivos que no estén desactivados ni aparezcan como desconectados en la función de disponibilidad de Zigbee2MQTT. No repite una solicitud fallida cada vez que se actualiza la lista. Solo vuelve a intentarlo cuando el dispositivo vuelve a estar en línea, se reactiva o se añade de nuevo, o cuando se restablece la conexión MQTT.</p>
+    <p>Para detectar dispositivos desconectados, debe estar habilitada la función de disponibilidad de Zigbee2MQTT.</p>
+    <p>Para que el broker MQTT envíe el último estado tras una reconexión, activa retain para el dispositivo en el <code>configuration.yaml</code> de Zigbee2MQTT:</p>
+    <pre><code>devices:
+  '0x00158d0001abcdef':
+    retain: true</code></pre>
+    <p>El dato retenido es el último estado publicado por el dispositivo. Activar retain no crea un valor hasta que el dispositivo vuelva a publicar.</p>
 </script>
