@@ -349,8 +349,11 @@ class Zigbee2mqttHelper {
                 "MotionDetected": payload.occupancy
             };
             msg["OccupancySensor"] = {
-                "OccupancyDetected":payload.occupancy?1:0
+                "OccupancyDetected": payload.occupancy ? 1 : 0
             };
+            if ('tamper' in payload) {
+                msg["OccupancySensor"]["StatusTampered"] = payload.tamper ? 1 : 0;
+            }
         }
 
         //WaterLeak
