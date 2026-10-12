@@ -85,11 +85,53 @@ module.exports = function(RED) {
             node.devices_values = {};
         }
 
-        getDevices(callback, withGroups = false) {
+        getDevices(callback, withGroups = false, refresh = false) {
             if (typeof (callback) !== 'function') {
                 return
             }
             let node = this;
+            if (refresh) {
+                const topics = [node.getTopic('/bridge/devices')];
+                if (withGroups) {
+                    topics.push(node.getTopic('/bridge/groups'));
+                }
+
+                let timeout = null;
+                let completed = false;
+                const receivedTopics = new Set();
+                const finish = (success) => {
+                    if (completed) return;
+                    completed = true;
+                    clearTimeout(timeout);
+                    node.removeListener('onMQTTMessageBridge', onBridgeMessage);
+                    node.mqtt.unsubscribe(topics);
+                    if (success) {
+                        callback(withGroups ? [node.devices, node.groups] : node.devices);
+                    } else {
+                        node.error('Error: getDevices timeout');
+                        callback(null);
+                    }
+                };
+                const onBridgeMessage = (data) => {
+                    if (topics.includes(data.topic)) {
+                        receivedTopics.add(data.topic);
+                    }
+                    if (receivedTopics.size === topics.length) {
+                        finish(true);
+                    }
+                };
+
+                node.on('onMQTTMessageBridge', onBridgeMessage);
+                timeout = setTimeout(() => finish(false), 60_000);
+                node.mqtt.subscribe(topics, { 'qos': parseInt(node.config.mqtt_qos || 0) }, (err) => {
+                    if (err) {
+                        node.warn('MQTT Error: Subscribe to "' + topics.join(', ') + '"');
+                        finish(false);
+                    }
+                });
+                return;
+            }
+
             if (node.devices && (!withGroups || node.groups)) {
                 node.log('Using cached devices')
                 callback(withGroups ? [node.devices, node.groups] : node.devices);
