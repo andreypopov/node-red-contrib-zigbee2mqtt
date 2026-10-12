@@ -113,6 +113,7 @@ module.exports = function(RED) {
                                         break;
 
                                     case 'position':
+                                    case 'tilt':
                                         payload = parseInt(payload);
                                         break;
                                     
