@@ -1,0 +1,51 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  publish:
+    name: Publish GitHub release to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: npm-publish-${{ github.event.release.tag_name }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Check release tag matches package version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          node <<'NODE'
+          const tagVersion = process.env.RELEASE_TAG.replace(/^v/, '');
+          const packageVersion = require('./package.json').version;
+
+          if (tagVersion !== packageVersion) {
+            console.error(`Release tag ${process.env.RELEASE_TAG} does not match package version ${packageVersion}`);
+            process.exit(1);
+          }
+          NODE
+
+      - name: Check package contents
+        run: npm pack --dry-run
+
+      - name: Publish stable release
+        if: ${{ !github.event.release.prerelease }}
+        run: npm publish --access public
+
+      - name: Publish prerelease
+        if: ${{ github.event.release.prerelease }}
+        run: npm publish --access public --tag next
