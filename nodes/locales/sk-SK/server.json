@@ -8,11 +8,13 @@
         "mqtt_password": "Heslo MQTT",
         "use-tls": "Použiť TLS",
         "tls-config": "Konfigurácia TLS",
-        "flow_label": "Označenie toku"
+        "flow_label": "Označenie toku",
+        "homeassistant_discovery_prefix": "Discovery prefix Home Assistant"
     },
     "placeholder": {
         "name": "Meno",
-        "flow_label": "napr. poschodie"
+        "flow_label": "napr. poschodie",
+        "homeassistant_discovery_prefix": "homeassistant"
     },
     "status": {
         "no_server": "žiadny server",
@@ -22,7 +24,8 @@
         "received": "prijaté"
     },
     "tip": {
-        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení"
+        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení",
+        "homeassistant_discovery_prefix": "MQTT Discovery prefix nastavený v Home Assistant. Predvolené: homeassistant."
     },
     "editor": {
         "groups": "Skupiny",

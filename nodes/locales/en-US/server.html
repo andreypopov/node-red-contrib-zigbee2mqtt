@@ -6,6 +6,7 @@
         <dt class="optional">Flow label <span class="property-type">string</span></dt><dd>Optional label, up to 24 characters. It is added in square brackets to the labels of Bridge, In, Get, and Out nodes that use this server. For example: <code>Lamp [Upstairs]</code>. Leave blank to keep their current labels.</dd>
         <dt>MQTT Host <span class="property-type">string</span></dt><dd>IP-address or MQTT Host of your zigbee2mqtt instance. Examples: <code>127.0.0.1</code>, <code>192.168.1.100</code>, <code>myzigbee2mqtt.dydns.com</code></dd>
          <dt class="required">Base topic <span class="property-type">string</span></dt><dd> Same as in your configuration.yaml</dd>
+        <dt class="optional">Home Assistant discovery prefix <span class="property-type">string</span></dt><dd>MQTT Discovery prefix configured in Home Assistant. Default: <code>homeassistant</code>. Used by the Home Assistant switch option on In nodes.</dd>
         <dt class="optional">MQTT Port <span class="property-type">number</span></dt><dd>default port for mqtt is 1883</dd>
         <dt class="optional">MQTT Username <span class="property-type">string</span></dt><dd></dd>
         <dt class="optional">MQTT Password <span class="property-type">string</span></dt><dd></dd>

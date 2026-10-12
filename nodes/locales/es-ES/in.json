@@ -17,7 +17,9 @@
         "filter_properties": "Propiedades para comparar",
         "output": "Salida",
         "enable_multiple": "Varios dispositivos",
-        "enable_multiple_help": "Recibir actualizaciones de cada dispositivo seleccionado."
+        "enable_multiple_help": "Recibir actualizaciones de cada dispositivo seleccionado.",
+        "expose_to_home_assistant": "Exponer a Home Assistant",
+        "expose_to_home_assistant_help": "Crea un interruptor para pausar este nodo de entrada. MQTT Discovery debe usar el mismo broker."
     },
     "placeholder": {
         "name": "Nombre",

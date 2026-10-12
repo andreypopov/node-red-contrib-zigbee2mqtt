@@ -8,11 +8,13 @@
         "mqtt_password": "Пароль MQTT",
         "use-tls": "Использовать TLS",
         "tls-config": "Настройка TLS",
-        "flow_label": "Метка потока"
+        "flow_label": "Метка потока",
+        "homeassistant_discovery_prefix": "Префикс обнаружения Home Assistant"
     },
     "placeholder": {
         "name": "Имя",
-        "flow_label": "Например, Верхний этаж"
+        "flow_label": "Например, Верхний этаж",
+        "homeassistant_discovery_prefix": "homeassistant"
     },
     "status": {
         "no_server": "нет серверного узла",
@@ -22,7 +24,8 @@
         "received": "получено"
     },
     "tip": {
-        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств"
+        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств",
+        "homeassistant_discovery_prefix": "Префикс MQTT Discovery из настроек Home Assistant. По умолчанию: homeassistant."
     },
     "editor": {
         "groups": "Группы",

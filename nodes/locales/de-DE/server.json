@@ -8,11 +8,13 @@
         "mqtt_password": "MQTT-Passwort",
         "use-tls": "TLS verwenden",
         "tls-config": "TLS-Konfiguration",
-        "flow_label": "Flow-Kennzeichnung"
+        "flow_label": "Flow-Kennzeichnung",
+        "homeassistant_discovery_prefix": "Home-Assistant-Discovery-Präfix"
     },
     "placeholder": {
         "name": "Name",
-        "flow_label": "z. B. Obergeschoss"
+        "flow_label": "z. B. Obergeschoss",
+        "homeassistant_discovery_prefix": "homeassistant"
     },
     "status": {
         "no_server": "kein Server-Node",
@@ -22,7 +24,8 @@
         "received": "empfangen"
     },
     "tip": {
-        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden",
+        "homeassistant_discovery_prefix": "Das in Home Assistant konfigurierte MQTT-Discovery-Präfix. Standard: homeassistant."
     },
     "editor": {
         "groups": "Gruppen",

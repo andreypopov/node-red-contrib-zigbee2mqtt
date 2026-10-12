@@ -43,6 +43,10 @@
         <select id="node-input-filterProperties" class="s-width" multiple="multiple"></select>
         <div class="form-tips"><span data-i18n="tip.filter_properties_help"></span></div>
     </div>
+    <div class="form-row">
+        <label for='node-input-exposeToHomeAssistant' class="l-width"><i class='fa fa-home'></i> <span data-i18n="label.expose_to_home_assistant"></span></label>
+        <input type="checkbox" id="node-input-exposeToHomeAssistant" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.expose_to_home_assistant_help"></span></input>
+    </div>
 </script>
 
 <script type='text/javascript'>
@@ -81,6 +85,10 @@
                 required: false
             },
             enableMultiple: {
+                value: false,
+                required: true
+            },
+            exposeToHomeAssistant: {
                 value: false,
                 required: true
             },

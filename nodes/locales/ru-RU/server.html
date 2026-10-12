@@ -6,6 +6,7 @@
         <dt class="optional">Метка потока <span class="property-type">строка</span></dt><dd>Необязательная метка длиной до 24 символов. Она добавляется в квадратных скобках к названиям узлов Bridge, In, Get и Out, использующих этот сервер. Например: <code>Лампа [Верхний этаж]</code>. Оставьте поле пустым, чтобы названия не менялись.</dd>
         <dt>Хост MQTT <span class="property-type">строка</span></dt><dd>IP-адрес или имя MQTT-хоста экземпляра Zigbee2MQTT. Примеры: <code>127.0.0.1</code>, <code>192.168.1.100</code>, <code>myzigbee2mqtt.dydns.com</code></dd>
         <dt class="required">Базовый топик <span class="property-type">строка</span></dt><dd>Такой же, как в <code>configuration.yaml</code>.</dd>
+        <dt class="optional">Префикс обнаружения Home Assistant <span class="property-type">строка</span></dt><dd>Префикс MQTT Discovery из настроек Home Assistant. По умолчанию: <code>homeassistant</code>. Используется переключателем Home Assistant в узлах In.</dd>
         <dt class="optional">Порт MQTT <span class="property-type">число</span></dt><dd>Порт MQTT по умолчанию — 1883.</dd>
         <dt class="optional">Имя пользователя MQTT <span class="property-type">строка</span></dt><dd></dd>
         <dt class="optional">Пароль MQTT <span class="property-type">строка</span></dt><dd></dd>
