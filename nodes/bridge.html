@@ -497,15 +497,17 @@
                         });
                         $('#node-z2m-tab-groups .red-ui-item-add').on('click', function () {
                             var name = prompt(RED._("node-red-contrib-zigbee2mqtt/bridge:groups.enter_group_name"), "");
-                            if (name) {
+                            if (name !== null) {
                                 $.getJSON('zigbee2mqtt/addGroup', {
                                     controllerID: node.server,
-                                    name: name
+                                    name: name.trim()
                                 }).done(function (data, textStatus, jqXHR) {
                                     if ("error" in data) alert(data.description);
-                                    setTimeout(function(){
-                                        init();
-                                    }, 1000);
+                                    else {
+                                        setTimeout(function(){
+                                            init();
+                                        }, 1000);
+                                    }
                                 });
                             }
                         });

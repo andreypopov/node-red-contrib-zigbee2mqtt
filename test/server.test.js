@@ -219,8 +219,13 @@ test('group commands validate ids and publish expected MQTT topics', () => {
     assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { id: 2 });
     assert.deepEqual(node.removeGroup(9), { error: true, description: 'no such group' });
 
-    assert.deepEqual(node.addGroup('office'), { success: true, description: 'command sent' });
+    assert.deepEqual(node.addGroup('  office  '), { success: true, description: 'command sent' });
     assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { friendly_name: 'office' });
+    const publicationCount = client.publications.length;
+    for (const invalidName of ['', '  ', null, undefined, 42]) {
+        assert.deepEqual(node.addGroup(invalidName), { error: true, description: 'can not be empty' });
+    }
+    assert.equal(client.publications.length, publicationCount);
     assert.deepEqual(node.addDeviceToGroup('lamp', 2), { success: true, description: 'command sent' });
     assert.deepEqual(JSON.parse(client.publications.at(-1)[1]), { group: 2, device: 'lamp' });
     assert.deepEqual(node.removeDeviceFromGroup('lamp', 2), { success: true, description: 'command sent' });
