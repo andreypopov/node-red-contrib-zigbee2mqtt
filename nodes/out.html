@@ -199,7 +199,7 @@
                             label: 'zigbee2mqtt',
                             icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
                             options: [
-                                {'value':'state', 'label':'State (on|off|toggle)'},
+                                ...Zigbee2mqttEditorUtils.getStateCommandOptions(),
                                 {'value':'brightness', 'label':'Brightness (0..255)'},
                                 {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
                                 {'value':'brightness_move_onoff', 'label':'Brightness Move On/Off (-255...255|stop)'},
@@ -241,16 +241,8 @@
 
                 function getPayloadTypes(command) {
                     let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                    let options = [];
-                    if ('state' === command) {
-                        options = [
-                            {'value':'on', 'label':'On'},
-                            {'value':'off', 'label':'Off'},
-                            {'value':'toggle', 'label':'Toggle'},
-                            {'value':'lock', 'label':'Lock'},
-                            {'value':'unlock', 'label':'Unlock'}
-                        ];
-                    } else if ('color_temp' === command) {
+                    let options = Zigbee2mqttEditorUtils.getStatePayloadOptions(command);
+                    if (!options.length && 'color_temp' === command) {
                         options = [
                             {'value':'50', 'label':'Cold'},
                             {'value':'250', 'label':'White'},
@@ -286,4 +278,3 @@
         }
     });
 </script>
-

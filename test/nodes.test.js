@@ -153,6 +153,23 @@ test('output node supports lock, color and HomeKit commands', (t) => {
     assert.deepEqual(JSON.parse(server.mqtt.publications.at(-1)[1]), { brightness: 64, state: 'on' });
 });
 
+test('output node publishes state commands for all nine endpoints', (t) => {
+    const server = makeServer();
+
+    for (let endpoint = 1; endpoint <= 9; endpoint++) {
+        const command = `state_l${endpoint}`;
+        const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+            server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
+            commandType: 'z2m_cmd', command
+        }, server);
+        t.after(() => clearTimeout(node.cleanTimer));
+
+        node.emit('input', {});
+
+        assert.equal(server.mqtt.publications.at(-1)[1], JSON.stringify({ [command]: 'on' }));
+    }
+});
+
 test('output node applies device options and rejects invalid JSON payloads', (t) => {
     const server = makeServer();
     const options = instantiate(registerOut, 'zigbee2mqtt-out', {

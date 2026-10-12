@@ -158,13 +158,17 @@ class Zigbee2MqttEditor {
                 if ('features' in value) {
                     $.each(value.features, function(index2, value2) {
                         if ('property' in value2) {
-                            $('<option  value="' + value2.property + '">' + value2.name + (value2.unit ? ', ' + value2.unit : '') + '</option>')
-                                .appendTo(html);
+                            $('<option/>', {
+                                value: value2.property,
+                                text: Zigbee2mqttEditorUtils.formatExposeLabel(value2, value)
+                            }).appendTo(html);
                         }
                     });
                 } else if ('property' in value) {
-                    $('<option  value="' + value.property + '">' + value.name + (value.unit ? ', ' + value.unit : '') + '</option>')
-                        .appendTo(html);
+                    $('<option/>', {
+                        value: value.property,
+                        text: Zigbee2mqttEditorUtils.formatExposeLabel(value)
+                    }).appendTo(html);
                 }
             });
         }

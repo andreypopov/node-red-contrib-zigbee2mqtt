@@ -1,3 +1,6 @@
 .github/
 RELEASING.md
 test/
+tests/
+coverage/
+*.test.js
