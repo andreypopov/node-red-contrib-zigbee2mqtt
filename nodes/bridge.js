@@ -35,8 +35,58 @@ module.exports = function(RED) {
 
             if (node.server) {
                 node.on('input', function (message_in) {
-                    node.log('Published to mqtt topic: ' + message_in.topic + ' Payload: ' + JSON.stringify(message_in.payload));
-                    node.server.mqtt.publish(message_in.topic, JSON.stringify(message_in.payload));
+                    if (!node.server || !node.server.mqtt || !node.server.connection) {
+                        node.status({
+                            fill: "red",
+                            shape: "dot",
+                            text: "node-red-contrib-zigbee2mqtt/bridge:status.no_connection"
+                        });
+                        node.error("MQTT not connected - cannot publish message");
+                        return;
+                    }
+
+                    if (!message_in.topic) {
+                        node.error("Message must have a 'topic' property");
+                        return;
+                    }
+
+                    if (message_in.payload === undefined || message_in.payload === null) {
+                        node.error("Message must have a 'payload' property");
+                        return;
+                    }
+
+                    node.log('Published to mqtt topic: ' + message_in.topic + 
+                             ' Payload: ' + JSON.stringify(message_in.payload));
+
+                    node.status({
+                        fill: "blue",
+                        shape: "ring",
+                        text: "publishing..."
+                    });
+
+                    node.server.mqtt.publish(
+                        message_in.topic, 
+                        JSON.stringify(message_in.payload),
+                        { qos: parseInt(node.server.config.mqtt_qos || 0) },
+                        (err) => {
+                            if (err) {
+                                node.status({
+                                    fill: "red",
+                                    shape: "dot",
+                                    text: "publish failed"
+                                });
+                                node.error("MQTT publish error: " + err.message);
+                                
+                                setTimeout(() => {
+                                    node.setNodeStatus();
+                                }, 5000);
+                            } else {
+                                setTimeout(() => {
+                                    node.setNodeStatus();
+                                }, 1000);
+                            }
+                        }
+                    );
                 });
 
             } else {
@@ -52,7 +102,6 @@ module.exports = function(RED) {
             let node = this;
             node.setNodeStatus();
 
-            //remove listeners
             if (node.listener_onMQTTConnect) {
                 node.server.removeListener('onMQTTConnect', node.listener_onMQTTConnect);
             }
@@ -76,18 +125,22 @@ module.exports = function(RED) {
                     text: "node-red-contrib-zigbee2mqtt/bridge:status.searching"
                 });
             } else {
-                let text = node.server.bridge_state?RED._("node-red-contrib-zigbee2mqtt/bridge:status.online"):RED._("node-red-contrib-zigbee2mqtt/bridge:status.offline");
+                let text = node.server.bridge_state ?
+                    RED._("node-red-contrib-zigbee2mqtt/bridge:status.online") :
+                    RED._("node-red-contrib-zigbee2mqtt/bridge:status.offline");
+                
                 if (node.server.bridge_info && "log_level" in node.server.bridge_info) {
-                    text += ' (log: '+node.server.bridge_info.log_level+')';
+                    text += ' (log: ' + node.server.bridge_info.log_level + ')';
                 }
+                
                 node.status({
-                    fill: node.server.bridge_state?"green":"red",
+                    fill: node.server.bridge_state ? "green" : "red",
                     shape: "dot",
                     text: text
                 });
             }
         }
-
+        
         onMQTTMessageBridge(data) {
             let node = this;
             let payload = Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload;
@@ -117,8 +170,5 @@ module.exports = function(RED) {
         }
     }
     RED.nodes.registerType('zigbee2mqtt-bridge', Zigbee2mqttNodeBridge);
+    
 };
-
-
-
-

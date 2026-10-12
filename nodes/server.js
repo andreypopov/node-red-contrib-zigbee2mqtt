@@ -3,7 +3,16 @@ var mqtt = require('mqtt');
 var Viz = require('viz.js');
 var {Module, render} = require('viz.js/full.render.js');
 
+
 module.exports = function(RED) {
+    "use strict";
+    
+    const path = require('path');
+    // âœ… REGISTAR O SCRIPT DEBUG GLOBALMENTE
+    RED.httpAdmin.get('/zigbee2mqtt/js/debug.js', function(req, res) {
+        res.sendFile(path.join(__dirname, '../resources/js/debug.js'));
+    });
+    
     class ServerNode {
         constructor(n) {
             RED.nodes.createNode(this, n);
@@ -196,17 +205,73 @@ module.exports = function(RED) {
             node.log('Log Level was set to: ' + val);
         }
 
-        setPermitJoin(val) {
-            let node = this;
-            let payload = {
-                'options': {
-                    'permit_join': val,
-                },
+// FIX para Issue #146
+    setPermitJoin(val, customTime) {
+        let node = this;
+        
+        // âœ… VALIDAR CONEXÃƒO MQTT
+        if (!node.mqtt || !node.connection) {
+            node.warn('Cannot set permit_join: MQTT not connected');
+            return {'error': true, 'description': 'MQTT not connected'};
+        }
+        
+        // âœ… DETERMINAR TEMPO
+        // Aceita: setPermitJoin(true, 300) ou setPermitJoin(true) [default 180s]
+        let time = 180; // Default: 3 minutos
+        
+        if (customTime !== undefined && customTime !== null) {
+            const parsed = parseInt(customTime);
+            if (!isNaN(parsed) && parsed > 0) {
+                time = parsed;
+            }
+        }
+        
+        // âœ… PREPARAR PAYLOAD (novo formato Zigbee2MQTT)
+        let payload;
+        
+        if (val === true || val === 'true' || parseInt(val) > 0) {
+            // Ativar pairing mode
+            payload = {
+                'value': true,
+                'time': time
             };
-            node.mqtt.publish(node.getTopic('/bridge/request/options'), JSON.stringify(payload));
-            node.log('Permit Join was set to: ' + val);
+            
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            const timeStr = minutes > 0 ? 
+                `${minutes}m ${seconds}s` : 
+                `${seconds}s`;
+            
+            node.log(`Permit Join ENABLED for ${timeStr} (${time} seconds)`);
+            
+        } else {
+            // Desativar pairing mode
+            payload = {
+                'value': false
+            };
+            node.log('Permit Join DISABLED');
         }
 
+        // âœ… PUBLICAR NO TÃ“PICO CORRETO
+        // ANTES (antigo): /bridge/request/options com {"options": {"permit_join": true}}
+        // AGORA (novo):   /bridge/request/permit_join com {"value": true, "time": 180}
+        node.mqtt.publish(
+            node.getTopic('/bridge/request/permit_join'),  // âœ… TÃ³pico atualizado
+            JSON.stringify(payload),
+            { qos: parseInt(node.config.mqtt_qos || 0) },
+            (err) => {
+                if (err) {
+                    node.error('Failed to set permit_join: ' + err.message);
+                }
+            }
+        );
+        
+        return {
+            'success': true, 
+            'description': 'command sent', 
+            'time': time
+        };
+    }
         renameDevice(ieee_address, newName) {
             let node = this;
 
@@ -519,7 +584,7 @@ module.exports = function(RED) {
             }
 
             if (item && "power_source" in item && 'Battery' === item.power_source && payload_all && "battery" in payload_all && parseInt(payload_all.battery) > 0) {
-                text += ' ⚡' + payload_all.battery + '%';
+                text += ' âš¡' + payload_all.battery + '%';
             }
 
             msg.topic = this.getTopic('/'+item.friendly_name);
@@ -659,60 +724,57 @@ module.exports = function(RED) {
             }, 3000);
         }
 
-
         onMQTTConnect() {
             var node = this;
-            node.connection = true;
+            node.connection = true;  // âœ… Marca como conectado
             node.log('MQTT Connected');
             node.emit('onMQTTConnect');
             node.subscribeMQTT();
-
         }
 
         onMQTTDisconnect(error) {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // âœ… CORRIGIDO: Marca como desconectado
             node.log('MQTT Disconnected');
-            console.log(error);
-
+            node.emit('onConnectError', error);  // âœ… CORRIGIDO: Notifica os nÃ³s
+            if (error) {
+                console.log('Disconnect error:', error);
+            }
         }
 
         onMQTTError(error) {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // âœ… CORRIGIDO: Marca como desconectado
             node.log('MQTT Error');
-            console.log(error);
-
+            node.emit('onConnectError', error);  // âœ… CORRIGIDO: Notifica os nÃ³s
+            if (error) {
+                console.log('MQTT error:', error);
+            }
         }
 
         onMQTTOffline() {
             let node = this;
-            // node.connection = true;
+            node.connection = false;  // âœ… CORRIGIDO: Marca como desconectado
             node.warn('MQTT Offline');
+            node.emit('onConnectError');  // âœ… CORRIGIDO: Notifica os nÃ³s
         }
 
         onMQTTEnd() {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // âœ… CORRIGIDO: Marca como desconectado
             node.log('MQTT End');
-            // console.log();
-
         }
 
         onMQTTReconnect() {
             var node = this;
-            // node.connection = true;
-            node.log('MQTT Reconnect');
-            // console.log();
-
+            // MantÃ©m connection = false atÃ© receber onMQTTConnect
+            node.log('MQTT Reconnect attempt...');
         }
 
         onMQTTClose() {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // âœ… CORRIGIDO: Marca como desconectado
             node.log('MQTT Close');
-            // console.log(node.connection);
-
         }
 
         onMQTTMessage(topic, message) {
@@ -756,18 +818,28 @@ module.exports = function(RED) {
                     }
                 } else if (node.getTopic('/bridge/state') === topic) {
                     let availabilityStatus = false;
+                    
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         let availabilityStatusObject = JSON.parse(messageString);
                         availabilityStatus = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
                     } else {
                         availabilityStatus = messageString === 'online';
                     }
+                    
+                    node.bridge_state = availabilityStatus ? 'online' : 'offline';
+                    
                     node.emit('onMQTTBridgeState', {
                         topic: topic,
                         payload: availabilityStatus,
                     });
                     if (node.bridge_state !== null || !availabilityStatus) {
-                        node.warn(`Bridge ${availabilityStatus ? 'online' : 'offline'}`)
+                        if (!availabilityStatus) {
+                            node.warn(`Bridge offline`)
+                        }
+                        // ✅ Log silencioso quando fica online (apenas em debug)
+                        else if (typeof Z2MDebug !== 'undefined' && Z2MDebug.isEnabled()) {
+                            node.log(`Bridge online`)
+                        }
                     }
                     node.bridge_state = availabilityStatus
                 } else if (node.getTopic('/bridge/info') === topic) {
@@ -851,4 +923,3 @@ module.exports = function(RED) {
 
     RED.nodes.registerType('zigbee2mqtt-server', ServerNode, {});
 };
-

@@ -17,7 +17,10 @@
     "status": {
         "no_server": "no server",
         "no_device": "no device",
-        "no_payload": "no payload"
+        "no_payload": "no payload",
+        "no_connection": "no connection",
+        "connected": "connected",
+        "received": "ok"        
     },
     "help": {
         "important": "IMPORTANT:",

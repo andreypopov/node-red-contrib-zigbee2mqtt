@@ -1,3 +1,15 @@
+<script type="text/javascript">
+// ✅ Usar Z2MDebug do contexto global (já carregado pelo api.html)
+(function(win) {
+    if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
+        win.Z2MDebug = win.parent.Z2MDebug;
+    }
+})(window);
+</script>
+
+<script type='text/javascript'>
+    $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
+</script>
 <script type="text/x-red" data-template-name="zigbee2mqtt-get">
     <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
     <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />

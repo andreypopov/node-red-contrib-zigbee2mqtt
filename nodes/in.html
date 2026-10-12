@@ -1,3 +1,14 @@
+<script type="text/javascript">
+// ✅ Usar Z2MDebug do contexto global (já carregado pelo api.html)
+(function(win) {
+    if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
+        win.Z2MDebug = win.parent.Z2MDebug;
+    }
+})(window);
+</script>
+<script type='text/javascript'>
+    $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
+</script>
 <script type="text/x-red" data-template-name="zigbee2mqtt-in">
     <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
     <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
@@ -94,12 +105,22 @@
 
             return label;
         },
-        oneditprepare: function () {
+        oneditprepare: async function () {
             let node = this;
+            
+            // ✅ Criar debugger específico
+            var debug = Z2MDebug.create('Z2M In');
+            if (Z2MDebug.isEnabled()) {
+                debug.log('Initializing In node');
+            }   
+            
+            setTimeout(() => {
+                    // âœ¨ Passar mode: 'in' (ou omitir, pois Ã© default)
+                    new Zigbee2MqttEditor(node, {
+                        'mode': 'in'  // â† ESPECIFICAR IN
+                    }).build();
+                }, 100);
 
-            setTimeout(()=>{
-                new Zigbee2MqttEditor(node).build();
-            }, 100); //need timeout to load server node
         },
         oneditsave: function () {
             //convert array for string if single mode

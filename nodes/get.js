@@ -1,46 +1,114 @@
-module.exports = function(RED) {
-    class Zigbee2mqttNodeGet {
-        constructor(config) {
-            RED.nodes.createNode(this, config);
+<script type="text/javascript">
+// ✅ Usar Z2MDebug do contexto global (já carregado pelo api.html)
+(function(win) {
+    if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
+        win.Z2MDebug = win.parent.Z2MDebug;
+    }
+})(window);
+</script>
 
+<script type='text/javascript'>
+    $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
+</script>
+<script type="text/x-red" data-template-name="zigbee2mqtt-get">
+    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
+    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
+
+    <div class="form-row">
+        <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
+    </div>
+    <div class="form-row" style="display:none;">
+        <label for="node-input-friendly_name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.friendly_name"></span></label>
+        <input type="text" id="node-input-friendly_name" data-i18n="[placeholder]placeholder.friendly_name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
+        <input type="text" id="node-input-server">
+    </div>
+    <div class="form-row">
+        <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
+        <select id="node-input-device_id" class="s-width" multiple="multiple"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
+        <select id="node-input-state" class="s-width"  data-i18n="[placeholder]multiselect.complete_payload"></select>
+    </div>
+    <div class="form-row">
+        <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
+        <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
+    </div>
+    <div class="form-row">
+        <label for='node-input-enableMultiple' class="l-width"><i class='fa fa-filter'></i> <span data-i18n="label.enable_multiple"></span></label>
+        <input type="checkbox" id="node-input-enableMultiple" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.enable_multiple_help"></span>
+    </div>
+
+
+
+</script>
+
+<script type='text/javascript'>
+    RED.nodes.registerType('zigbee2mqtt-get', {
+        category: 'Zigbee2mqtt',
+        color: '#FDBF48',
+        defaults: {
+            name: {
+                value: ''
+            },
+            server: {
+                type: 'zigbee2mqtt-server',
+                required: true
+            },
+            friendly_name: {
+                value: '',
+                required: false
+            },
+            device_id: {
+                value: null,
+                required: false
+            },
+            state: {
+                value: ''
+            },
+            enableMultiple: {
+                value: false,
+                required: true
+            }
+        },
+        inputs: 1,
+        outputs: 1,
+        outputLabels: ["value"],
+        paletteLabel: 'get',
+        icon: "icon.png",
+        label: function () {
+            var label = 'z2m-get';
+
+            if (this.name) {
+                label = this.name;
+            } else if (typeof(this.friendly_name) == 'string' && this.friendly_name.length) {
+                label = this.friendly_name;
+            } else if (typeof(this.device_id) == 'string') {
+                label = this.device_id;
+            }
+
+            return label;
+        },
+        oneditprepare: function () {
             let node = this;
-            node.config = config;
-            node.cleanTimer = null;
-            node.last_successful_status = {};
-            node.server = RED.nodes.getNode(node.config.server);
-            node.status({});
-            if (node.server) {
-                node.on('input', function(message_in) {
 
-                    let key = node.config.device_id;
-                    if ((!key || key === 'msg.topic') && message_in.topic) {
-                        key = message_in.topic;
-                    }
-
-                    node.server.nodeSend(node, {
-                        'msg': message_in,
-                        'key': key,
-                    });
-                });
-
-            } else {
-                node.status({
-                    fill: 'red',
-                    shape: 'dot',
-                    text: 'node-red-contrib-zigbee2mqtt/server:status.no_server',
-                });
+            setTimeout(()=>{
+                new Zigbee2MqttEditor(node, {
+                    'allow_empty': true
+                }).build();
+            }, 100); //need timeout to load server node
+        },
+        oneditsave: function () {
+            //convert array for string if single mode
+            if (!$('#node-input-enableMultiple').is(':checked')) {
+                let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
+                this.device_id = device_id.length ? device_id[0] : null;
             }
         }
-
-        setSuccessfulStatus(obj) {
-            this.status(obj);
-            this.last_successful_status = obj;
-        }
-    }
-
-    RED.nodes.registerType('zigbee2mqtt-get', Zigbee2mqttNodeGet);
-};
-
-
-
+    });
+</script>
 

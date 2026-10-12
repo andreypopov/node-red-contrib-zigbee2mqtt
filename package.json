@@ -3,8 +3,8 @@
     "name": "Andrey Popov",
     "email": "andrey_popov@me.com"
   },
-  "name": "node-red-contrib-zigbee2mqtt",
-  "description": "Zigbee2mqtt connectivity nodes for node-red",
+  "name": "@camels84/node-red-contrib-zigbee2mqtt",
+  "description": "Fork of Zigbee2mqtt connectivity nodes for node-red",
   "version": "2.7.5",
   "dependencies": {
     "eventsource": "^2.0.2",

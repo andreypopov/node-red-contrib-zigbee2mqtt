@@ -1,289 +1,616 @@
-<script type="text/x-red" data-template-name="zigbee2mqtt-out">
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
-
-    <div class="form-row">
-        <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
-        <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
-    </div>
-   <div class="form-row" style="display:none;">
-        <label for="node-input-friendly_name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.friendly_name"></span></label>
-        <input type="text" id="node-input-friendly_name" data-i18n="[placeholder]placeholder.friendly_name">
-    </div>
-    <div class="form-row">
-        <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
-        <input type="text" id="node-input-server">
-    </div>
-    <div class="form-row">
-        <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
-        <select id="node-input-device_id" class="s-width" multiple="multiple"></select>
-    </div>
-<!--    <div class="form-row">-->
-<!--        <label for='node-input-enableMultiple' class="l-width"></label>-->
-<!--        <input type="checkbox" id="node-input-enableMultiple" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="node-red-contrib-spruthub/server:label.enable_multiple"></span></input>-->
-<!--    </div>-->
-    <div class="form-row">
-        <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
-        <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
-    </div>
-    <div class="form-row">
-        <label for="node-input-command" class="l-width"><i class="fa fa-tasks"></i> <span data-i18n="label.command"></span></label>
-        <input type="text" id="node-input-command" style="width:70%">
-        <input type="hidden" id="node-input-commandType">
-    </div>
-	<div class="form-row">
-        <label for="node-input-payload" class="l-width"><i class="fa fa-envelope"></i> <span data-i18n="label.payload"></span></label>
-        <input type="text" id="node-input-payload" style="width:70%">
-        <input type="hidden" id="node-input-payloadType">
-    </div>
-
-    <!--homekit-->
-    <div class="form-row help_block help_block__homekit_homekit">
-        <div class="form-tips">
-            <strong><span data-i18n="help.important"></span></strong><br>
-            <span data-i18n="help.command_homekit"></span>
-        </div>
-    </div>
-
-	<div class="form-row">
-        <label for="node-input-optionsValue" class="l-width"><i class="fa fa-gears"></i> <span data-i18n="label.options"></span></label>
-        <input type="text" id="node-input-optionsValue" style="width:70%">
-        <input type="hidden" id="node-input-optionsType">
-    </div>
-    <!--option description-->
-    <div class="form-tips optionsType_description">
-        <strong><div data-i18n="help.description"></div></strong>
-        <span></span>
-    </div>
-
-    <div class="form-row node-input-rule-container-row">
-        <ol id="node-input-rule-container"></ol>
-    </div>
-    <hr>
-
-
-    <!--brightness_move-->
-    <div class="form-tips help_block help_block__z2m_cmd_brightness_move">
-        <strong><span data-i18n="help.description"></span></strong><br>
-        <span data-i18n="help.command_brightness_move"></span>
-    </div>
-    <!--brightness_step-->
-    <div class="form-tips help_block help_block__z2m_cmd_brightness_step">
-        <strong><span data-i18n="help.description"></span></strong><br>
-        <span data-i18n="help.command_brightness_step"></span>
-    </div>
-
+<script type="text/javascript">
+// ✅ Usar Z2MDebug do contexto global (já carregado pelo api.html)
+(function(win) {
+    if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
+        win.Z2MDebug = win.parent.Z2MDebug;
+    }
+})(window);
 </script>
 
 <script type='text/javascript'>
-    RED.nodes.registerType('zigbee2mqtt-out', {
-        category: 'Zigbee2mqtt',
-        color: '#FDBF48',
-        align: 'right',
-        defaults: {
-            name: {
-                value: ""
-            },
-            server: {
-                type: "zigbee2mqtt-server",
-                required: true
-            },
-            friendly_name: {
-                value: "",
-                required: false
-            },
-            device_id: {
-                value: null
-            },
-            command: {
-                value: 'state',
-            },
-            commandType: {
-                value: 'z2m_cmd',
-            },
-            payload: {
-                value: 'payload',
-            },
-            payloadType: {
-                value: 'msg',
-            },
-            optionsValue: {
-                value: null,
-            },
-            optionsType: {
-                value: null,
-            },
-            // enableMultiple: {
-            //     value: false,
-            //     required: true
-            // },
-        },
-        inputLabels: "value",
-        paletteLabel: 'out',
-        inputs: 1,
-        outputs: 0,
-        icon: "icon.png",
-        label: function() {
-            var label = 'z2m-out';
+    $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
+</script>
+ <script type="text/x-red" data-template-name="zigbee2mqtt-out">
+        <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
+        <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
 
-            if (this.name) {
-                label = this.name;
-            } else if (typeof(this.friendly_name) == 'string' && this.friendly_name.length) {
-                label = this.friendly_name;
-            } else if (typeof(this.device_id) == 'string') {
-                label = this.device_id;
-            }
-            return label;
-        },
-        oneditprepare: function() {
-            let node = this;
-            let $inputCommand = $('#node-input-command');
-            let $inputCommandType = $('#node-input-commandType');
+        <div class="form-row">
+            <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
+            <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
+        </div>
+       <div class="form-row" style="display:none;">
+            <label for="node-input-friendly_name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.friendly_name"></span></label>
+            <input type="text" id="node-input-friendly_name" data-i18n="[placeholder]placeholder.friendly_name">
+        </div>
+        <div class="form-row">
+            <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
+            <input type="text" id="node-input-server">
+        </div>
+        <div class="form-row">
+            <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
+            <select id="node-input-device_id" class="s-width" ></select>
+        </div>
+    <!--    <div class="form-row">-->
+    <!--        <label for='node-input-enableMultiple' class="l-width"></label>-->
+    <!--        <input type="checkbox" id="node-input-enableMultiple" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="node-red-contrib-spruthub/server:label.enable_multiple"></span></input>-->
+    <!--    </div>-->
+        <div class="form-row">
+            <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
+            <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
+        </div>
+        
+        <!-- Command Input -->
+        <div class="form-row">
+            <label for="node-input-command" class="l-width"><i class="fa fa-tasks"></i> <span data-i18n="label.command"></span></label>
+            <!-- Select oculto para armazenar comandos do device -->
+            <select id="node-input-command-list" style="display:none"></select>
+            <!-- Input visivel com typedInput -->
+            <input type="text" id="node-input-command" style="width:70%">
+            <input type="hidden" id="node-input-commandType">
+        </div>
+        
+        <!-- Payload Input -->
+        <div class="form-row">
+            <label for="node-input-payload" class="l-width"><i class="fa fa-envelope"></i> <span data-i18n="label.payload"></span></label>
+            <input type="text" id="node-input-payload" style="width:70%">
+            <input type="hidden" id="node-input-payloadType">
+        </div>
 
-            // setTimeout(()=>{
-                new Zigbee2MqttEditor(node, {
-                    'allow_empty': true
-                }).build();
+        <!-- NOVO: Campo Manual para Payload -->
 
-                showHelpBlock();
-                buildTypesInput();
+        <!-- NOVO: Slider para Payload Manual -->
+        <div class="form-row" id="manual-payload-row" style="display:none; padding: 10px 0;">
+            <label for="node-input-manualPayloadValue" class="l-width">
+                <i class="fa fa-clock-o"></i> <span id="manual-label">Manual Value</span>
+            </label>
+            <div style="display: inline-block; width: 70%; vertical-align: middle;">
+                <!-- Campo de input VISIVEL e editável -->
+                <input type="number" 
+                       id="node-input-manualPayloadValue" 
+                       value="0" 
+                       min="0"
+                       max="43200"
+                       step="60"
+                       placeholder="Enter value..."
+                       style="width: 100px; margin-bottom: 10px; display: inline-block;">
+                <span id="slider-value-display" style="margin-left: 10px; font-weight: bold; color: #2196F3;">0s</span>
+                
+                <!-- Slider -->
+                <input type="range" 
+                       id="node-input-manualPayloadSlider" 
+                       min="0" 
+                       max="43200" 
+                       value="0" 
+                       step="60"
+                       style="width: 100%; margin-top: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #666; margin-top: 2px;">
+                    <span id="slider-min-label">0s</span>
+                    <span id="slider-max-label">12h</span>
+                </div>
+            </div>
+        </div>
 
-                $inputCommand.on('change', function(event, type, value) {
-                    $('#node-input-payload').typedInput('types', getPayloadTypes(value));
+        <style>
+        /* Estilo do slider inspirado no exemplo */
+        #node-input-manualPayloadSlider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #4CAF50 0%, #FFC107 50%, #F44336 100%);
+            outline: none;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
 
-                    //show/hide
-                    if ('homekit' === type || 'nothing' === type) {
-                        $('#node-input-payload').closest('.form-row').hide();
-                    } else {
-                        $('#node-input-payload').closest('.form-row').show();
-                    }
+        #node-input-manualPayloadSlider:hover {
+            opacity: 1;
+        }
 
-                    showHelpBlock();
-                });
+        #node-input-manualPayloadSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #2196F3;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        #node-input-manualPayloadSlider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        #node-input-manualPayloadSlider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #2196F3;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        #node-input-manualPayloadSlider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        #manual-payload-row {
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+            margin: 10px 0;
+            padding: 15px 10px !important;
+            border-radius: 4px;
+        }
+        </style>
+        
+        
+        <!-- Homekit help -->
+        <div class="form-row help_block help_block__homekit_homekit">
+            <div class="form-tips">
+                <strong><span data-i18n="help.important"></span></strong><br>
+                <span data-i18n="help.command_homekit"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="node-input-optionsValue" class="l-width"><i class="fa fa-gears"></i> <span data-i18n="label.options"></span></label>
+            <input type="text" id="node-input-optionsValue" style="width:70%">
+            <input type="hidden" id="node-input-optionsType">
+        </div>
+        <!--option description-->
+        <div class="form-tips optionsType_description">
+            <strong><div data-i18n="help.description"></div></strong>
+            <span></span>
+        </div>
+
+        <div class="form-row node-input-rule-container-row">
+            <ol id="node-input-rule-container"></ol>
+        </div>
+        <hr>
 
 
-                //init typedInput
-                $('#node-input-payload').typedInput({
-                    types: getPayloadTypes(node.command),
-                    default: 'msg',
-                    value: 'payload',
-                    typeField: $('#node-input-payloadType'),
-                });
-                $inputCommandType.val(node.commandType);
-                $('#node-input-payloadType').val(node.payloadType);
+        <!--brightness_move-->
+        <div class="form-tips help_block help_block__z2m_cmd_brightness_move">
+            <strong><span data-i18n="help.description"></span></strong><br>
+            <span data-i18n="help.command_brightness_move"></span>
+        </div>
+        <!--brightness_step-->
+        <div class="form-tips help_block help_block__z2m_cmd_brightness_step">
+            <strong><span data-i18n="help.description"></span></strong><br>
+            <span data-i18n="help.command_brightness_step"></span>
+        </div>
 
+    </script>
+    <script type="text/javascript">
+        RED.nodes.registerType('zigbee2mqtt-out', {
+            category: 'Zigbee2mqtt',
+            color: '#FDBF48',
+            align: 'right',
+            defaults: {
+                name: {
+                    value: ""
+                },
+                server: {
+                    type: "zigbee2mqtt-server",
+                    required: true
+                },
+                friendly_name: {
+                    value: "",
+                    required: false
+                },
+                device_id: {
+                    value: null
+                },
+                command: {
+                    value: ' ',
+                },
+                commandType: {
+                    value: 'z2m_cmd',
+                },
+                payload: {
+                    value: ' ',
+                },
+                payloadType: {
+                    value: 'msg',
+                },
+                manualPayloadValue: {
+                    value: '',
+                },
+                optionsValue: {
+                    value: null,
+                },
+                optionsType: {
+                    value: null,
+                },
+
+            },
+            inputLabels: "value",
+            paletteLabel: 'out',
+            inputs: 1,
+            outputs: 0,
+            icon: "icon.png",
+            label: function() {
+                var label = 'z2m-out';
+
+                if (this.name) {
+                    label = this.name;
+                } else if (typeof(this.friendly_name) == 'string' && this.friendly_name.length) {
+                    label = this.friendly_name;
+                } else if (typeof(this.device_id) == 'string') {
+                    label = this.device_id;
+                }
+                return label;
+            },
+                                    
+            oneditprepare: async function() {
+                let node = this;
+            
+            // ✅ Criar debugger específico - SEM LOG AQUI
+            var debug = Z2MDebug.create('Z2M Out');
+    
+            // Função para mostrar/esconder blocos de ajuda
                 function showHelpBlock() {
-                    var command = $('#node-input-command').val(); //state
-                    var commandType = $('#node-input-commandType').val(); //z2m_cmd
+                    var $inputCommand = $('#node-input-command');
+                    var command = $inputCommand.val();
+                    var commandType = $('#node-input-commandType').val();
                     if (command === '{}') command = 'json';
                     if (commandType === 'str') command = 'custom';
                     $('.help_block').hide();
-                    $('.help_block__'+commandType+'_'+command).show();
+                    $('.help_block__' + commandType + '_' + command).show();
                 }
-
-
-                function buildTypesInput() {
-                    $('#node-input-command').typedInput({
-                        types: getCommandTypes(),
-                        default: 'msg',
-                        value: 'topic',
-                        typeField: $('#node-input-commandType'),
+                
+                // Função para mostrar/esconder blocos de ajuda
+                function setupSlider() {
+                    const $slider = $('#node-input-manualPayloadSlider');
+                    const $input = $('#node-input-manualPayloadValue');
+                    const $display = $('#slider-value-display');
+                    const $label = $('#manual-label');
+                    const $minLabel = $('#slider-min-label');
+                    const $maxLabel = $('#slider-max-label');
+                    
+                    // Função para formatar tempo
+                    function formatTime(seconds) {
+                        const hours = Math.floor(seconds / 3600);
+                        const minutes = Math.floor((seconds % 3600) / 60);
+                        const secs = seconds % 60;
+                        
+                        let parts = [];
+                        if (hours > 0) parts.push(hours + 'h');
+                        if (minutes > 0) parts.push(minutes + 'm');
+                        if (secs > 0 || parts.length === 0) parts.push(secs + 's');
+                        
+                        return parts.join(' ');
+                    }
+                    
+                    // Atualizar display
+                    function updateDisplay(value) {
+                        const max = parseInt($slider.attr('max'));
+                        const min = parseInt($slider.attr('min'));
+                        
+                        if (max > 1000) {
+                            $display.text(value + 's (' + formatTime(value) + ')');
+                        } else if (min >= 150) {
+                            $display.text(value + 'K');
+                        } else {
+                            $display.text(value);
+                        }
+                    }
+                    
+                    // Detectar tipo de comando para ajustar range
+                    function adjustSliderForCommand() {
+                        const $cmd = $('#node-input-command');
+                        if ($cmd.data('typedInput')) {
+                            try {
+                                const cmd = $cmd.typedInput('value');
+                                
+                                // Countdown: até 12 horas (43200s)
+                                if (cmd && cmd.toLowerCase().includes('countdown')) {
+                                    $slider.attr('min', 0);
+                                    $slider.attr('max', 43200);
+                                    $slider.attr('step', 60);
+                                    $input.attr('min', 0);
+                                    $input.attr('max', 43200);
+                                    $input.attr('step', 60);
+                                    $label.text('Countdown Duration');
+                                    $minLabel.text('0s');
+                                    $maxLabel.text('12h');
+                                }
+                                // Brightness: 0-255
+                                else if (cmd && cmd.toLowerCase().includes('brightness')) {
+                                    $slider.attr('min', 0);
+                                    $slider.attr('max', 255);
+                                    $slider.attr('step', 1);
+                                    $input.attr('min', 0);
+                                    $input.attr('max', 255);
+                                    $input.attr('step', 1);
+                                    $label.text('Brightness Level');
+                                    $minLabel.text('0');
+                                    $maxLabel.text('255');
+                                }
+                                // Temperatura de cor: 150-500
+                                else if (cmd && cmd.toLowerCase().includes('color_temp')) {
+                                    $slider.attr('min', 150);
+                                    $slider.attr('max', 500);
+                                    $slider.attr('step', 10);
+                                    $input.attr('min', 150);
+                                    $input.attr('max', 500);
+                                    $input.attr('step', 10);
+                                    $label.text('Color Temperature');
+                                    $minLabel.text('150K');
+                                    $maxLabel.text('500K');
+                                }
+                                // Default: 0-100
+                                else {
+                                    $slider.attr('min', 0);
+                                    $slider.attr('max', 100);
+                                    $slider.attr('step', 1);
+                                    $input.attr('min', 0);
+                                    $input.attr('max', 100);
+                                    $input.attr('step', 1);
+                                    $label.text('Manual Value');
+                                    $minLabel.text('0');
+                                    $maxLabel.text('100');
+                                }
+                                
+                                // Resetar para valor minimo quando muda comando
+                                const minVal = parseInt($slider.attr('min'));
+                                $slider.val(minVal);
+                                $input.val(minVal);
+                                updateDisplay(minVal);
+                                
+                            } catch(e) {
+                                // Silenciar erro
+                            }
+                        }
+                    }
+                    
+                    // Listener do SLIDER - atualiza o input
+                    $slider.on('input', function() {
+                        const value = parseInt($(this).val());
+                        $input.val(value);
+                        updateDisplay(value);
                     });
+                    
+                    // Listener do INPUT - atualiza o slider
+                    $input.on('input change', function() {
+                        const value = parseInt($(this).val()) || 0;
+                        const min = parseInt($slider.attr('min'));
+                        const max = parseInt($slider.attr('max'));
+                        
+                        // Validar limites
+                        const validValue = Math.max(min, Math.min(max, value));
+                        
+                        $slider.val(validValue);
+                        $(this).val(validValue);
+                        updateDisplay(validValue);
+                    });
+                    
+                    // Carregar valor inicial
+                    const initialValue = node.manualPayloadValue || 0;
+                    $slider.val(initialValue);
+                    $input.val(initialValue);
+                    updateDisplay(initialValue);
+                    
+                    // Se o payload atual é __manual__, mostrar o slider
+                    if (node.payload === '__manual__' || (node.manualPayloadValue && node.manualPayloadValue !== '0')) {
+                        $('#manual-payload-row').show();
+                    }
+                    
+                    return adjustSliderForCommand;
                 }
 
-                function getCommandTypes() {
-                    return [
-                        //z2m commands
-                        {
-                            value: 'z2m_cmd',
-                            label: 'zigbee2mqtt',
-                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                            options: [
-                                {'value':'state', 'label':'State (on|off|toggle)'},
-                                {'value':'brightness', 'label':'Brightness (0..255)'},
-                                {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
-                                {'value':'brightness_move_onoff', 'label':'Brightness Move On/Off (-255...255|stop)'},
-                                {'value':'brightness_step', 'label':'Brightness Step (-255...255)'},
-                                {'value':'brightness_step_onoff', 'label':'Brightness Step On/Off (-255...255)'},
-                                {'value':'color', 'label':'Color: {}'},
-                                {'value':'color_rgb', 'label':'Color: r,g,b'},
-                                {'value':'color_hex', 'label':'Color: #hex'},
-                                {'value':'color_hsb', 'label':'Color: h,s,b'},
-                                {'value':'color_hsv', 'label':'Color: h,s,v'},
-                                {'value':'color_hue', 'label':'Color: hue'},
-                                {'value':'color_saturation', 'label':'Color: saturation'},
-                                {'value':'color_temp', 'label':'Color Temperature (50..400)'},
-                                {'value':'color_temp_move', 'label':'Color Temperature Move (50..400|stop)'},
-                                {'value':'color_temp_step', 'label':'Color Temperature Step (50..400)'},
-                                {'value':'position', 'label':'Position (0..100)'},
-                                {'value':'scene', 'label':'Scene (0..255)'},
-                                {'value':'lock', 'label':'Lock (lock|unlock|on|off|toggle)'},
-                                {'value':'alert', 'label':'Alert'}
-                            ]
-                        },
-                        //homekit
-                        {
-                            value:'homekit',
-                            label:'homekit',
-                            icon:'icons/node-red-contrib-zigbee2mqtt/homekit-logo.png',
-                            options:[{'value':'homekit', 'label':'Apple Homekit data format'}]
-                        },
-                        {
-                            value: 'nothing',
-                            label: RED._("node-red-contrib-zigbee2mqtt/server:editor.nothing"),
-                            options:['']
-                        },
-                        {value:'str', label: 'str'},
-                        {value:'msg', label: 'msg'},
-                        {value:'json',label:'JSON',options:['{}']}
-                    ];
-                }
+                // Inicializar após pequeno delay
+                setTimeout(() => {
+                    // Criar editor com helper
+                    let helper = new Zigbee2MqttEditor(node, { 
+                        'allow_empty': true,
+                        'mode': 'out'
+                    });
+                    
+                    helper.build().then(() => {
+                        // Setup slider DEPOIS do build
+                        const adjustSliderForCommand = setupSlider();
+                        
+                        // Quando comando muda, ajustar slider
+                        $('#node-input-command').on('change', function(event, type, value) {
+                            setTimeout(() => {
+                                adjustSliderForCommand();
+                            }, 100);
+                        });
+                        
+                        // Mostrar help block inicial
+                        showHelpBlock();
+                        
+                        // Disparar evento inicial
+                        setTimeout(() => {
+                            const $cmd = $('#node-input-command');
+                            if ($cmd.data('typedInput')) {
+                                const currentType = $cmd.typedInput('type');
+                                const currentValue = $cmd.typedInput('value');
+                                $cmd.trigger('change', [currentType, currentValue]);
+                            }
+                        }, 100);
+                    });
+                }, 100);
+            },
 
-                function getPayloadTypes(command) {
-                    let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                    let options = [];
-                    if ('state' === command) {
-                        options = [
-                            {'value':'on', 'label':'On'},
-                            {'value':'off', 'label':'Off'},
-                            {'value':'toggle', 'label':'Toggle'},
-                            {'value':'lock', 'label':'Lock'},
-                            {'value':'unlock', 'label':'Unlock'}
-                        ];
-                    } else if ('color_temp' === command) {
-                        options = [
-                            {'value':'50', 'label':'Cold'},
-                            {'value':'250', 'label':'White'},
-                            {'value':'400', 'label':'Warm'}
-                        ];
-                    } else if ('alert' === command) {
-                        options = [
-                            {'value':'none', 'label':'None'},
-                            {'value':'select', 'label':'Blink short'},
-                            {'value':'lselect', 'label':'Blink log'}
-                        ];
-                    }
-                    if (options.length) {
-                        const predefinedValuesPayload = {
-                            value: 'z2m_payload',
-                            label: 'zigbee2mqtt',
-                            icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
-                            options
-                        };
-                        return [predefinedValuesPayload, ...types]
-                    } else {
-                        return types;
+
+            // ============================================================================
+            // PARTE 5: oneditsave - LER DO TYPEDINPUT
+            // ============================================================================  
+            oneditsave: function() {
+                // ✅ NOVA VALIDAÇÃO: Verificar se device tem comandos
+                const $cmd = $('#node-input-command');
+                let hasCommands = true;
+                
+                if ($cmd.data('typedInput')) {
+                    try {
+                        const cmdType = $cmd.typedInput('type');
+                        const cmdValue = $cmd.typedInput('value');
+                        
+                        if (cmdType === 'nothing' || !cmdValue || cmdValue === '') {
+                            hasCommands = false;
+                        }
+                    } catch(e) {
+                        // Silenciar erro
                     }
                 }
-            // }, 100); //need timeout to load server node
-        },
-        oneditsave: function () {
-            //convert array for string if single mode
-            if (!$('#node-input-enableMultiple').is(':checked')) {
+                
+                // ✅ Se não tem comandos, BLOQUEAR gravação
+                if (!hasCommands) {
+                    RED.notify(
+                        RED._("node-red-contrib-zigbee2mqtt/server:editor.error_no_commands") || 
+                        "This device has no output commands available. Please select a device with controllable features.",
+                        "error"
+                    );
+                    return false;
+                }
+                
+                // Device ID
                 let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
-                this.device_id = device_id.length ? device_id[0] : null;
-            }
-        }
-    });
-</script>
+                this.device_id = device_id && device_id.length ? device_id[0] : null;
 
+                // Topic
+                let selectedOptions = $('#node-input-device_id option:selected');
+                if (selectedOptions && selectedOptions.length) {
+                    this.topic = selectedOptions.map(function() {
+                        return $(this).val();
+                    }).get();
+                } else {
+                    this.topic = null;
+                }
+
+                // Friendly name
+                const selectedOpt = $('#node-input-device_id option:selected').first();
+                this.friendly_name = selectedOpt.data('friendly_name') || null;
+
+                // ✅ Command - ler do typedInput
+                if ($cmd.data('typedInput')) {
+                    try {
+                        this.commandType = $cmd.typedInput('type');
+                        let cmdValue = $cmd.typedInput('value');
+                        
+                        // ✅ Se é objeto, extrair o .value
+                        if (cmdValue && typeof cmdValue === 'object' && cmdValue.value !== undefined) {
+                            cmdValue = cmdValue.value;
+                        }
+                        
+                        this.command = cmdValue || '';
+                        
+                        console.log('[OUT SAVE] Command saved:', this.commandType, '/', this.command);
+                    } catch(err) {
+                        console.error('[OUT SAVE] Error reading command:', err);
+                        this.command = '';
+                        this.commandType = 'z2m_cmd';
+                    }
+                } else {
+                    console.warn('[OUT SAVE] Command typedInput not initialized');
+                    this.command = '';
+                    this.commandType = 'z2m_cmd';
+                }
+                
+                // ✅ Payload - ler do typedInput COM VALIDAÇÃO
+                const $payload = $('#node-input-payload');
+                if ($payload.data('typedInput')) {
+                    try {
+                        const payloadType = $payload.typedInput('type');
+                        let payloadValue = $payload.typedInput('value');
+                        
+                        console.log('[OUT SAVE] Payload read from typedInput:', payloadType, '/', payloadValue);
+                        
+                        // ✅ Caso especial: Manual input
+                        if (payloadValue === '__manual__') {
+                            const manualValue = $('#node-input-manualPayloadValue').val();
+                            this.payload = '__manual__';
+                            this.payloadType = 'z2m_payload';
+                            this.manualPayloadValue = manualValue || '0';
+                            
+                            console.log('[OUT SAVE] Manual payload saved:', this.manualPayloadValue);
+                        } 
+                        // ✅ Tipos msg/flow/global - GARANTIR que tem valor
+                        else if (['msg', 'flow', 'global'].includes(payloadType)) {
+                            // Se não tem valor, usar 'payload' como padrão
+                            if (!payloadValue || payloadValue === '') {
+                                payloadValue = 'payload';
+                                console.log('[OUT SAVE] Empty value for', payloadType, '- using default "payload"');
+                            }
+                            
+                            this.payload = payloadValue;
+                            this.payloadType = payloadType;
+                            this.manualPayloadValue = '';
+                            
+                            console.log('[OUT SAVE] Payload saved:', this.payloadType, '/', this.payload);
+                        }
+                        // ✅ Outros tipos (z2m_payload, str, num, json)
+                        else {
+                            this.payload = payloadValue;
+                            this.payloadType = payloadType;
+                            this.manualPayloadValue = '';
+                            
+                            console.log('[OUT SAVE] Payload saved:', this.payloadType, '/', this.payload);
+                        }
+                    } catch(err) {
+                        console.error('[OUT SAVE] Error reading payload:', err);
+                        // ✅ Fallback seguro
+                        this.payload = 'payload';
+                        this.payloadType = 'msg';
+                        this.manualPayloadValue = '';
+                    }
+                } else {
+                    console.warn('[OUT SAVE] Payload typedInput not initialized');
+                    // ✅ Se não existe typedInput mas node tem valores, manter
+                    if (!this.payload) {
+                        this.payload = 'payload';
+                        this.payloadType = 'msg';
+                        this.manualPayloadValue = '';
+                    }
+                }
+
+                // ✅ Options - ler do typedInput
+                const $options = $('#node-input-optionsValue');
+                if ($options.data('typedInput')) {
+                    try {
+                        if (!hasCommands) {
+                            this.optionsType = 'nothing';
+                            this.optionsValue = '';
+                        } else {
+                            this.optionsType = $options.typedInput('type');
+                            this.optionsValue = $options.typedInput('value');
+                        }
+                        
+                        console.log('[OUT SAVE] Options saved:', this.optionsType, '/', this.optionsValue);
+                    } catch(err) {
+                        console.error('[OUT SAVE] Error reading options:', err);
+                        this.optionsType = 'nothing';
+                        this.optionsValue = '';
+                    }
+                } else {
+                    console.warn('[OUT SAVE] Options typedInput not initialized');
+                    this.optionsType = 'nothing';
+                    this.optionsValue = '';
+                }
+                
+                // ✅ Log final para debug
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('[OUT SAVE] FINAL VALUES:');
+                console.log('  - device_id:', this.device_id);
+                console.log('  - commandType:', this.commandType);
+                console.log('  - command:', this.command);
+                console.log('  - payloadType:', this.payloadType);
+                console.log('  - payload:', this.payload);
+                console.log('  - manualPayloadValue:', this.manualPayloadValue);
+                console.log('  - optionsType:', this.optionsType);
+                console.log('  - optionsValue:', this.optionsValue);
+                console.log('═══════════════════════════════════════════════════════');
+                
+                return true;
+            }
+    });
+    </script>
