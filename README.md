@@ -49,6 +49,10 @@ Enable **Filter** to send a message only when the selected value changes. When *
 
 The Server node has an optional **Flow label**. When set, it is appended to the labels of the Bridge, In, Get, and Out nodes that use that server, making multiple Zigbee2MQTT instances easier to distinguish in a flow. For example, set it to `Upstairs` to show `Lamp [Upstairs]`.
 
+## Log visibility
+
+Set the Server node's **Log level** to choose the minimum severity for package logs: `notice` shows all messages, `warning` shows warnings and errors, and `error` shows errors only. This filters log output without changing node status or message routing; errors remain available to Catch nodes at every level.
+
 ## Control an In node from Home Assistant
 
 Enable **Expose to Home Assistant** on an In node to create an MQTT switch for it through Home Assistant MQTT Discovery. Home Assistant and the Server node must use the same MQTT broker. If Home Assistant uses a custom discovery prefix, set it in the Server node's **Home Assistant discovery prefix** field.

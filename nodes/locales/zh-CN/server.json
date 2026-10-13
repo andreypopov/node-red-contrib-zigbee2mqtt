@@ -9,7 +9,8 @@
         "use-tls": "使用 TLS",
         "tls-config": "TLS 配置",
         "flow_label": "流程标签",
-        "homeassistant_discovery_prefix": "Home Assistant Discovery 前缀"
+        "homeassistant_discovery_prefix": "Home Assistant Discovery 前缀",
+        "debug_level": "日志级别"
     },
     "placeholder": {
         "name": "名称",
@@ -25,7 +26,8 @@
     },
     "tip": {
         "deploy": "<b>重要：</b>部署服务器节点以加载设备列表",
-        "homeassistant_discovery_prefix": "Home Assistant 中配置的 MQTT Discovery 前缀。默认值：homeassistant。"
+        "homeassistant_discovery_prefix": "Home Assistant 中配置的 MQTT Discovery 前缀。默认值：homeassistant。",
+        "debug_level": "程序日志的最低级别。Notice 显示所有消息；Warning 显示警告和错误；Error 仅显示错误。"
     },
     "editor": {
         "groups": "群组",
@@ -36,6 +38,9 @@
         "msg_topic": "msg.topic",
         "complete_payload": "完整 Payload",
         "zigbee2mqtt": "zigbee2mqtt",
-        "homekit": "Apple HomeKit"
+        "homekit": "Apple HomeKit",
+        "debug_notice": "Notice（所有消息）",
+        "debug_warning": "Warning（警告和错误）",
+        "debug_error": "Error（仅错误）"
     }
 }

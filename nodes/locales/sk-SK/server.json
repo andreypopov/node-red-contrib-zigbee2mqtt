@@ -9,7 +9,8 @@
         "use-tls": "Použiť TLS",
         "tls-config": "Konfigurácia TLS",
         "flow_label": "Označenie toku",
-        "homeassistant_discovery_prefix": "Discovery prefix Home Assistant"
+        "homeassistant_discovery_prefix": "Discovery prefix Home Assistant",
+        "debug_level": "Úroveň protokolovania"
     },
     "placeholder": {
         "name": "Meno",
@@ -25,7 +26,8 @@
     },
     "tip": {
         "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení",
-        "homeassistant_discovery_prefix": "MQTT Discovery prefix nastavený v Home Assistant. Predvolené: homeassistant."
+        "homeassistant_discovery_prefix": "MQTT Discovery prefix nastavený v Home Assistant. Predvolené: homeassistant.",
+        "debug_level": "Minimálna úroveň protokolov balíka. Notice zobrazuje všetky správy; Warning zobrazuje upozornenia a chyby; Error zobrazuje iba chyby."
     },
     "editor": {
         "groups": "Skupiny",
@@ -36,6 +38,9 @@
         "msg_topic": "msg.topic",
         "complete_payload": "Kompletný payload",
         "zigbee2mqtt": "zigbee2mqtt",
-        "homekit": "Apple HomeKit"
+        "homekit": "Apple HomeKit",
+        "debug_notice": "Notice (všetky správy)",
+        "debug_warning": "Warning (upozornenia a chyby)",
+        "debug_error": "Error (iba chyby)"
     }
 }

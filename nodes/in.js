@@ -1,4 +1,5 @@
 const packageInfo = require('../package.json');
+const createLogger = require('../resources/Zigbee2mqttLogger.js');
 
 module.exports = function(RED) {
     class Zigbee2mqttNodeIn {
@@ -9,6 +10,7 @@ module.exports = function(RED) {
             node.config = config;
             node.cleanTimer = null;
             node.server = RED.nodes.getNode(node.config.server);
+            node.logger = createLogger(node, node.server, RED);
             node.last_value = null;
             node.last_filter_value = null;
             node.last_successful_status = {};
@@ -123,7 +125,7 @@ module.exports = function(RED) {
                     return;
                 }
                 if (error) {
-                    node.warn(`Home Assistant MQTT subscription failed: ${error.message || error}`);
+                    node.logger.warning(`Home Assistant MQTT subscription failed: ${error.message || error}`);
                     if (!node.homeAssistantStateInitialized) {
                         node.setHomeAssistantEnabled(true);
                     }
