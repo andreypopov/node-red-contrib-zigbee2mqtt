@@ -289,11 +289,18 @@ module.exports = function(RED) {
             Promise.all(devices.map((device) => this.requestDeviceState(node, device)))
                 .then((received) => {
                     if (node._deviceStateRequestClosed) return;
-                    if (received.every(Boolean)) {
-                        this.nodeSend(node, opts);
-                    } else {
-                        node.warn('Zigbee2MQTT did not return a readable device state; no output was sent.');
+                    if (!received.every(Boolean)) {
+                        if (!node.config.enableMultiple) {
+                            node.warn('Zigbee2MQTT did not return a readable device state; no output was sent.');
+                            return;
+                        }
+                        const failedDevices = devices
+                            .filter((device, index) => !received[index])
+                            .map((device) => device.friendly_name || device.ieee_address);
+                        node.warn('Zigbee2MQTT did not return readable states for '
+                            + failedDevices.join(', ') + '; sending the device list with available cached states.');
                     }
+                    this.nodeSend(node, opts);
                 });
         }
 

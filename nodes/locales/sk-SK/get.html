@@ -1,5 +1,6 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-get">
-    <p>Vráti aktuálny stav zariadenia. Ak požadovaný stav nie je v lokálnej pamäti uzla, požiada Zigbee2MQTT o čitateľné vlastnosti a čaká až 15 sekúnd na novú odpoveď. Ak zariadenie nemá čitateľné vlastnosti alebo neodpovie, uzol neodošle správu. Pri skupinách používa iba stav z vyrovnávacej pamäte; Zigbee2MQTT neposkytuje skupinovú požiadavku <code>/get</code>.</p>
+    <p>Vráti aktuálny stav zariadenia. Ak požadovaný stav nie je v lokálnej pamäti uzla, požiada Zigbee2MQTT o čitateľné vlastnosti a čaká až 15 sekúnd na novú odpoveď. V režime jedného zariadenia uzol neodošle správu, ak zariadenie nemá čitateľné vlastnosti alebo neodpovie. Pri skupinách používa iba stav z vyrovnávacej pamäte; Zigbee2MQTT neposkytuje skupinovú požiadavku <code>/get</code>.</p>
+    <p>Ak je zapnutá možnosť Viacero zariadení, po dokončení požiadaviek uzol odošle posledné stavy z vyrovnávacej pamäte, aj keď niektoré zariadenia nemožno prečítať. Zariadenie bez uloženého stavu zostane vo výstupe s <code>payload: null</code>. Upozornenie uvedie zariadenia, ktoré sa nepodarilo prečítať.</p>
     <h3>Konfigurácia</h3>
     <dl class="message-properties">
         <dt class="optional">Meno <span class="property-type">reťazec</span></dt><dd>Vyberte akékoľvek meno na identifikáciu vášho uzla</dd>

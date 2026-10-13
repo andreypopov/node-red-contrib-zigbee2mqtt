@@ -37,6 +37,12 @@ devices:
 
 Retained state is the last value published by the device; enabling retain stores a value after the device publishes again.
 
+## Reading device state with Get
+
+The Get node returns cached state when available. If the requested state is missing, it requests readable properties through Zigbee2MQTT `/get` and waits up to 15 seconds for a fresh response. In single-device mode, a failed request produces a warning and no output. Groups use cached state only.
+
+With **Multiple devices** enabled, the node sends the latest cached states after the requests finish, even if some devices could not be read. Each selected device found in the inventory remains in `msg.payload`; a device without cached state has `msg.payload[device_id].payload` set to `null`. The warning lists the devices that could not be read. One unavailable device does not suppress the states of the other selected devices.
+
 ## Filtering In node output
 
 Enable **Filter** to send a message only when the selected value changes. When **Payload output** is set to the complete state, or **Multiple devices** is enabled, **Compare properties** lets you select exposed state properties for the selected device or devices. Changes to other fields such as linkquality will not trigger output, while the emitted message still contains the complete payload. In multiple-device mode, the selected fields are compared separately for each device. Leave the selection empty to compare the full payload.

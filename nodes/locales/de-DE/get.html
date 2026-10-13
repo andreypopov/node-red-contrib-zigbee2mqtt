@@ -1,5 +1,6 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-get">
-    <p>Gibt den aktuellen Gerätestatus zurück. Ist der angeforderte Status nicht im Cache des Knotens vorhanden, fragt er lesbare Eigenschaften bei Zigbee2MQTT ab und wartet bis zu 15 Sekunden auf eine aktuelle Antwort. Hat das Gerät keine lesbaren Eigenschaften oder antwortet es nicht, wird keine Nachricht gesendet. Bei Gruppen wird nur der Cache verwendet; Zigbee2MQTT bietet keine Gruppenanfrage per <code>/get</code>.</p>
+    <p>Gibt den aktuellen Gerätestatus zurück. Ist der angeforderte Status nicht im Cache des Knotens vorhanden, fragt er lesbare Eigenschaften bei Zigbee2MQTT ab und wartet bis zu 15 Sekunden auf eine aktuelle Antwort. Im Modus für ein einzelnes Gerät wird keine Nachricht gesendet, wenn es keine lesbaren Eigenschaften hat oder nicht antwortet. Bei Gruppen wird nur der Cache verwendet; Zigbee2MQTT bietet keine Gruppenanfrage per <code>/get</code>.</p>
+    <p>Wenn Mehrere Geräte aktiviert ist, sendet der Knoten nach Abschluss der Anfragen die letzten zwischengespeicherten Zustände, auch wenn einige Geräte nicht gelesen werden konnten. Ein Gerät ohne zwischengespeicherten Zustand bleibt mit <code>payload: null</code> in der Ausgabe. Eine Warnung nennt die Geräte, die nicht gelesen werden konnten.</p>
     <h3>Konfiguration</h3>
     <dl class="message-properties">
         <dt class="optional">Name <span class="property-type">string</span></dt><dd>Wählen Sie einen beliebigen Namen zur Identifizierung des Knotens.</dd>

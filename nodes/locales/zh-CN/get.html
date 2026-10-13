@@ -1,5 +1,6 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-get">
-    <p>返回设备当前状态。如果节点缓存中没有所请求的状态，它会向 Zigbee2MQTT 请求可读取的属性，并等待最多 15 秒获取最新响应。如果设备没有可读取的属性或未响应，节点不会发送消息。对于群组，只使用缓存状态；Zigbee2MQTT 不支持通过 <code>/get</code> 请求群组状态。</p>
+    <p>返回设备当前状态。如果节点缓存中没有所请求的状态，它会向 Zigbee2MQTT 请求可读取的属性，并等待最多 15 秒获取最新响应。在单设备模式下，如果设备没有可读取的属性或未响应，节点不会发送消息。对于群组，只使用缓存状态；Zigbee2MQTT 不支持通过 <code>/get</code> 请求群组状态。</p>
+    <p>启用多个设备后，节点会在请求结束后发送最新的缓存状态，即使部分设备无法读取。没有缓存状态的设备仍会包含在输出中，其值为 <code>payload: null</code>。警告会列出无法读取的设备。</p>
     <h3>配置</h3>
     <dl class="message-properties">
         <dt class="optional">名称 <span class="property-type">string</span></dt><dd>为节点设置任意名称。</dd>

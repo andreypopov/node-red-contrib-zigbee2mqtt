@@ -157,6 +157,87 @@ test('get node requests missing state once and sends each waiting message after 
     assert.equal(server.listenerCount('onMQTTMessage'), 0);
 });
 
+for (const failure of ['no readable properties', 'timeout', 'publish error', 'publish exception']) {
+    test(`multiple get node preserves available states after ${failure}`, async (t) => {
+        t.mock.timers.enable({ apis: ['setTimeout'] });
+        const { node: server, client } = createServer();
+        server.devices = ['cached', 'fresh', 'unavailable'].map((name, index) => ({
+            id: index + 1,
+            friendly_name: name,
+            ieee_address: `0x00${index + 1}`,
+            definition: { exposes: name === 'unavailable' && failure === 'no readable properties'
+                ? [] : [{ name: 'temperature', access: 5 }] }
+        }));
+        server.devices_values['zigbee2mqtt/cached'] = { temperature: 20 };
+        const publish = client.publish;
+        client.publish = (...args) => {
+            if (args[0] === 'zigbee2mqtt/unavailable/get') {
+                if (failure === 'publish exception') throw new Error('publish failed');
+                if (failure === 'publish error') {
+                    client.publications.push(args);
+                    args.at(-1)(new Error('publish failed'));
+                    return;
+                }
+            }
+            publish(...args);
+        };
+        const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
+            server: 'server', enableMultiple: true,
+            device_id: ['cached', 'fresh', 'unavailable'], state: '0'
+        }, server);
+        t.after(() => {
+            node.emit('close');
+            clearTimeout(node.cleanTimer);
+        });
+
+        node.emit('input', { payload: { source: 'request' }, extra: 'preserved' });
+        assert.equal(node.messages.length, 0);
+        assert.equal(client.publications.some(([topic]) => topic === 'zigbee2mqtt/cached/get'), false);
+
+        server.onMQTTMessage('zigbee2mqtt/fresh', Buffer.from('{"temperature":24}'));
+        await new Promise((resolve) => setImmediate(resolve));
+        if (failure === 'timeout') {
+            assert.equal(node.messages.length, 0);
+            t.mock.timers.tick(15_000);
+            await new Promise((resolve) => setImmediate(resolve));
+        }
+
+        assert.equal(node.messages.length, 1);
+        const message = node.messages[0];
+        assert.deepEqual(Object.keys(message.payload), ['cached', 'fresh', 'unavailable']);
+        assert.deepEqual(message.payload.cached.payload, { temperature: 20 });
+        assert.deepEqual(message.payload.fresh.payload, { temperature: 24 });
+        assert.equal(message.payload.unavailable.payload, null);
+        assert.deepEqual(message.payload_in, { source: 'request' });
+        assert.equal(message.extra, 'preserved');
+        assert.deepEqual(message.math.temperature, { count: 2, avg: 22, min: 20, max: 24, sum: 44 });
+        const warnings = logs.filter(({ level }) => level === 'warn');
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0].args[0], /unavailable.*cached states/);
+        assert.equal(server.listenerCount('onMQTTMessage'), 0);
+        assert.equal(node.pendingDeviceStateRequests.size, 0);
+    });
+}
+
+test('single get node still warns without output when a state request fails', async (t) => {
+    const { node: server } = createServer();
+    server.devices = [{
+        friendly_name: 'unavailable', ieee_address: '0x001', definition: { exposes: [] }
+    }];
+    const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', device_id: 'unavailable', state: '0'
+    }, server);
+    t.after(() => node.emit('close'));
+
+    node.emit('input', { payload: 'request' });
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(node.messages.length, 0);
+    assert.deepEqual(logs.filter(({ level }) => level === 'warn').map(({ args }) => args[0]), [
+        'Zigbee2MQTT did not return a readable device state; no output was sent.'
+    ]);
+});
+
 test('get node cancels a pending state request when it closes', async (t) => {
     const { node: server, client } = createServer();
     server.devices = [{
