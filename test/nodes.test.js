@@ -6,6 +6,7 @@ const registerGet = require('../nodes/get');
 const registerOut = require('../nodes/out');
 const registerBridge = require('../nodes/bridge');
 const { instantiate } = require('./support/runtime');
+const { createServer } = require('./support/server');
 
 function makeServer() {
     const server = new EventEmitter();
@@ -32,6 +33,7 @@ function makeServer() {
     server.getTopic = (path) => `zigbee2mqtt${path}`;
     server.getDeviceAvailabilityColor = () => 'green';
     server.getDeviceOrGroupByKey = (key) => ['lamp', '0x001', 'zigbee2mqtt/lamp', 'zigbee2mqtt/0x001'].includes(key) ? lamp : null;
+    server.getDeviceByKey = (key) => server.getDeviceOrGroupByKey(key);
     server.nodeSend = (node, options) => server.calls.push({ node, options });
     server.setDeviceOptions = (...args) => server.calls.push({ method: 'setDeviceOptions', args });
     return server;
@@ -114,6 +116,71 @@ test('get node uses configured device or incoming message topic', () => {
     }, server).node;
     fixed.emit('input', { topic: 'ignored' });
     assert.equal(server.calls.at(-1).options.key, 'lamp');
+});
+
+test('get node requests missing state once and sends each waiting message after a fresh update', async (t) => {
+    const { node: server, client } = createServer();
+    server.devices = [{
+        id: 1,
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        definition: { exposes: [{ name: 'state', access: 5 }] }
+    }];
+    server.devices_values = {};
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', device_id: 'lamp', state: 'state'
+    }, server);
+    t.after(() => {
+        node.emit('close');
+        clearTimeout(node.cleanTimer);
+    });
+
+    node.emit('input', { payload: 'first' });
+    node.emit('input', { payload: 'second' });
+
+    assert.equal(client.publications.length, 1);
+    assert.equal(client.publications[0][0], 'zigbee2mqtt/lamp/get');
+    assert.equal(client.publications[0][1], '{"state":""}');
+    assert.equal(node.messages.length, 0);
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"ON"}'), { retain: true });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(node.messages.length, 0);
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"OFF"}'));
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(node.messages.length, 2);
+    assert.equal(node.messages[0].payload, 'OFF');
+    assert.equal(node.messages[0].payload_in, 'first');
+    assert.equal(node.messages[1].payload_in, 'second');
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
+});
+
+test('get node cancels a pending state request when it closes', async (t) => {
+    const { node: server, client } = createServer();
+    server.devices = [{
+        id: 1,
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        definition: { exposes: [{ name: 'state', access: 5 }] }
+    }];
+    server.devices_values = {};
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', device_id: 'lamp', state: 'state'
+    }, server);
+    t.after(() => clearTimeout(node.cleanTimer));
+
+    node.emit('input', { payload: 'request' });
+    assert.equal(client.publications.length, 1);
+    assert.equal(server.listenerCount('onMQTTMessage'), 1);
+
+    node.emit('close');
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(node.messages.length, 0);
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
+    assert.equal(node.pendingDeviceStateRequests.size, 0);
 });
 
 test('get node reports a missing server', () => {
