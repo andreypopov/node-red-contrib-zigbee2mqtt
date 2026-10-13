@@ -41,13 +41,15 @@ module.exports = function(RED) {
                         'msg': message_in,
                         'key': key,
                     };
-                    const keys = node.config.enableMultiple && Array.isArray(key) ? key : [key];
-                    const missingDevices = keys
-                        .map((deviceKey) => node.server.getDeviceByKey(deviceKey))
-                        .filter((device) => device && !hasRequestedState(node, device));
+                    if (node.config.enableMultiple) {
+                        node.server.nodeSend(node, options);
+                        return;
+                    }
 
-                    if (missingDevices.length && typeof node.server.requestMissingDeviceStates === 'function') {
-                        node.server.requestMissingDeviceStates(node, options, missingDevices);
+                    const device = node.server.getDeviceByKey(key);
+                    if (device && !hasRequestedState(node, device)
+                        && typeof node.server.requestMissingDeviceStates === 'function') {
+                        node.server.requestMissingDeviceStates(node, options, [device]);
                     } else {
                         node.server.nodeSend(node, options);
                     }

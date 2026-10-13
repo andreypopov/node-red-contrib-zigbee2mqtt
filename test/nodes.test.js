@@ -119,6 +119,7 @@ test('get node uses configured device or incoming message topic', () => {
 });
 
 test('get node requests missing state once and sends each waiting message after a fresh update', async (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
     const { node: server, client } = createServer();
     server.devices = [{
         id: 1,
@@ -143,6 +144,7 @@ test('get node requests missing state once and sends each waiting message after 
     assert.equal(client.publications[0][1], '{"state":""}');
     assert.equal(node.messages.length, 0);
 
+    t.mock.timers.tick(4_999);
     server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"ON"}'), { retain: true });
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(node.messages.length, 0);
@@ -157,86 +159,134 @@ test('get node requests missing state once and sends each waiting message after 
     assert.equal(server.listenerCount('onMQTTMessage'), 0);
 });
 
-for (const failure of ['no readable properties', 'timeout', 'publish error', 'publish exception']) {
-    test(`multiple get node preserves available states after ${failure}`, async (t) => {
-        t.mock.timers.enable({ apis: ['setTimeout'] });
-        const { node: server, client } = createServer();
-        server.devices = ['cached', 'fresh', 'unavailable'].map((name, index) => ({
-            id: index + 1,
-            friendly_name: name,
-            ieee_address: `0x00${index + 1}`,
-            definition: { exposes: name === 'unavailable' && failure === 'no readable properties'
-                ? [] : [{ name: 'temperature', access: 5 }] }
-        }));
-        server.devices_values['zigbee2mqtt/cached'] = { temperature: 20 };
-        const publish = client.publish;
-        client.publish = (...args) => {
-            if (args[0] === 'zigbee2mqtt/unavailable/get') {
-                if (failure === 'publish exception') throw new Error('publish failed');
-                if (failure === 'publish error') {
-                    client.publications.push(args);
-                    args.at(-1)(new Error('publish failed'));
-                    return;
-                }
-            }
-            publish(...args);
-        };
-        const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
-            server: 'server', enableMultiple: true,
-            device_id: ['cached', 'fresh', 'unavailable'], state: '0'
-        }, server);
-        t.after(() => {
-            node.emit('close');
-            clearTimeout(node.cleanTimer);
-        });
-
-        node.emit('input', { payload: { source: 'request' }, extra: 'preserved' });
-        assert.equal(node.messages.length, 0);
-        assert.equal(client.publications.some(([topic]) => topic === 'zigbee2mqtt/cached/get'), false);
-
-        server.onMQTTMessage('zigbee2mqtt/fresh', Buffer.from('{"temperature":24}'));
-        await new Promise((resolve) => setImmediate(resolve));
-        if (failure === 'timeout') {
-            assert.equal(node.messages.length, 0);
-            t.mock.timers.tick(15_000);
-            await new Promise((resolve) => setImmediate(resolve));
-        }
-
-        assert.equal(node.messages.length, 1);
-        const message = node.messages[0];
-        assert.deepEqual(Object.keys(message.payload), ['cached', 'fresh', 'unavailable']);
-        assert.deepEqual(message.payload.cached.payload, { temperature: 20 });
-        assert.deepEqual(message.payload.fresh.payload, { temperature: 24 });
-        assert.equal(message.payload.unavailable.payload, null);
-        assert.deepEqual(message.payload_in, { source: 'request' });
-        assert.equal(message.extra, 'preserved');
-        assert.deepEqual(message.math.temperature, { count: 2, avg: 22, min: 20, max: 24, sum: 44 });
-        const warnings = logs.filter(({ level }) => level === 'warn');
-        assert.equal(warnings.length, 1);
-        assert.match(warnings[0].args[0], /unavailable.*cached states/);
-        assert.equal(server.listenerCount('onMQTTMessage'), 0);
-        assert.equal(node.pendingDeviceStateRequests.size, 0);
+test('multiple get node immediately returns cached device and group states without requesting missing states', (t) => {
+    const { node: server, client } = createServer();
+    server.devices = ['cached', 'readable', 'unreadable'].map((name, index) => ({
+        id: index + 1,
+        friendly_name: name,
+        ieee_address: `0x00${index + 1}`,
+        definition: { exposes: name === 'unreadable' ? [] : [{ name: 'temperature', access: 5 }] }
+    }));
+    server.groups = [{ id: 4, friendly_name: 'room' }];
+    server.devices_values['zigbee2mqtt/cached'] = { temperature: 20 };
+    server.devices_values['zigbee2mqtt/room'] = { temperature: 24 };
+    const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', enableMultiple: true,
+        device_id: ['cached', 'readable', 'unreadable', 'room'], state: 'state'
+    }, server);
+    t.after(() => {
+        node.emit('close');
+        clearTimeout(node.cleanTimer);
     });
-}
 
-test('single get node still warns without output when a state request fails', async (t) => {
-    const { node: server } = createServer();
+    node.emit('input', { payload: { source: 'request' }, extra: 'preserved' });
+
+    assert.equal(node.messages.length, 1);
+    const message = node.messages[0];
+    assert.deepEqual(Object.keys(message.payload), ['cached', 'readable', 'unreadable', 'room']);
+    assert.deepEqual(message.payload.cached.payload, { temperature: 20 });
+    assert.deepEqual(message.payload.room.payload, { temperature: 24 });
+    assert.equal(message.payload.readable.payload, null);
+    assert.equal(message.payload.unreadable.payload, null);
+    assert.deepEqual(message.payload_in, { source: 'request' });
+    assert.equal(message.extra, 'preserved');
+    assert.deepEqual(message.math.temperature, { count: 2, avg: 22, min: 20, max: 24, sum: 44 });
+    assert.equal(client.publications.length, 0);
+    assert.equal(logs.some(({ level }) => level === 'warn'), false);
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
+    assert.equal(node.pendingDeviceStateRequests, undefined);
+});
+
+test('multiple get node immediately returns null states when no selected device is cached', (t) => {
+    const { node: server, client } = createServer();
+    server.devices = ['first', 'second'].map((name, index) => ({
+        friendly_name: name, ieee_address: `0x00${index + 1}`,
+        definition: { exposes: [{ name: 'state', access: 5 }] }
+    }));
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', enableMultiple: true, device_id: ['first', 'second'], state: '0'
+    }, server);
+    t.after(() => {
+        node.emit('close');
+        clearTimeout(node.cleanTimer);
+    });
+
+    node.emit('input', { payload: 'request' });
+
+    assert.equal(node.messages.length, 1);
+    assert.deepEqual(Object.keys(node.messages[0].payload), ['first', 'second']);
+    assert.equal(node.messages[0].payload.first.payload, null);
+    assert.equal(node.messages[0].payload.second.payload, null);
+    assert.equal(client.publications.length, 0);
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
+    assert.equal(node.pendingDeviceStateRequests, undefined);
+});
+
+test('single get node stops waiting for missing state after exactly five seconds', async (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const { node: server, client } = createServer();
     server.devices = [{
-        friendly_name: 'unavailable', ieee_address: '0x001', definition: { exposes: [] }
+        friendly_name: 'lamp', ieee_address: '0x001',
+        definition: { exposes: [{ name: 'state', access: 5 }] }
     }];
     const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
-        server: 'server', device_id: 'unavailable', state: '0'
+        server: 'server', device_id: 'lamp', state: 'state'
     }, server);
     t.after(() => node.emit('close'));
 
     node.emit('input', { payload: 'request' });
-    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(client.publications.length, 1);
+    assert.equal(client.publications[0][0], 'zigbee2mqtt/lamp/get');
 
+    t.mock.timers.tick(4_999);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(node.pendingDeviceStateRequests.size, 1);
+    assert.equal(server.listenerCount('onMQTTMessage'), 1);
+    assert.equal(logs.some(({ level }) => level === 'warn'), false);
+
+    t.mock.timers.tick(1);
+    await new Promise((resolve) => setImmediate(resolve));
     assert.equal(node.messages.length, 0);
+    assert.equal(node.pendingDeviceStateRequests.size, 0);
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
     assert.deepEqual(logs.filter(({ level }) => level === 'warn').map(({ args }) => args[0]), [
         'Zigbee2MQTT did not return a readable device state; no output was sent.'
     ]);
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"ON"}'));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(node.messages.length, 0);
 });
+
+for (const failure of ['no readable properties', 'publish error', 'publish exception']) {
+    test(`single get node warns without output after ${failure}`, async (t) => {
+        const { node: server, client } = createServer();
+        server.devices = [{
+            friendly_name: 'unavailable', ieee_address: '0x001',
+            definition: { exposes: failure === 'no readable properties'
+                ? [] : [{ name: 'state', access: 5 }] }
+        }];
+        if (failure !== 'no readable properties') {
+            client.publish = (...args) => {
+                if (failure === 'publish exception') throw new Error('publish failed');
+                args.at(-1)(new Error('publish failed'));
+            };
+        }
+        const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
+            server: 'server', device_id: 'unavailable', state: '0'
+        }, server);
+        t.after(() => node.emit('close'));
+
+        node.emit('input', { payload: 'request' });
+        await new Promise((resolve) => setImmediate(resolve));
+
+        assert.equal(node.messages.length, 0);
+        assert.deepEqual(logs.filter(({ level }) => level === 'warn').map(({ args }) => args[0]), [
+            'Zigbee2MQTT did not return a readable device state; no output was sent.'
+        ]);
+        assert.equal(server.listenerCount('onMQTTMessage'), 0);
+    });
+}
 
 test('get node cancels a pending state request when it closes', async (t) => {
     const { node: server, client } = createServer();

@@ -4,7 +4,7 @@ var Viz = require('@viz-js/viz');
 var vizInstancePromise;
 const MAX_PENDING_MQTT_MESSAGES = 1000;
 const INITIAL_STATE_REQUEST_DELAY_MS = 1000;
-const DEVICE_STATE_REQUEST_TIMEOUT_MS = 15_000;
+const DEVICE_STATE_REQUEST_TIMEOUT_MS = 5_000;
 
 function hasState(value) {
     if (value === null || value === undefined) return false;
@@ -289,18 +289,11 @@ module.exports = function(RED) {
             Promise.all(devices.map((device) => this.requestDeviceState(node, device)))
                 .then((received) => {
                     if (node._deviceStateRequestClosed) return;
-                    if (!received.every(Boolean)) {
-                        if (!node.config.enableMultiple) {
-                            node.warn('Zigbee2MQTT did not return a readable device state; no output was sent.');
-                            return;
-                        }
-                        const failedDevices = devices
-                            .filter((device, index) => !received[index])
-                            .map((device) => device.friendly_name || device.ieee_address);
-                        node.warn('Zigbee2MQTT did not return readable states for '
-                            + failedDevices.join(', ') + '; sending the device list with available cached states.');
+                    if (received.every(Boolean)) {
+                        this.nodeSend(node, opts);
+                    } else {
+                        node.warn('Zigbee2MQTT did not return a readable device state; no output was sent.');
                     }
-                    this.nodeSend(node, opts);
                 });
         }
 
