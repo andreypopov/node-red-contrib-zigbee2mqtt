@@ -10,7 +10,7 @@
         <dt class="optional">Filtrovať zmeny <span class="property-type">boolean</span></dt><dd>Odošle správu iba pri zmene vybranej hodnoty. Pri tlačidlách filter vypnite.</dd>
         <dt class="optional">Porovnávať vlastnosti <span class="property-type">zoznam</span></dt><dd>Pri zapnutom filtri sa porovnávajú iba tieto vlastnosti stavu, no výstupom zostáva celý payload. Nechajte zoznam prázdny na porovnanie celého payloadu.</dd>
         <dt class="optional">Viacero zariadení <span class="property-type">boolean</span></dt><dd>Prijíma aktualizácie z každého vybraného zariadenia.</dd>
-        <dt class="optional">Zobraziť v Home Assistant <span class="property-type">boolean</span></dt><dd>Vytvorí prepínač Home Assistant pre tento vstupný uzol. Vypnutím prepínača sa pozastaví odosielanie správ z tohto uzla. Odber Zigbee2MQTT zostane aktívny. Správy prijaté počas vypnutia sa po opätovnom zapnutí neodošlú. Home Assistant musí používať MQTT Discovery na rovnakom brokeri.</dd>
+        <dt class="optional">Zobraziť v Home Assistant <span class="property-type">boolean</span></dt><dd>Vytvorí prepínač Home Assistant pre tento vstupný uzol. Vypnutím pozastavíte odosielanie správ z tohto uzla. Odber Zigbee2MQTT zostane aktívny a správy prijaté počas vypnutia sa zahodia. Integrácia MQTT v Home Assistant musí byť pripojená k rovnakému brokeru ako uzol Server a musí mať zapnuté MQTT Discovery. Aplikácia Home Assistant Companion nie je potrebná.</dd>
     </dl>
     <h3>Výstupy</h3>
     <dl class="message-properties">

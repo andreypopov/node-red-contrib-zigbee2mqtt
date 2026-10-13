@@ -19,7 +19,7 @@
         "enable_multiple": "Mehrere Geräte",
         "enable_multiple_help": "Aktualisierungen von jedem ausgewählten Gerät empfangen.",
         "expose_to_home_assistant": "In Home Assistant anzeigen",
-        "expose_to_home_assistant_help": "Erstellt einen Schalter, um diesen Eingangs-Node zu pausieren. MQTT Discovery muss denselben Broker verwenden."
+        "expose_to_home_assistant_help": "Einen Home-Assistant-Schalter zum Pausieren dieses Eingangs-Nodes bereitstellen."
     },
     "placeholder": {
         "name": "Name",

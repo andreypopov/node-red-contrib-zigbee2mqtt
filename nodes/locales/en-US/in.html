@@ -10,7 +10,7 @@
         <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Send only when the selected value changes. Disable this for buttons.</dd>
         <dt class="optional">Compare properties <span class="property-type">array</span></dt><dd>When Filter is enabled, compare only these state properties. The full payload is still output. Leave empty to compare the complete payload.</dd>
         <dt class="optional">Multiple devices <span class="property-type">boolean</span></dt><dd>Receive updates from each selected device.</dd>
-        <dt class="optional">Expose to Home Assistant <span class="property-type">boolean</span></dt><dd>Creates a Home Assistant switch for this input node. Turn it off to pause messages from this node. The Zigbee2MQTT subscription stays active. Messages received while off are not replayed. Home Assistant must use MQTT Discovery on the same broker.</dd>
+        <dt class="optional">Expose to Home Assistant <span class="property-type">boolean</span></dt><dd>Creates a Home Assistant switch for this input node. Turn it off to pause messages from this node. The Zigbee2MQTT subscription stays active, and messages received while the switch is off are discarded. Home Assistant's MQTT integration must connect to the same broker as the Server node with MQTT Discovery enabled. The Home Assistant Companion app is optional.</dd>
     </dl>
     <h3>Outputs</h3>
     <dl class="message-properties">
