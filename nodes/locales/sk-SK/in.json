@@ -19,7 +19,7 @@
         "enable_multiple_help": "Prijímať aktualizácie z každého vybraného zariadenia.",
         "friendly_name": "Názov zariadenia",
         "expose_to_home_assistant": "Zobraziť v Home Assistant",
-        "expose_to_home_assistant_help": "Vytvorí prepínač na pozastavenie tohto vstupného uzla. MQTT Discovery musí používať rovnaký broker."
+        "expose_to_home_assistant_help": "Vytvoriť prepínač Home Assistant na pozastavenie tohto vstupného uzla."
     },
     "placeholder": {
         "name": "Meno",

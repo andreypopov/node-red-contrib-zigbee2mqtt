@@ -10,7 +10,7 @@
         <dt class="optional">Filtrar cambios <span class="property-type">booleano</span></dt><dd>Envía solo cuando cambia el valor seleccionado. Desactívalo para los botones.</dd>
         <dt class="optional">Comparar propiedades <span class="property-type">lista</span></dt><dd>Con el filtro activado, compara solo estas propiedades del estado, pero sigue enviando el payload completo. Déjalo vacío para comparar el payload completo.</dd>
         <dt class="optional">Varios dispositivos <span class="property-type">booleano</span></dt><dd>Recibe actualizaciones de cada dispositivo seleccionado.</dd>
-        <dt class="optional">Exponer a Home Assistant <span class="property-type">booleano</span></dt><dd>Crea un interruptor de Home Assistant para este nodo de entrada. Apágalo para pausar sus mensajes. La suscripción de Zigbee2MQTT sigue activa. Los mensajes recibidos mientras está apagado no se vuelven a enviar. Home Assistant debe usar MQTT Discovery en el mismo broker.</dd>
+        <dt class="optional">Exponer a Home Assistant <span class="property-type">booleano</span></dt><dd>Crea un interruptor en Home Assistant para este nodo de entrada. Apágalo para pausar los mensajes de este nodo. La suscripción de Zigbee2MQTT seguirá activa y los mensajes recibidos mientras el interruptor esté apagado se descartarán. La integración MQTT de Home Assistant debe conectarse al mismo broker que el nodo Server y tener MQTT Discovery activado. La aplicación Home Assistant Companion es opcional.</dd>
     </dl>
     <h3>Salidas</h3>
     <dl class="message-properties">
