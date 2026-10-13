@@ -10,7 +10,7 @@
         <dt class="optional">筛选变化 <span class="property-type">布尔值</span></dt><dd>仅在所选值变化时发送。按钮设备应关闭此选项。</dd>
         <dt class="optional">比较属性 <span class="property-type">数组</span></dt><dd>启用筛选后，仅比较这些状态属性，但仍输出完整 payload。留空则比较完整 payload。</dd>
         <dt class="optional">多个设备 <span class="property-type">布尔值</span></dt><dd>接收每个所选设备的更新。</dd>
-        <dt class="optional">在 Home Assistant 中显示 <span class="property-type">布尔值</span></dt><dd>为此输入节点在 Home Assistant 中创建一个开关。关闭开关会暂停此节点传递消息，但 Zigbee2MQTT 订阅仍保持活动。关闭期间收到的消息不会在重新开启后补发。Home Assistant 必须通过同一个 broker 使用 MQTT Discovery。</dd>
+        <dt class="optional">在 Home Assistant 中显示 <span class="property-type">布尔值</span></dt><dd>为此输入节点在 Home Assistant 中创建一个开关。关闭开关可暂停此节点传递消息。Zigbee2MQTT 订阅仍保持活动，开关关闭期间收到的消息会被丢弃。Home Assistant 的 MQTT 集成必须连接到与 Server 节点相同的 broker，并启用 MQTT Discovery。无需使用 Home Assistant Companion 应用。</dd>
     </dl>
     <h3>输出</h3>
     <dl class="message-properties">

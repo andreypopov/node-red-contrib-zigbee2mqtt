@@ -19,7 +19,7 @@
         "enable_multiple": "Несколько устройств",
         "enable_multiple_help": "Получать обновления от каждого выбранного устройства.",
         "expose_to_home_assistant": "Добавить в Home Assistant",
-        "expose_to_home_assistant_help": "Создать переключатель для приостановки этой входной ноды. MQTT Discovery должен работать через тот же брокер."
+        "expose_to_home_assistant_help": "Добавить переключатель Home Assistant для приостановки этой входной ноды."
     },
     "placeholder": {
         "name": "Имя",

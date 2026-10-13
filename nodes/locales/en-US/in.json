@@ -19,7 +19,7 @@
         "enable_multiple": "Multiple devices",
         "enable_multiple_help": "Receive updates from each selected device.",
         "expose_to_home_assistant": "Expose to Home Assistant",
-        "expose_to_home_assistant_help": "Create a switch to pause this input node. Requires MQTT Discovery on the same broker."
+        "expose_to_home_assistant_help": "Expose a Home Assistant switch to pause this input node."
     },
     "placeholder": {
         "name": "Name",

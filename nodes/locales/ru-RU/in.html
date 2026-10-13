@@ -10,7 +10,7 @@
         <dt class="optional">Фильтр <span class="property-type">логическое</span></dt><dd>Отправлять сообщение только при изменении выбранного значения. Для кнопок отключите фильтр.</dd>
         <dt class="optional">Свойства для сравнения <span class="property-type">список</span></dt><dd>При включенном фильтре сравниваются только эти свойства состояния, но отправляется полный payload. Оставьте список пустым, чтобы сравнивать весь payload.</dd>
         <dt class="optional">Несколько устройств <span class="property-type">логическое</span></dt><dd>Получать обновления от каждого выбранного устройства.</dd>
-        <dt class="optional">Добавить в Home Assistant <span class="property-type">логическое</span></dt><dd>Создает в Home Assistant переключатель для этой входной ноды. Выключите его, чтобы приостановить передачу сообщений от ноды. Подписка Zigbee2MQTT продолжит работать. Сообщения, полученные во время паузы, не воспроизводятся после включения. Для обнаружения Home Assistant должен использовать MQTT Discovery на том же брокере.</dd>
+        <dt class="optional">Добавить в Home Assistant <span class="property-type">логическое</span></dt><dd>Создает переключатель Home Assistant для этой входной ноды. Выключите его, чтобы приостановить передачу сообщений. Подписка Zigbee2MQTT продолжит работать, а сообщения, полученные во время паузы, будут отброшены. Интеграция MQTT в Home Assistant должна быть подключена к тому же брокеру, что и узел Server, с включенным MQTT Discovery. Приложение Home Assistant Companion не требуется.</dd>
     </dl>
     <h3>Выходы</h3>
     <dl class="message-properties">

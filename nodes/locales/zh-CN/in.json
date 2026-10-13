@@ -19,7 +19,7 @@
         "enable_multiple": "多个设备",
         "enable_multiple_help": "接收每个所选设备的更新。",
         "expose_to_home_assistant": "在 Home Assistant 中显示",
-        "expose_to_home_assistant_help": "创建一个开关以暂停此输入节点。MQTT Discovery 必须使用同一个 broker。"
+        "expose_to_home_assistant_help": "在 Home Assistant 中添加一个用于暂停此输入节点的开关。"
     },
     "placeholder": {
         "name": "名称",
