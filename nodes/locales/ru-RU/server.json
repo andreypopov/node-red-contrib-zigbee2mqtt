@@ -9,7 +9,8 @@
         "use-tls": "Использовать TLS",
         "tls-config": "Настройка TLS",
         "flow_label": "Метка потока",
-        "homeassistant_discovery_prefix": "Префикс обнаружения Home Assistant"
+        "homeassistant_discovery_prefix": "Префикс обнаружения Home Assistant",
+        "debug_level": "Уровень логирования"
     },
     "placeholder": {
         "name": "Имя",
@@ -25,7 +26,8 @@
     },
     "tip": {
         "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств",
-        "homeassistant_discovery_prefix": "Префикс MQTT Discovery из настроек Home Assistant. По умолчанию: homeassistant."
+        "homeassistant_discovery_prefix": "Префикс MQTT Discovery из настроек Home Assistant. По умолчанию: homeassistant.",
+        "debug_level": "Минимальный уровень логов пакета. Notice показывает все сообщения; Warning — предупреждения и ошибки; Error — только ошибки."
     },
     "editor": {
         "groups": "Группы",
@@ -36,6 +38,9 @@
         "msg_topic": "msg.topic",
         "complete_payload": "Полный payload",
         "zigbee2mqtt": "zigbee2mqtt",
-        "homekit": "Apple HomeKit"
+        "homekit": "Apple HomeKit",
+        "debug_notice": "Notice (все сообщения)",
+        "debug_warning": "Warning (предупреждения и ошибки)",
+        "debug_error": "Error (только ошибки)"
     }
 }

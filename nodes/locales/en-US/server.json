@@ -9,7 +9,8 @@
         "use-tls": "Use TLS",
         "tls-config": "TLS configuration",
         "flow_label": "Flow label",
-        "homeassistant_discovery_prefix": "Home Assistant discovery prefix"
+        "homeassistant_discovery_prefix": "Home Assistant discovery prefix",
+        "debug_level": "Log level"
     },
     "placeholder": {
         "name": "Name",
@@ -25,7 +26,8 @@
     },
     "tip": {
         "deploy": "<b>Important:</b> deploy server node to get devices list",
-        "homeassistant_discovery_prefix": "MQTT Discovery prefix configured in Home Assistant. Default: homeassistant."
+        "homeassistant_discovery_prefix": "MQTT Discovery prefix configured in Home Assistant. Default: homeassistant.",
+        "debug_level": "Minimum severity for package logs. Notice shows all messages; Warning shows warnings and errors; Error shows errors only."
     },
     "editor": {
         "groups": "Groups",
@@ -36,6 +38,9 @@
         "msg_topic": "msg.topic",
         "complete_payload": "Complete payload",
         "zigbee2mqtt": "zigbee2mqtt",
-        "homekit": "Apple Homekit"
+        "homekit": "Apple Homekit",
+        "debug_notice": "Notice (all messages)",
+        "debug_warning": "Warning (warnings and errors)",
+        "debug_error": "Error (errors only)"
     }
 }

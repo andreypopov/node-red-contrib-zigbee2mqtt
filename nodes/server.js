@@ -1,4 +1,5 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
+const createLogger = require('../resources/Zigbee2mqttLogger.js');
 var mqtt = require('mqtt');
 var Viz = require('@viz-js/viz');
 var vizInstancePromise;
@@ -51,6 +52,7 @@ module.exports = function(RED) {
             RED.nodes.createNode(this, n);
             var node = this;
             node.config = n;
+            node.logger = createLogger(node, node, RED);
             node.connection = false;
             node.items = undefined;
             node.groups = undefined;
@@ -105,17 +107,17 @@ module.exports = function(RED) {
             var node = this;
             node.mqtt.subscribe(node.getTopic('/#'), {'qos':parseInt(node.config.mqtt_qos||0)}, function(err) {
                 if (err) {
-                    node.warn('MQTT Error: Subscribe to "' + node.getTopic('/#'));
+                    node.logger.warning('MQTT Error: Subscribe to "' + node.getTopic('/#'));
                     node.emit('onConnectError', err);
                 } else {
-                    node.log('MQTT Subscribed to: "' + node.getTopic('/#'));
+                    node.logger.notice('MQTT Subscribed to: "' + node.getTopic('/#'));
                 }
             });
         }
 
         unsubscribeMQTT() {
             var node = this;
-            node.log('MQTT Unsubscribe from mqtt topic: ' + node.getTopic('/#'));
+            node.logger.notice('MQTT Unsubscribe from mqtt topic: ' + node.getTopic('/#'));
             node.mqtt.unsubscribe(node.getTopic('/#'), function(err) {});
             node.devices_values = {};
         }
@@ -143,7 +145,7 @@ module.exports = function(RED) {
                     if (success) {
                         callback(withGroups ? [node.devices, node.groups] : node.devices);
                     } else {
-                        node.error('Error: getDevices timeout');
+                        node.logger.error('Error: getDevices timeout');
                         callback(null);
                     }
                 };
@@ -160,7 +162,7 @@ module.exports = function(RED) {
                 timeout = setTimeout(() => finish(false), 60_000);
                 node.mqtt.subscribe(topics, { 'qos': parseInt(node.config.mqtt_qos || 0) }, (err) => {
                     if (err) {
-                        node.warn('MQTT Error: Subscribe to "' + topics.join(', ') + '"');
+                        node.logger.warning('MQTT Error: Subscribe to "' + topics.join(', ') + '"');
                         finish(false);
                     }
                 });
@@ -168,10 +170,10 @@ module.exports = function(RED) {
             }
 
             if (node.devices && (!withGroups || node.groups)) {
-                node.log('Using cached devices')
+                node.logger.notice('Using cached devices')
                 callback(withGroups ? [node.devices, node.groups] : node.devices);
             } else {
-                node.log('Waiting for device list')
+                node.logger.notice('Waiting for device list')
                 let timeout = null
                 let checkAvailability = null
                 new Promise(function(resolve) {
@@ -190,7 +192,7 @@ module.exports = function(RED) {
                     if (node.devices && (!withGroups || node.groups)) {
                         callback(withGroups ? [node.devices, node.groups] : node.devices);
                     } else {
-                        node.error('Error: getDevices timeout')
+                        node.logger.error('Error: getDevices timeout')
                         callback(null)
                     }
                 })
@@ -330,7 +332,7 @@ module.exports = function(RED) {
         restart() {
             let node = this;
             node.mqtt.publish(node.getTopic('/bridge/request/restart'));
-            node.log('Restarting zigbee2mqtt...');
+            node.logger.notice('Restarting zigbee2mqtt...');
         }
 
         setLogLevel(val) {
@@ -344,7 +346,7 @@ module.exports = function(RED) {
                 },
             };
             node.mqtt.publish(node.getTopic('/bridge/request/options'), JSON.stringify(payload));
-            node.log('Log Level was set to: ' + val);
+            node.logger.notice('Log Level was set to: ' + val);
         }
 
         setPermitJoin(val) {
@@ -353,7 +355,7 @@ module.exports = function(RED) {
                 'time': val ? 180 : 0,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/permit_join'), JSON.stringify(payload));
-            node.log('Permit Join was set to: ' + val);
+            node.logger.notice('Permit Join was set to: ' + val);
         }
 
         renameDevice(ieee_address, newName) {
@@ -373,7 +375,7 @@ module.exports = function(RED) {
             };
 
             node.mqtt.publish(node.getTopic('/bridge/request/device/rename'), JSON.stringify(payload));
-            node.log('Rename device ' + ieee_address + ' to ' + newName);
+            node.logger.notice('Rename device ' + ieee_address + ' to ' + newName);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -391,7 +393,7 @@ module.exports = function(RED) {
             };
 
             node.mqtt.publish(node.getTopic('/bridge/device/remove'), JSON.stringify(payload));
-            node.log('Remove device: ' + device.friendly_name);
+            node.logger.notice('Remove device: ' + device.friendly_name);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -409,7 +411,7 @@ module.exports = function(RED) {
             };
 
             node.mqtt.publish(node.getTopic('/bridge/request/device/options'), JSON.stringify(payload));
-            node.log('Set device options for "'+device.friendly_name+'" : '+JSON.stringify(payload));
+            node.logger.notice('Set device options for "'+device.friendly_name+'" : '+JSON.stringify(payload));
 
             return {"success":true,"description":"command sent"};
         }
@@ -430,7 +432,7 @@ module.exports = function(RED) {
                 'from': group.friendly_name, 'to': newName,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/group/rename'), JSON.stringify(payload));
-            node.log('Rename group ' + id + ' to ' + newName);
+            node.logger.notice('Rename group ' + id + ' to ' + newName);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -447,7 +449,7 @@ module.exports = function(RED) {
                 'id': id,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/group/remove'), JSON.stringify(payload));
-            node.log('Remove group: ' + group.friendly_name);
+            node.logger.notice('Remove group: ' + group.friendly_name);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -463,7 +465,7 @@ module.exports = function(RED) {
                 'friendly_name': friendlyName,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/group/add'), JSON.stringify(payload));
-            node.log('Add group: ' + friendlyName);
+            node.logger.notice('Add group: ' + friendlyName);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -484,7 +486,7 @@ module.exports = function(RED) {
                 'group': groupId, 'device': deviceId,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/group/members/remove'), JSON.stringify(payload));
-            node.log('Removing device: ' + device.friendly_name + ' from group: ' + group.friendly_name);
+            node.logger.notice('Removing device: ' + device.friendly_name + ' from group: ' + group.friendly_name);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -506,7 +508,7 @@ module.exports = function(RED) {
                 'device': deviceId,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/group/members/add'), JSON.stringify(payload));
-            node.log('Adding device: ' + device.friendly_name + ' to group: ' + group.friendly_name);
+            node.logger.notice('Adding device: ' + device.friendly_name + ' to group: ' + group.friendly_name);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -530,9 +532,9 @@ module.exports = function(RED) {
                             if (!err) {
                                 client.publish(node.getTopic('/bridge/request/networkmap'), JSON.stringify({'type': 'graphviz', 'routes': false}));
 
-                                node.log('Refreshing map and waiting...');
+                                node.logger.notice('Refreshing map and waiting...');
                             } else {
-                                RED.log.error('zigbee2mqtt: error code #0023: ' + err);
+                                node.logger.systemError('zigbee2mqtt: error code #0023: ' + err);
                                 client.end(true);
                                 reject({'success': false, 'description': 'zigbee2mqtt: error code #0023'});
                             }
@@ -540,7 +542,7 @@ module.exports = function(RED) {
                     });
 
                     client.on('error', function(error) {
-                        RED.log.error('zigbee2mqtt: error code #0024: ' + error);
+                        node.logger.systemError('zigbee2mqtt: error code #0024: ' + error);
                         client.end(true);
                         reject({'success': false, 'description': 'zigbee2mqtt: error code #0024'});
                     });
@@ -563,7 +565,7 @@ module.exports = function(RED) {
                     });
                 } else {
                     node.mqtt.publish(node.getTopic('/bridge/request/networkmap'), JSON.stringify({'type': 'graphviz', 'routes': false}));
-                    node.log('Refreshing map...');
+                    node.logger.notice('Refreshing map...');
 
                     resolve({'success': true, 'svg': node.map});
                 }
@@ -589,6 +591,7 @@ module.exports = function(RED) {
 
         nodeSendSingle(node, opts) {
             clearTimeout(node.cleanTimer);
+            const flowLogger = createLogger(node, this, RED);
 
             opts = Object.assign({
                 'node_send':true,
@@ -608,7 +611,7 @@ module.exports = function(RED) {
             if (item) {
                 payload_all = item.current_values;
                 if (payload_all == null && opts.node_send) {
-                    node.warn('You need to turn on the "retain" option for the device in Zigbee2MQTT to be able to read it before a state change.')
+                    flowLogger.warning('You need to turn on the "retain" option for the device in Zigbee2MQTT to be able to read it before a state change.')
                 }
             } else {
                 node.status({
@@ -813,7 +816,7 @@ module.exports = function(RED) {
             var node = this;
             node.connection = true;
             node.initialStateRequests.clear();
-            node.log('MQTT Connected');
+            node.logger.notice('MQTT Connected');
             node.emit('onMQTTConnect');
             node.subscribeMQTT();
 
@@ -822,29 +825,29 @@ module.exports = function(RED) {
         onMQTTDisconnect(error) {
             var node = this;
             // node.connection = true;
-            node.log('MQTT Disconnected');
-            console.log(error);
+            node.logger.notice('MQTT Disconnected');
+            node.logger.systemError(error);
 
         }
 
         onMQTTError(error) {
             var node = this;
             // node.connection = true;
-            node.log('MQTT Error');
-            console.log(error);
+            node.logger.notice('MQTT Error');
+            node.logger.systemError(error);
 
         }
 
         onMQTTOffline() {
             let node = this;
             // node.connection = true;
-            node.warn('MQTT Offline');
+            node.logger.warning('MQTT Offline');
         }
 
         onMQTTEnd() {
             var node = this;
             // node.connection = true;
-            node.log('MQTT End');
+            node.logger.notice('MQTT End');
             // console.log();
 
         }
@@ -852,7 +855,7 @@ module.exports = function(RED) {
         onMQTTReconnect() {
             var node = this;
             // node.connection = true;
-            node.log('MQTT Reconnect');
+            node.logger.notice('MQTT Reconnect');
             // console.log();
 
         }
@@ -860,7 +863,7 @@ module.exports = function(RED) {
         onMQTTClose() {
             var node = this;
             // node.connection = true;
-            node.log('MQTT Close');
+            node.logger.notice('MQTT Close');
             // console.log(node.connection);
 
         }
@@ -923,14 +926,14 @@ module.exports = function(RED) {
                         payload: availabilityStatus,
                     });
                     if (node.bridge_state !== null || !availabilityStatus) {
-                        node.warn(`Bridge ${availabilityStatus ? 'online' : 'offline'}`)
+                        node.logger.warning(`Bridge ${availabilityStatus ? 'online' : 'offline'}`)
                     }
                     node.bridge_state = availabilityStatus
                 } else if (node.getTopic('/bridge/info') === topic) {
                     try {
                         node.bridge_info = JSON.parse(messageString);
                     } catch (error) {
-                        node.warn("Failed to parse Bridge info JSON:", error);
+                        node.logger.warning("Failed to parse Bridge info JSON:", error);
                         node.bridge_info = null;
                     }
                 }
@@ -1031,7 +1034,7 @@ module.exports = function(RED) {
             node.pendingMQTTMessages.clear();
             node.connection = false;
             node.emit('onClose');
-            node.log('MQTT connection closed');
+            node.logger.notice('MQTT connection closed');
         }
     }
 

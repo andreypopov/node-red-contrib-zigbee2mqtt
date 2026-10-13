@@ -1,3 +1,5 @@
+const createLogger = require('../resources/Zigbee2mqttLogger.js');
+
 module.exports = function(RED) {
     class Zigbee2mqttNodeGet {
         constructor(config) {
@@ -8,6 +10,7 @@ module.exports = function(RED) {
             node.cleanTimer = null;
             node.last_successful_status = {};
             node.server = RED.nodes.getNode(node.config.server);
+            node.logger = createLogger(node, node.server, RED);
             node.status({});
             if (node.server) {
                 node.on('input', function(message_in) {
