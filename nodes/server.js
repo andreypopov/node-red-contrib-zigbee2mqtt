@@ -294,7 +294,7 @@ module.exports = function(RED) {
                     if (received.every(Boolean)) {
                         this.nodeSend(node, opts);
                     } else {
-                        node.warn('Zigbee2MQTT did not return a readable device state; no output was sent.');
+                        node.logger.warning('Zigbee2MQTT did not return a readable device state; no output was sent.');
                     }
                 });
         }
