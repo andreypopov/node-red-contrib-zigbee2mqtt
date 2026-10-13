@@ -32,11 +32,22 @@ function getDeviceGetPayload(device) {
     if (!Array.isArray(exposes)) return null;
 
     const payload = {};
-    for (const expose of exposes) {
-        if (expose && typeof expose.name === 'string' && expose.access && (expose.access & 0b100)) {
-            payload[expose.name] = '';
+    const addReadableExposes = (items) => {
+        for (const expose of items) {
+            if (!expose || typeof expose !== 'object') continue;
+
+            const property = typeof expose.property === 'string' && expose.property.length
+                ? expose.property : expose.name;
+            if (typeof property === 'string' && expose.access && (expose.access & 0b100)) {
+                payload[property] = '';
+            }
+            if (Array.isArray(expose.features)) {
+                addReadableExposes(expose.features);
+            }
         }
-    }
+    };
+    addReadableExposes(exposes);
+
     return Object.keys(payload).length ? payload : null;
 }
 
@@ -303,7 +314,6 @@ module.exports = function(RED) {
             const deviceName = device.friendly_name || device.ieee_address;
             const topic = this.getTopic('/' + deviceName);
             const getPayload = getDeviceGetPayload(device);
-            if (!getPayload) return Promise.resolve(false);
 
             if (!node.pendingDeviceStateRequests) {
                 node.pendingDeviceStateRequests = new Map();
@@ -344,6 +354,11 @@ module.exports = function(RED) {
             node.on('close', onClose);
             timer = setTimeout(() => finish(false), DEVICE_STATE_REQUEST_TIMEOUT_MS);
             if (typeof timer.unref === 'function') timer.unref();
+
+            // Some device exposes have no readable properties. Keep listening for a
+            // spontaneous state update until the same timeout instead of failing
+            // immediately, but only publish /get when there is something to request.
+            if (!getPayload) return request;
 
             try {
                 this.mqtt.publish(
