@@ -44,6 +44,15 @@
         </select>
     </div>
     <div class="form-row">
+        <label for="node-config-input-debug_level" class="l-width"><i class="fa fa-eye"></i> <span data-i18n="label.debug_level"></span></label>
+        <select id="node-config-input-debug_level" class="s-width">
+            <option value="notice" data-i18n="editor.debug_notice"></option>
+            <option value="warning" data-i18n="editor.debug_warning"></option>
+            <option value="error" data-i18n="editor.debug_error"></option>
+        </select>
+    </div>
+    <div class="form-tips" data-i18n="tip.debug_level"></div>
+    <div class="form-row">
         <input type="checkbox" id="node-config-input-usetls" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-config-input-usetls" style="width: auto" data-i18n="label.use-tls"></label>
         <div id="node-config-row-tls" >
@@ -87,6 +96,10 @@
                 value: 0,
                 required: false,
                 validate:RED.validators.number()
+            },
+            debug_level: {
+                value: 'notice',
+                required: true
             },
             tls: {type:"tls-config",required: false},
             usetls: {value: false},

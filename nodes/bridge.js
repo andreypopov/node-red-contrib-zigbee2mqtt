@@ -1,4 +1,5 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
+const createLogger = require('../resources/Zigbee2mqttLogger.js');
 
 module.exports = function(RED) {
 
@@ -12,6 +13,7 @@ module.exports = function(RED) {
             node.cleanTimer = null;
             node.is_subscribed = false;
             node.server = RED.nodes.getNode(node.config.server);
+            node.logger = createLogger(node, node.server, RED);
 
             if (node.server) {
                 node.listener_onMQTTConnect = function() { node.onMQTTConnect(); }
@@ -35,7 +37,7 @@ module.exports = function(RED) {
 
             if (node.server) {
                 node.on('input', function (message_in) {
-                    node.log('Published to mqtt topic: ' + message_in.topic + ' Payload: ' + JSON.stringify(message_in.payload));
+                    node.logger.notice('Published to mqtt topic: ' + message_in.topic + ' Payload: ' + JSON.stringify(message_in.payload));
                     node.server.mqtt.publish(message_in.topic, JSON.stringify(message_in.payload));
                 });
 

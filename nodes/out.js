@@ -1,4 +1,5 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
+const createLogger = require('../resources/Zigbee2mqttLogger.js');
 const OUTPUT_STATE_TIMEOUT = 30_000;
 
 function resolveDeviceTarget(server, key) {
@@ -50,6 +51,7 @@ module.exports = function(RED) {
             node.config = config;
             node.cleanTimer = null;
             node.server = RED.nodes.getNode(node.config.server);
+            node.logger = createLogger(node, node.server, RED);
             node.pendingOutputs = [];
             node.outputEnabled = Number(node.config.outputs) > 0;
 
@@ -129,7 +131,7 @@ module.exports = function(RED) {
                             case 'global': {
                                 RED.util.evaluateNodeProperty(node.config.payload, node.config.payloadType, this, message, function (error, result) {
                                     if (error) {
-                                        node.error(error, message);
+                                        node.logger.error(error, message);
                                     } else {
                                         payload = result;
                                     }
@@ -154,7 +156,7 @@ module.exports = function(RED) {
                                 if (Zigbee2mqttHelper.isJson(node.config.payload)) {
                                     payload = JSON.parse(node.config.payload);
                                 } else {
-                                    node.warn('Incorrect payload. Waiting for valid JSON');
+                                    node.logger.warning('Incorrect payload. Waiting for valid JSON');
                                     node.status({
                                         fill: "red",
                                         shape: "dot",
@@ -301,7 +303,7 @@ module.exports = function(RED) {
                                 if (node.config.optionsValue in message && typeof(message[node.config.optionsValue]) == 'object') {
                                     optionsToSend = message[node.config.optionsValue];
                                 } else {
-                                    node.warn('Options value has invalid format');
+                                    node.logger.warning('Options value has invalid format');
                                 }
                                 break;
 
@@ -309,7 +311,7 @@ module.exports = function(RED) {
                                 if (Zigbee2mqttHelper.isJson(node.config.optionsValue)) {
                                     optionsToSend = JSON.parse(node.config.optionsValue);
                                 } else {
-                                    node.warn('Options value is not valid JSON, ignore: '+node.config.optionsValue);
+                                    node.logger.warning('Options value is not valid JSON, ignore: '+node.config.optionsValue);
                                 }
                                 break;
 
@@ -353,15 +355,15 @@ module.exports = function(RED) {
                                     };
                                     pendingOutput.timeout = setTimeout(function() {
                                         node.removePendingOutput(pendingOutput);
-                                        node.warn(`No state update received from ${device.friendly_name || device.ieee_address} within 30 seconds`);
+                                        node.logger.warning(`No state update received from ${device.friendly_name || device.ieee_address} within 30 seconds`);
                                     }, OUTPUT_STATE_TIMEOUT);
                                     node.pendingOutputs.push(pendingOutput);
                                 } else {
-                                    node.warn('The optional output is available for devices, not groups');
+                                    node.logger.warning('The optional output is available for devices, not groups');
                                 }
                             }
 
-                            node.log('Published to mqtt topic: ' + topic + ' : ' + JSON.stringify(toSend));
+                            node.logger.notice('Published to mqtt topic: ' + topic + ' : ' + JSON.stringify(toSend));
                             node.server.mqtt.publish(topic, JSON.stringify(toSend),
                                 {'qos':parseInt(node.server.config.mqtt_qos||0)},
                                 function(err) {
@@ -369,7 +371,7 @@ module.exports = function(RED) {
                                         if (pendingOutput) {
                                             node.removePendingOutput(pendingOutput);
                                         }
-                                        node.error(err);
+                                        node.logger.error(err);
                                     }
                             });
 

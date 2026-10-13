@@ -9,7 +9,8 @@
         "use-tls": "TLS verwenden",
         "tls-config": "TLS-Konfiguration",
         "flow_label": "Flow-Kennzeichnung",
-        "homeassistant_discovery_prefix": "Home-Assistant-Discovery-Präfix"
+        "homeassistant_discovery_prefix": "Home-Assistant-Discovery-Präfix",
+        "debug_level": "Protokollstufe"
     },
     "placeholder": {
         "name": "Name",
@@ -25,7 +26,8 @@
     },
     "tip": {
         "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden",
-        "homeassistant_discovery_prefix": "Das in Home Assistant konfigurierte MQTT-Discovery-Präfix. Standard: homeassistant."
+        "homeassistant_discovery_prefix": "Das in Home Assistant konfigurierte MQTT-Discovery-Präfix. Standard: homeassistant.",
+        "debug_level": "Mindeststufe für Paketprotokolle. Notice zeigt alle Meldungen; Warning zeigt Warnungen und Fehler; Error zeigt nur Fehler."
     },
     "editor": {
         "groups": "Gruppen",
@@ -36,6 +38,9 @@
         "msg_topic": "msg.topic",
         "complete_payload": "Vollständiger Payload",
         "zigbee2mqtt": "zigbee2mqtt",
-        "homekit": "Apple HomeKit"
+        "homekit": "Apple HomeKit",
+        "debug_notice": "Notice (alle Meldungen)",
+        "debug_warning": "Warning (Warnungen und Fehler)",
+        "debug_error": "Error (nur Fehler)"
     }
 }
