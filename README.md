@@ -37,6 +37,10 @@ devices:
 
 Retained state is the last value published by the device; enabling retain stores a value after the device publishes again.
 
+## Button actions
+
+The `action` field is an event. A device update includes it only when that MQTT message explicitly contains `action`; later battery, linkquality or other updates from the same device do not repeat the previous action. Other cached state properties are preserved across partial updates for Get nodes. Disable the In node's **Filter** for buttons so repeated identical actions are emitted.
+
 ## Filtering In node output
 
 Enable **Filter** to send a message only when the selected value changes. When **Payload output** is set to the complete state, or **Multiple devices** is enabled, **Compare properties** lets you select exposed state properties for the selected device or devices. Changes to other fields such as linkquality will not trigger output, while the emitted message still contains the complete payload. In multiple-device mode, the selected fields are compared separately for each device. Leave the selection empty to compare the full payload.
