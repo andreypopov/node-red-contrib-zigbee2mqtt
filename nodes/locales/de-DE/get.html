@@ -1,0 +1,18 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-get">
+    <p>Gibt den aktuellen Gerätestatus zurück. Im Modus für ein einzelnes Gerät fragt der Knoten lesbare Eigenschaften bei Zigbee2MQTT ab, wenn der angeforderte Status nicht im Cache vorhanden ist, und wartet bis zu 5 Sekunden auf eine aktuelle Antwort. Hat das Gerät keine lesbaren Eigenschaften oder antwortet es nicht, wird keine Nachricht gesendet. Bei Gruppen wird nur der Cache verwendet; Zigbee2MQTT bietet keine Gruppenanfrage per <code>/get</code>.</p>
+    <p>Wenn die Option Mehrere Geräte aktiviert ist, gibt der Knoten sofort nur zwischengespeicherte Zustände zurück, ohne Gerätewerte abzufragen oder auf eine Antwort zu warten. Ein Gerät ohne zwischengespeicherten Zustand bleibt mit <code>payload: null</code> in der Ausgabe.</p>
+    <h3>Konfiguration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">string</span></dt><dd>Wählen Sie einen beliebigen Namen zur Identifizierung des Knotens.</dd>
+        <dt>Server <span class="property-type">object</span></dt><dd>Wählen Sie die zu verwendende Zigbee2MQTT-Serverinstanz.</dd>
+        <dt>Gerät <span class="property-type">string</span></dt><dd>Wählen Sie das Gerät aus.</dd>
+    </dl>
+    <h3>Ausgaben</h3>
+    <h5>Ausgabe</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string</span></dt><dd>Aktueller Wert</dd>
+        <dt>payload_in <span class="property-type">object</span></dt><dd>Eingehender Payload</dd>
+        <dt>payload_raw <span class="property-type">object</span></dt><dd>Vollständiger Payload</dd>
+        <dt>device <span class="property-type">object</span></dt><dd>Geräteinformationen</dd>
+    </dl>
+</script>

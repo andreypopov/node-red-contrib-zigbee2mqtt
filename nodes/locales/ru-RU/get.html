@@ -1,0 +1,18 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-get">
+    <p>Возвращает текущее состояние устройства. В режиме одного устройства, если запрошенного значения нет в кэше узла, он запрашивает у Zigbee2MQTT доступные для чтения свойства и ждёт свежий ответ до 5 секунд. Если у устройства нет читаемых свойств или оно не отвечает, сообщение не отправляется. Для групп используется только кэш: Zigbee2MQTT не поддерживает запрос состояния группы через <code>/get</code>.</p>
+    <p>В режиме нескольких устройств узел сразу возвращает только состояния из кэша, без запросов значений у устройств и ожидания ответа. Устройство без состояния в кэше остаётся в выходном списке с <code>payload: null</code>.</p>
+    <h3>Настройка</h3>
+    <dl class="message-properties">
+        <dt class="optional">Имя <span class="property-type">string</span></dt><dd>Задайте любое имя для узла.</dd>
+        <dt>Сервер <span class="property-type">object</span></dt><dd>Выберите экземпляр сервера Zigbee2MQTT.</dd>
+        <dt>Устройство <span class="property-type">string</span></dt><dd>Выберите устройство.</dd>
+    </dl>
+    <h3>Выходы</h3>
+    <h5>Выход</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string</span></dt><dd>Текущее значение</dd>
+        <dt>payload_in <span class="property-type">object</span></dt><dd>Входной payload</dd>
+        <dt>payload_raw <span class="property-type">object</span></dt><dd>Полный payload</dd>
+        <dt>device <span class="property-type">object</span></dt><dd>Информация об устройстве</dd>
+    </dl>
+</script>

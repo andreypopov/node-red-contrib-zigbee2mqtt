@@ -1,0 +1,18 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-get">
+    <p>Devuelve el estado actual del dispositivo. En el modo de un solo dispositivo, si el estado solicitado no está en la caché del nodo, solicita a Zigbee2MQTT las propiedades que se pueden leer y espera hasta 5 segundos una respuesta actualizada. Si el dispositivo no tiene propiedades legibles o no responde, el nodo no envía ningún mensaje. Para los grupos solo usa el estado en caché; Zigbee2MQTT no ofrece una solicitud de grupo mediante <code>/get</code>.</p>
+    <p>Con Varios dispositivos activado, el nodo devuelve inmediatamente solo los estados en caché, sin solicitar valores a los dispositivos ni esperar una respuesta. Un dispositivo sin estado en caché permanece en la salida con <code>payload: null</code>.</p>
+    <h3>Configuración</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nombre <span class="property-type">string</span></dt><dd>Elige cualquier nombre para identificar el nodo.</dd>
+        <dt>Servidor <span class="property-type">object</span></dt><dd>Elige la instancia del servidor Zigbee2MQTT que se utilizará.</dd>
+        <dt>Dispositivo <span class="property-type">string</span></dt><dd>Selecciona el dispositivo.</dd>
+    </dl>
+    <h3>Salidas</h3>
+    <h5>Salida</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string</span></dt><dd>Valor actual</dd>
+        <dt>payload_in <span class="property-type">object</span></dt><dd>Payload de entrada</dd>
+        <dt>payload_raw <span class="property-type">object</span></dt><dd>Payload completo</dd>
+        <dt>device <span class="property-type">object</span></dt><dd>Información del dispositivo</dd>
+    </dl>
+</script>
