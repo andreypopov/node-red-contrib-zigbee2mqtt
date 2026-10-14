@@ -989,6 +989,10 @@ module.exports = function(RED) {
                                 : {}),
                             ...parsedPayload
                         };
+                        // Button actions are events, so a later state update must not replay them.
+                        if (!Object.prototype.hasOwnProperty.call(parsedPayload, 'action')) {
+                            delete payload.action;
+                        }
                     } else {
                         payload = {};
                         Object.assign(payload, parsedPayload); //clone object for payload output
