@@ -1,5 +1,27 @@
 # Changelog
 
+## [3.1.0] - 2026-10-14
+
+Changes since [3.0.1](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/releases/tag/v3.0.1).
+
+### Added and improved
+
+- Expose In nodes to Home Assistant with an optional switch to pause forwarding ([#182](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/182)).
+- Add optional state output after Out-node commands ([#177](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/177)).
+- Add configurable labels for Server nodes and log visibility levels ([#176](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/176), [#185](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/185)).
+- Let In nodes compare selected properties when filtering state changes ([#179](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/179)).
+
+### Fixed
+
+- Replay MQTT state messages that arrive before the device inventory loads and avoid repeated startup reads for unavailable devices ([#180](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/180), [#181](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/181)).
+- Request missing state for single-device Get nodes while keeping multi-device reads cache-only ([#183](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/183)).
+- Correct In-node retain warnings and property change filtering ([#178](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/178), [#179](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/179)).
+- Clear a cached Zigbee `action` when a later message omits it, so button events are not replayed by telemetry. This corrects the regression introduced by [#169](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/169) ([#186](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/186)).
+
+### Documentation and localization
+
+- Clarify Out-node device topic routing and the Home Assistant pause control ([#175](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/175), [#184](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/184)).
+
 ## [3.0.1] - 2026-10-12
 
 Changes since [3.0.0](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/releases/tag/v3.0.0).

@@ -15,6 +15,16 @@ function addLamp(server, values = { state: 'ON', brightness: 80, battery: 52 }) 
     server.devices_values['zigbee2mqtt/lamp'] = values;
 }
 
+function addButton(server) {
+    server.devices = [{
+        id: 2,
+        friendly_name: 'button',
+        ieee_address: '0x002',
+        power_source: 'Battery',
+        definition: { exposes: [] }
+    }];
+}
+
 test('MQTT connection uses configured authentication and subscribes on connect', () => {
     const { node, client, connection } = createServer({
         mqtt_port: 1884,
@@ -295,6 +305,91 @@ test('partial JSON MQTT updates preserve unchanged properties for GET nodes', (t
     assert.deepEqual(server.devices_values['zigbee2mqtt/lamp'], { state: 'OFF', brightness: 4 });
     server.nodeSend(output, { key: 'lamp' });
     assert.equal(output.messages[1].payload, 'OFF');
+});
+
+test('button input ignores telemetry after earlier actions and accepts repeated live actions', async (t) => {
+    for (const retained of [false, true]) {
+        await t.test(retained ? 'retained action after reconnect' : 'earlier live action', (t) => {
+            const { node: server } = createServer();
+            addButton(server);
+            const input = instantiate(registerIn, 'zigbee2mqtt-in', {
+                server: 'server', device_id: '0x002', state: 'action',
+                filterChanges: false, outputAtStartup: false
+            }, server).node;
+            t.after(() => {
+                clearTimeout(input.cleanTimer);
+                input.emit('close');
+            });
+            const publish = (payload, retain = false) => server.onMQTTMessage(
+                'zigbee2mqtt/button', Buffer.from(JSON.stringify(payload)), { retain }
+            );
+
+            publish({ action: 'single', battery: 90, voltage: 2900 }, retained);
+            const initialCount = retained ? 0 : 1;
+            assert.equal(input.messages.length, initialCount);
+
+            publish({ battery: 90, linkquality: 92 });
+            publish({ voltage: 2900, linkquality: 88 });
+            publish({ battery: 90, linkquality: 88 });
+            assert.equal(input.messages.length, initialCount);
+
+            publish({ action: 'single' });
+            publish({ action: 'single' });
+            assert.equal(input.messages.length, initialCount + 2);
+            assert.deepEqual(input.messages.slice(initialCount).map((msg) => msg.payload), ['single', 'single']);
+
+            publish({ linkquality: 80 });
+            assert.equal(input.messages.length, initialCount + 2);
+        });
+    }
+});
+
+test('full-state and multiple-device inputs omit earlier actions on telemetry updates', (t) => {
+    const { node: server } = createServer();
+    addButton(server);
+    const full = instantiate(registerIn, 'zigbee2mqtt-in', {
+        server: 'server', device_id: '0x002', state: '0', filterChanges: false
+    }, server).node;
+    const multiple = instantiate(registerIn, 'zigbee2mqtt-in', {
+        server: 'server', device_id: ['0x002'], enableMultiple: true, filterChanges: false
+    }, server).node;
+    t.after(() => {
+        for (const input of [full, multiple]) {
+            clearTimeout(input.cleanTimer);
+            input.emit('close');
+        }
+    });
+
+    server.onMQTTMessage('zigbee2mqtt/button', Buffer.from('{"action":"double","battery":90}'));
+    server.onMQTTMessage('zigbee2mqtt/button', Buffer.from('{"linkquality":80}'));
+
+    assert.equal(full.messages.length, 2);
+    assert.equal(full.messages[0].payload.action, 'double');
+    assert.deepEqual(full.messages[1].payload, { battery: 90, linkquality: 80 });
+    assert.deepEqual(full.messages[1].payload_raw, { battery: 90, linkquality: 80 });
+    assert.equal(multiple.messages.length, 2);
+    assert.equal(multiple.messages[0].payload['0x002'].payload.action, 'double');
+    assert.deepEqual(multiple.messages[1].payload['0x002'].payload, { battery: 90, linkquality: 80 });
+    assert.deepEqual(multiple.messages[1].changed.payload, { battery: 90, linkquality: 80 });
+});
+
+test('partial JSON updates clear earlier actions while preserving readable device state', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', brightness: 80, action: 'single' });
+    const output = createFlowNode({ device_id: 'lamp', state: 'state' });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"brightness":4}'));
+    server.nodeSend(output, { key: 'lamp' });
+
+    assert.equal(output.messages[0].payload, 'ON');
+    assert.deepEqual(output.messages[0].payload_raw, { state: 'ON', brightness: 4 });
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"action":"double"}'));
+    server.nodeSend(output, { key: 'lamp' });
+
+    assert.equal(output.messages[1].payload, 'ON');
+    assert.deepEqual(output.messages[1].payload_raw, { state: 'ON', brightness: 4, action: 'double' });
 });
 
 test('set-topic messages are ignored', () => {

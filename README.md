@@ -43,6 +43,10 @@ The Get node returns cached state when available. In single-device mode, if the 
 
 With **Multiple devices** enabled, the node immediately returns only cached states, without requesting device values or waiting for a response. Each selected device found in the inventory remains in `msg.payload`; a device without cached state has `msg.payload[device_id].payload` set to `null`. One unavailable device does not suppress the states of the other selected devices.
 
+## Button actions
+
+The `action` field is an event. A device update includes it only when that MQTT message explicitly contains `action`; later battery, linkquality or other updates from the same device do not repeat the previous action. Other cached state properties are preserved across partial updates for Get nodes. Disable the In node's **Filter** for buttons so repeated identical actions are emitted.
+
 ## Filtering In node output
 
 Enable **Filter** to send a message only when the selected value changes. When **Payload output** is set to the complete state, or **Multiple devices** is enabled, **Compare properties** lets you select exposed state properties for the selected device or devices. Changes to other fields such as linkquality will not trigger output, while the emitted message still contains the complete payload. In multiple-device mode, the selected fields are compared separately for each device. Leave the selection empty to compare the full payload.
