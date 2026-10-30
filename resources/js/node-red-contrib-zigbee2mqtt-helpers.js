@@ -102,7 +102,10 @@ class Zigbee2MqttEditor {
         let html = '';
 
         //groups
-        let groups = data[1];
+        let groups = Array.isArray(data[1]) ? data[1] : [];
+        groups.sort(function(a, b) {
+            return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
+        });
         if (groups.length) {
             html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.groups")});
             html.appendTo(that.getDeviceIdInput());
@@ -117,7 +120,10 @@ class Zigbee2MqttEditor {
         }
 
         //devices
-        let devices = data[0];
+        let devices = Array.isArray(data[0]) ? data[0] : [];
+        devices.sort(function(a, b) {
+            return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
+        });
         if (devices.length) {
             html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.devices")});
             html.appendTo(that.getDeviceIdInput());
