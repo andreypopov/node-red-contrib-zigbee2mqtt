@@ -536,7 +536,9 @@ test('retained device states on MQTT reconnect prevent another initial request',
     publishDevices();
     t.mock.timers.tick(1000);
 
-    assert.deepEqual(client.publications.map(([topic]) => topic), ['zigbee2mqtt/lamp/get']);
+    // ignore the node-red/... online status published on connect
+    const deviceTopics = client.publications.map(([topic]) => topic).filter((topic) => topic.startsWith('zigbee2mqtt/'));
+    assert.deepEqual(deviceTopics, ['zigbee2mqtt/lamp/get']);
     assert.deepEqual(server.devices_values['zigbee2mqtt/lamp'], { state: 'ON' });
 });
 
@@ -700,6 +702,37 @@ test('multiple output builds values and math, suppressing retained startup outpu
         count: 2, avg: 21, min: 20, max: 22, sum: 42
     });
     assert.equal(output.messages[0].payload_in, 'original');
+});
+
+test('publishes a retained Node-RED connection status', () => {
+    const { node, client, connection } = createServer();
+    assert.deepEqual(connection.options.will, {
+        topic: 'node-red/zigbee2mqtt/state',
+        payload: '{"state":"offline"}',
+        qos: 1,
+        retain: true
+    });
+
+    client.emit('connect');
+    assert.deepEqual(client.publications[0].slice(0, 3), [
+        'node-red/zigbee2mqtt/state', '{"state":"online"}', { qos: 1, retain: true }
+    ]);
+
+    let closed = false;
+    node.onClose(false, () => { closed = true; });
+    assert.deepEqual(client.publications.at(-1).slice(0, 2), ['node-red/zigbee2mqtt/state', '{"state":"offline"}']);
+    assert.equal(client.ended, true);
+    assert.equal(closed, true);
+});
+
+test('deleting the server node clears its retained status', () => {
+    const { node, client } = createServer();
+    client.emit('connect');
+
+    node.onClose(true);
+
+    assert.deepEqual(client.publications.at(-1).slice(0, 2), ['node-red/zigbee2mqtt/state', '']);
+    assert.equal(client.ended, true);
 });
 
 test('close unsubscribes and ends the MQTT client', () => {

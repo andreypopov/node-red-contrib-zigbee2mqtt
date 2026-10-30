@@ -65,7 +65,7 @@ module.exports = function(RED) {
             node.bridge_info = null;
             node.bridge_state = null;
             node.map = null;
-            node.on('close', () => this.onClose());
+            node.on('close', (removed, done) => this.onClose(removed, done));
             node.setMaxListeners(0);
 
             //mqtt
@@ -91,6 +91,17 @@ module.exports = function(RED) {
                 password: node.config.mqtt_password || null,
                 clientId: 'NodeRed-' + node.id + '-' + (clientId ? clientId : (Math.random() + 1).toString(36).substring(7)),
             };
+
+            // Last Will: the broker marks Node-RED offline if the main connection drops
+            // without a clean disconnect. Not for the temporary map-refresh client.
+            if (!clientId) {
+                options.will = {
+                    topic: node.getStatusTopic(),
+                    payload: JSON.stringify({state: 'offline'}),
+                    qos: 1,
+                    retain: true
+                };
+            }
 
             let baseUrl = 'mqtt://';
 
@@ -263,6 +274,24 @@ module.exports = function(RED) {
 
         getTopic(path) {
             return this.getBaseTopic() + path;
+        }
+
+        // Retained Node-RED connection status, in the same format as Zigbee2MQTT's bridge/state
+        getStatusTopic() {
+            return 'node-red/' + this.getBaseTopic() + '/state';
+        }
+
+        publishStatus(state, callback) {
+            let node = this;
+            if (!node.mqtt || !node.connection) {
+                if (callback) callback();
+                return;
+            }
+            // state === null clears the retained message
+            let payload = state === null ? '' : JSON.stringify({state: state});
+            node.mqtt.publish(node.getStatusTopic(), payload, {qos: 1, retain: true}, function() {
+                if (callback) callback();
+            });
         }
 
         getDeviceStateTopic(device) {
@@ -817,6 +846,7 @@ module.exports = function(RED) {
             node.connection = true;
             node.initialStateRequests.clear();
             node.logger.notice('MQTT Connected');
+            node.publishStatus('online');
             node.emit('onMQTTConnect');
             node.subscribeMQTT();
 
@@ -1026,7 +1056,7 @@ module.exports = function(RED) {
             }
         }
 
-        onClose() {
+        onClose(removed, done) {
             var node = this;
             if (node.initialStateRequestTimer !== null) {
                 clearTimeout(node.initialStateRequestTimer);
@@ -1034,11 +1064,30 @@ module.exports = function(RED) {
             }
             node.initialStateRequests.clear();
             node.unsubscribeMQTT();
-            node.mqtt.end();
-            node.pendingMQTTMessages.clear();
-            node.connection = false;
-            node.emit('onClose');
-            node.logger.notice('MQTT connection closed');
+
+            let guard = null;
+            let finished = false;
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(guard);
+                // clean disconnect, so the broker doesn't also publish the Last Will
+                node.mqtt.end();
+                node.pendingMQTTMessages.clear();
+                node.connection = false;
+                node.emit('onClose');
+                node.logger.notice('MQTT connection closed');
+                if (typeof done === 'function') done();
+            };
+
+            if (node.connection) {
+                // don't hold up a deploy if the broker doesn't acknowledge in time
+                guard = setTimeout(finish, 2000);
+                // deleted server node: clear its retained status; otherwise mark it offline
+                node.publishStatus(removed ? null : 'offline', finish);
+            } else {
+                finish();
+            }
         }
     }
 

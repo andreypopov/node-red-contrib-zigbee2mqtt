@@ -20,4 +20,6 @@
   '0x00158d0001abcdef':
     retain: true</code></pre>
     <p>Retained data is the last state published by the device. Enabling retain does not create a value until the device publishes again.</p>
+    <h3>Node-RED connection status</h3>
+    <p>The server node publishes its own connection status, retained, to <code>node-red/&lt;base topic&gt;/state</code> (for example <code>node-red/zigbee2mqtt/state</code>), in the same format as Zigbee2MQTT's <code>bridge/state</code>: <code>{"state":"online"}</code> when connected and <code>{"state":"offline"}</code> on shutdown. If Node-RED stops unexpectedly, the broker publishes <code>offline</code> itself (MQTT Last Will). The message is cleared when the server node is deleted.</p>
 </script>
