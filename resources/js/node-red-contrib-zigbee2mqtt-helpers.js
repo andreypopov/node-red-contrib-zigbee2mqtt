@@ -59,16 +59,22 @@ class Zigbee2MqttEditor {
     async build() {
         let that = this;
         // console.log('build : '+(this.refresh?'true':false));
-        await that.buildDeviceIdInput().then(()=>{
+        try {
+            await that.buildDeviceIdInput();
             that.buildDevicePropertyInput();
             that.buildDeviceOptionsInput();
             that.buildFilterPropertiesInput();
-        });
-        that.updateFilterPropertiesVisibility();
-        if (typeof that.config.onBuild === 'function') {
-            that.config.onBuild(that.getDevice());
+            that.updateFilterPropertiesVisibility();
+            if (typeof that.config.onBuild === 'function') {
+                that.config.onBuild(that.getDevice());
+            }
+        } catch (err) {
+            RED.notify('Zigbee2MQTT: ' + (err && err.message ? err.message : err), 'error');
+        } finally {
+            // always (re)bind handlers, otherwise selecting a server does nothing
+            // until the node is saved and reopened
+            that.bind();
         }
-        that.bind();
     }
 
     async buildDeviceIdInput() {
@@ -371,7 +377,8 @@ class Zigbee2MqttEditor {
                 }
             });
             that.refresh = false;
-            that.devices = await response.json();
+            // 404 while the server node has no device list yet (e.g. not connected)
+            that.devices = response.ok ? await response.json() : [[], []];
             return that.devices;
         } else {
             return await new Promise(function(resolve, reject) {

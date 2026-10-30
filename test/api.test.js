@@ -115,7 +115,7 @@ test('admin API handles missing controllers and refresh errors', async () => {
     const missing = makeResponse();
 
     runtime.routes.get('/zigbee2mqtt/getDevices')({ query: { controllerID: 'missing' } }, missing);
-    assert.deepEqual(missing.body, [{}, {}]);
+    assert.deepEqual(missing.body, [[], []]);
 
     const notFound = makeResponse();
     runtime.routes.get('/zigbee2mqtt/restart')({ query: { controllerID: 'missing' } }, notFound);
