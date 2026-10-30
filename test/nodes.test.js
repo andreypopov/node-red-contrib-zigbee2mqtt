@@ -193,6 +193,44 @@ test('output node optionally sends input and updated full device state', (t) => 
     assert.equal(server.listenerCount('onMQTTMessage'), 0);
 });
 
+test('output node can send its output as soon as the command is published', (t) => {
+    const server = makeServer();
+    const group = { friendly_name: 'downstairs' };
+    server.groups = [group];
+    const lamp = server.devices[0];
+    server.getDeviceOrGroupByKey = (key) => ({ lamp, downstairs: group })[key] || null;
+    // like the real client, call back on success too
+    server.mqtt.publish = function(...args) {
+        this.publications.push(args);
+        args.at(-1)(this.publishError || null);
+    };
+    const create = (device_id) => instantiate(registerOut, 'zigbee2mqtt-out', {
+        server: 'server', device_id, payloadType: 'str', payload: 'on',
+        commandType: 'z2m_cmd', command: 'state', outputs: 1, outputMode: 'sent'
+    }, server).node;
+
+    const node = create('lamp');
+    t.after(() => node.emit('close'));
+    node.emit('input', { payload: 'original', extra: 'preserved' });
+    assert.deepEqual(node.messages, [{ payload: true, payload_in: 'original', extra: 'preserved' }]);
+    assert.equal(node.pendingOutputs.length, 0);
+    assert.equal(server.listenerCount('onMQTTMessage'), 0);
+
+    const groupNode = create('downstairs');
+    t.after(() => groupNode.emit('close'));
+    groupNode.emit('input', {});
+    assert.equal(groupNode.messages[0].payload, true);
+
+    server.mqtt.publishError = new Error('publish failed');
+    node.emit('input', {});
+    assert.equal(node.messages.at(-1).payload, false);
+
+    const missing = create('missing');
+    t.after(() => missing.emit('close'));
+    missing.emit('input', {});
+    assert.equal(missing.messages[0].payload, false);
+});
+
 test('output node publishes group commands without an entity-state output', (t) => {
     const server = makeServer();
     const group = { friendly_name: 'downstairs' };

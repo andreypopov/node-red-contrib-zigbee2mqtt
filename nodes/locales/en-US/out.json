@@ -10,8 +10,12 @@
         "transition": "Transition, sec",
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List",
-        "output_enabled": "Output after state update",
-        "output_state": "updated state"
+        "output_enabled": "Output",
+        "output_state": "updated state",
+        "output_mode": "Send output",
+        "output_mode_state": "after the device's state update",
+        "output_mode_sent": "as soon as the command is sent",
+        "output_result": "command sent"
     },
     "placeholder": {
         "name": "Name",

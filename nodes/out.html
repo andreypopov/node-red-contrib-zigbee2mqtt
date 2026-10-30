@@ -55,6 +55,13 @@
         <input type="checkbox" id="node-input-outputEnabled" style="display: inline-block; width: auto; vertical-align: top;">
         <input type="hidden" id="node-input-outputs">
     </div>
+    <div class="form-row">
+        <label for="node-input-outputMode" class="l-width"><i class="fa fa-clock-o"></i> <span data-i18n="label.output_mode"></span></label>
+        <select id="node-input-outputMode" class="s-width">
+            <option value="state" data-i18n="label.output_mode_state"></option>
+            <option value="sent" data-i18n="label.output_mode_sent"></option>
+        </select>
+    </div>
     <!--option description-->
     <div class="form-tips optionsType_description">
         <strong><div data-i18n="help.description"></div></strong>
@@ -121,6 +128,9 @@
             outputs: {
                 value: 0
             },
+            outputMode: {
+                value: 'state'
+            },
             // enableMultiple: {
             //     value: false,
             //     required: true
@@ -131,7 +141,10 @@
         inputs: 1,
         outputs: 0,
         outputLabels: function(index) {
-            return index === 0 ? RED._("node-red-contrib-zigbee2mqtt/out:label.output_state") : null;
+            if (index !== 0) return null;
+            return RED._(this.outputMode === 'sent'
+                ? "node-red-contrib-zigbee2mqtt/out:label.output_result"
+                : "node-red-contrib-zigbee2mqtt/out:label.output_state");
         },
         icon: "icon.png",
         label: function() {
@@ -144,6 +157,7 @@
             const $outputEnabled = $('#node-input-outputEnabled');
             const syncOutputCount = function() {
                 $('#node-input-outputs').val($outputEnabled.is(':checked') ? 1 : 0);
+                $('#node-input-outputMode').closest('.form-row').toggle($outputEnabled.is(':checked'));
             };
 
             $outputEnabled.prop('checked', Number(node.outputs) > 0);

@@ -54,6 +54,9 @@ module.exports = function(RED) {
             node.logger = createLogger(node, node.server, RED);
             node.pendingOutputs = [];
             node.outputEnabled = Number(node.config.outputs) > 0;
+            // 'state': after the device's next state update; 'sent': as soon as the command is published
+            node.outputMode = node.config.outputMode === 'sent' ? 'sent' : 'state';
+            node.stateOutputEnabled = node.outputEnabled && node.outputMode === 'state';
 
             node.removePendingOutput = function(pending) {
                 clearTimeout(pending.timeout);
@@ -64,7 +67,7 @@ module.exports = function(RED) {
             };
 
             node.listener_onMQTTMessage = function(data) {
-                if (!node.outputEnabled || !data || data.retained || typeof data.topic !== 'string') {
+                if (!node.stateOutputEnabled || !data || data.retained || typeof data.topic !== 'string') {
                     return;
                 }
 
@@ -104,12 +107,21 @@ module.exports = function(RED) {
             if (node.server) {
                 node.status({}); //clean
 
-                if (node.outputEnabled) {
+                if (node.stateOutputEnabled) {
                     node.server.on('onMQTTMessage', node.listener_onMQTTMessage);
                 }
 
                 node.on('input', function(message) {
                     clearTimeout(node.cleanTimer);
+
+                    // 'sent' output: a copy of the input with msg.payload true if the command was published
+                    const sendResult = function(success) {
+                        if (!node.outputEnabled || node.outputMode !== 'sent') return;
+                        const result = RED.util.cloneMessage(message);
+                        result.payload_in = message.payload;
+                        result.payload = success;
+                        node.send(result);
+                    };
 
                     let key = node.config.device_id;
                     if ((!key || key === 'msg.topic') && message.topic) {
@@ -343,7 +355,7 @@ module.exports = function(RED) {
 
                             const topic = target.topic || node.server.getTopic('/'+device.friendly_name + '/set');
                             let pendingOutput = null;
-                            if (node.outputEnabled) {
+                            if (node.stateOutputEnabled) {
                                 const isDevice = (node.server.devices || []).includes(device);
                                 if (isDevice) {
                                     const stateTopic = node.server.getTopic('/' + (device.friendly_name || device.ieee_address));
@@ -373,6 +385,7 @@ module.exports = function(RED) {
                                         }
                                         node.logger.error(err);
                                     }
+                                    sendResult(!err);
                             });
 
                             let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/'+device.friendly_name));
@@ -395,6 +408,7 @@ module.exports = function(RED) {
                                 shape: "dot",
                                 text: "node-red-contrib-zigbee2mqtt/out:status.no_payload"
                             });
+                            sendResult(false);
                         }
                     } else {
                         node.status({
@@ -402,6 +416,7 @@ module.exports = function(RED) {
                             shape: "dot",
                             text: "node-red-contrib-zigbee2mqtt/out:status.no_device"
                         });
+                        sendResult(false);
                     }
                 });
 

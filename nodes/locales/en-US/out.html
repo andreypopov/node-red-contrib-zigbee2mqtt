@@ -25,6 +25,8 @@
         <dt>Payload <span class="property-type">string or object</span></dt><dd>Select the payload data source.</dd>
     </dl>
     <h3>Output</h3>
-    <p>Optional. When enabled, adds one output. After publishing a command to a device, the node waits for that device's next live state update, for up to 30 seconds. It sends a copy of the input message with the original <code>msg.payload</code> in <code>msg.payload_in</code>, the full updated state in <code>msg.payload</code> and <code>msg.payload_raw</code>, and the device state topic in <code>msg.topic</code>. If no update arrives, no output is sent. Group commands do not produce output because a group has no single device state.</p>
+    <p>Optional. When enabled, adds one output. <b>Send output</b> chooses when it is sent.</p>
+    <p><b>After the device's state update</b>: after publishing a command to a device, the node waits for that device's next live state update, for up to 30 seconds. It sends a copy of the input message with the original <code>msg.payload</code> in <code>msg.payload_in</code>, the full updated state in <code>msg.payload</code> and <code>msg.payload_raw</code>, and the device state topic in <code>msg.topic</code>. If no update arrives, no output is sent. Group commands do not produce output because a group has no single device state.</p>
     <p>The state update is not correlated with the command; it is simply the next live update from that device.</p>
+    <p><b>As soon as the command is sent</b>: the node sends a copy of the input message straight after publishing, for devices and groups, with the original <code>msg.payload</code> in <code>msg.payload_in</code> and <code>msg.payload</code> set to <code>true</code>, or <code>false</code> if the command could not be published or there was no device or payload. Use this to continue a flow after every command, for example in a loop that repeats a command until the device reports the state you want.</p>
 </script>
