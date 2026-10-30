@@ -17,6 +17,8 @@
         "output": "Výstup",
         "enable_multiple": "Viacero zariadení",
         "enable_multiple_help": "Prijímať aktualizácie z každého vybraného zariadenia.",
+        "payload_as_object": "Payload ako objekt",
+        "payload_as_object_help": "Posielať {vlastnosť: hodnota} aj keď je vybraná iba jedna vlastnosť (obráti voľbu Payload ako objekt servera)",
         "friendly_name": "Názov zariadenia",
         "expose_to_home_assistant": "Zobraziť v Home Assistant",
         "expose_to_home_assistant_help": "Vytvoriť prepínač Home Assistant na pozastavenie tohto vstupného uzla."

@@ -10,7 +10,9 @@
         "tls-config": "Konfigurácia TLS",
         "flow_label": "Označenie toku",
         "homeassistant_discovery_prefix": "Discovery prefix Home Assistant",
-        "debug_level": "Úroveň protokolovania"
+        "debug_level": "Úroveň protokolovania",
+        "payload_as_object": "Payload ako objekt",
+        "payload_as_object_help": "Uzly In a Get posielajú jednu vybranú vlastnosť ako {vlastnosť: hodnota}. Voľba Payload ako objekt v uzle to obráti."
     },
     "placeholder": {
         "name": "Meno",

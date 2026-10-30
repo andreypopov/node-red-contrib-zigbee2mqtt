@@ -18,6 +18,8 @@
         "output": "Ausgabe",
         "enable_multiple": "Mehrere Geräte",
         "enable_multiple_help": "Aktualisierungen von jedem ausgewählten Gerät empfangen.",
+        "payload_as_object": "Objekt-Payload",
+        "payload_as_object_help": "{Eigenschaft: Wert} ausgeben, auch wenn nur eine Eigenschaft ausgewählt ist (kehrt die Objekt-Payload-Option des Servers um)",
         "expose_to_home_assistant": "In Home Assistant anzeigen",
         "expose_to_home_assistant_help": "Einen Home-Assistant-Schalter zum Pausieren dieses Eingangs-Nodes bereitstellen."
     },

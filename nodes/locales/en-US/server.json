@@ -10,7 +10,9 @@
         "tls-config": "TLS configuration",
         "flow_label": "Flow label",
         "homeassistant_discovery_prefix": "Home Assistant discovery prefix",
-        "debug_level": "Log level"
+        "debug_level": "Log level",
+        "payload_as_object": "Object payload",
+        "payload_as_object_help": "In and Get nodes send a single selected property as {property: value}. A node's own Object payload option reverses this."
     },
     "placeholder": {
         "name": "Name",

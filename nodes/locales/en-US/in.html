@@ -6,7 +6,8 @@
         <dt class="optional">Name <span class="property-type">string</span></dt><dd>Choose a name to identify this node.</dd>
         <dt>Server <span class="property-type">object</span></dt><dd>Select the Zigbee2MQTT server to use.</dd>
         <dt>Device <span class="property-type">string</span></dt><dd>Select the device or devices to listen to.</dd>
-        <dt class="optional">Payload output <span class="property-type">string</span></dt><dd>Choose which value to send in <code>msg.payload</code>.</dd>
+        <dt class="optional">Payload output <span class="property-type">string</span></dt><dd>Choose which values to send in <code>msg.payload</code>. One property sends its value; several send an object of them.</dd>
+        <dt class="optional">Object payload <span class="property-type">boolean</span></dt><dd>Send <code>{property: value}</code> even when only one property is selected, so it can be read as <code>msg.payload.property</code>. If the server's Object payload option is on, this works the other way round and sends the bare value.</dd>
         <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Send the current state when the node starts.</dd>
         <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Send only when the selected value changes. Disable this for buttons.</dd>
         <dt class="optional">Compare properties <span class="property-type">array</span></dt><dd>When Filter is enabled, compare only these state properties. The full payload is still output. Leave empty to compare the complete payload.</dd>

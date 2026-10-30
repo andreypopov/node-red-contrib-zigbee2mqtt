@@ -9,7 +9,9 @@
         "legacy_api": "Legacy API",
         "refresh_devices_list": "Refresh Devices List",
         "enable_multiple": "Multiple devices",
-        "enable_multiple_help": "Get values from one or more selected devices."
+        "enable_multiple_help": "Get values from one or more selected devices.",
+        "payload_as_object": "Object payload",
+        "payload_as_object_help": "Output {property: value} even when only one property is selected (reverses the server's Object payload option)"
     },
     "placeholder": {
         "name": "Name",

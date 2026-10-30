@@ -10,7 +10,9 @@
         "tls-config": "Настройка TLS",
         "flow_label": "Метка потока",
         "homeassistant_discovery_prefix": "Префикс обнаружения Home Assistant",
-        "debug_level": "Уровень логирования"
+        "debug_level": "Уровень логирования",
+        "payload_as_object": "Payload объектом",
+        "payload_as_object_help": "Узлы In и Get отправляют одно выбранное свойство как {свойство: значение}. Опция «Payload объектом» в узле меняет это на противоположное."
     },
     "placeholder": {
         "name": "Имя",

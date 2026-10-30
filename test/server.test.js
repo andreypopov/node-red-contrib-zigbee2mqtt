@@ -108,6 +108,42 @@ test('single output reads the selected multi-endpoint state property', (t) => {
     assert.deepEqual(output.messages[0].payload_raw, { state_l1: 'ON', state_l2: 'OFF' });
 });
 
+test('single output collects several selected properties into one payload', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', brightness: 80, battery: 52 });
+    const output = createFlowNode({ device_id: 'lamp', state: ['state', 'battery', 'missing'] });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { key: 'lamp' });
+
+    assert.deepEqual(output.messages[0].payload, { state: 'ON', battery: 52 });
+});
+
+test('single output can send one selected property as an object', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', brightness: 80 });
+    const output = createFlowNode({ device_id: 'lamp', state: ['brightness'], payloadAsObject: true });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { key: 'lamp' });
+
+    assert.deepEqual(output.messages[0].payload, { brightness: 80 });
+});
+
+test('the server Object payload option is reversed by the node option', (t) => {
+    const { node: server } = createServer({ payload_as_object: true });
+    addLamp(server, { state: 'ON', brightness: 80 });
+    const byDefault = createFlowNode({ device_id: 'lamp', state: ['brightness'] });
+    const reversed = createFlowNode({ device_id: 'lamp', state: ['brightness'], payloadAsObject: true });
+    t.after(() => { clearTimeout(byDefault.cleanTimer); clearTimeout(reversed.cleanTimer); });
+
+    server.nodeSend(byDefault, { key: 'lamp' });
+    server.nodeSend(reversed, { key: 'lamp' });
+
+    assert.deepEqual(byDefault.messages[0].payload, { brightness: 80 });
+    assert.equal(reversed.messages[0].payload, 80);
+});
+
 test('single output filters by selected properties and keeps the full payload', (t) => {
     const { node: server } = createServer();
     addLamp(server, { state: 'ON', brightness: 80, linkquality: 20 });

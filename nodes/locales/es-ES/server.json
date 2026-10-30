@@ -10,7 +10,9 @@
         "tls-config": "Configuración TLS",
         "flow_label": "Etiqueta del flujo",
         "homeassistant_discovery_prefix": "Prefijo de descubrimiento de Home Assistant",
-        "debug_level": "Nivel de registro"
+        "debug_level": "Nivel de registro",
+        "payload_as_object": "Payload como objeto",
+        "payload_as_object_help": "Los nodos In y Get envían una única propiedad seleccionada como {propiedad: valor}. La opción Payload como objeto de cada nodo lo invierte."
     },
     "placeholder": {
         "name": "Nombre",

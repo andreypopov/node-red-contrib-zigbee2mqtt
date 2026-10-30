@@ -623,18 +623,38 @@ module.exports = function(RED) {
             }
 
             let useProperty = null;
-            if (node.config.state && node.config.state !== '0') {
-                if (item.homekit && node.config.state.split("homekit_").join('') in item.homekit) {
-                    payload = item.homekit[node.config.state.split("homekit_").join('')];
-                    useProperty = node.config.state.split("homekit_").join('');
-                } else if (payload_all && node.config.state in payload_all) {
-                    payload = text = payload_all[node.config.state];
-                    useProperty = node.config.state;
-                } else {
+            // a single property (string, legacy) or several (array, In node)
+            let states = Array.isArray(node.config.state) ? node.config.state : [node.config.state];
+            states = states.filter((state) => state && state !== '0');
+            if (states.length) {
+                let collected = {};
+                let fromHomekit = false;
+                for (let state of states) {
+                    let homekitKey = state.split("homekit_").join('');
+                    if (item.homekit && homekitKey in item.homekit) {
+                        collected[state] = item.homekit[homekitKey];
+                        useProperty = homekitKey;
+                        fromHomekit = true;
+                    } else if (payload_all && state in payload_all) {
+                        collected[state] = payload_all[state];
+                        useProperty = state;
+                    }
+                }
+                if (!Object.keys(collected).length) {
                     //state was not found in payload (button case)
                     //payload: { last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     //payload: { action: 'single', last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     return;
+                }
+                // the server's Object payload option is the default, a node's option reverses it
+                let asObject = !!node.config.payloadAsObject !== !!this.config.payload_as_object;
+                if (states.length === 1 && !asObject) {
+                    payload = collected[states[0]];
+                    if (!fromHomekit) text = payload;
+                } else {
+                    // several properties, or object output requested: an object with just those keys
+                    payload = collected;
+                    useProperty = null; // a unit suffix only makes sense for a single property
                 }
             } else {
                 payload = payload_all;

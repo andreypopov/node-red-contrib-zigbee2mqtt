@@ -10,7 +10,9 @@
         "tls-config": "TLS 配置",
         "flow_label": "流程标签",
         "homeassistant_discovery_prefix": "Home Assistant Discovery 前缀",
-        "debug_level": "日志级别"
+        "debug_level": "日志级别",
+        "payload_as_object": "对象 payload",
+        "payload_as_object_help": "In 和 Get 节点将单个所选属性输出为 {属性: 值}。节点自身的“对象 payload”选项会反转此设置。"
     },
     "placeholder": {
         "name": "名称",

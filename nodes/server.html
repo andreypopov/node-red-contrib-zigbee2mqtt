@@ -53,6 +53,10 @@
     </div>
     <div class="form-tips" data-i18n="tip.debug_level"></div>
     <div class="form-row">
+        <label for="node-config-input-payload_as_object" class="l-width"><i class="fa fa-code"></i> <span data-i18n="label.payload_as_object"></span></label>
+        <input type="checkbox" id="node-config-input-payload_as_object" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.payload_as_object_help"></span>
+    </div>
+    <div class="form-row">
         <input type="checkbox" id="node-config-input-usetls" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-config-input-usetls" style="width: auto" data-i18n="label.use-tls"></label>
         <div id="node-config-row-tls" >
@@ -100,6 +104,9 @@
             debug_level: {
                 value: 'notice',
                 required: true
+            },
+            payload_as_object: {
+                value: false
             },
             tls: {type:"tls-config",required: false},
             usetls: {value: false},

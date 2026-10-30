@@ -18,6 +18,8 @@
         "output": "Output",
         "enable_multiple": "Multiple devices",
         "enable_multiple_help": "Receive updates from each selected device.",
+        "payload_as_object": "Object payload",
+        "payload_as_object_help": "Output {property: value} even when only one property is selected (reverses the server's Object payload option)",
         "expose_to_home_assistant": "Expose to Home Assistant",
         "expose_to_home_assistant_help": "Expose a Home Assistant switch to pause this input node."
     },

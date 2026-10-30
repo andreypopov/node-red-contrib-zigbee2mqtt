@@ -20,7 +20,11 @@
     </div>
     <div class="form-row">
         <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
-        <select id="node-input-state" class="s-width"  data-i18n="[placeholder]multiselect.complete_payload"></select>
+        <select id="node-input-state" class="s-width" multiple="multiple" data-i18n="[placeholder]multiselect.complete_payload"></select>
+    </div>
+    <div class="form-row">
+        <label for='node-input-payloadAsObject' class="l-width"><i class='fa fa-code'></i> <span data-i18n="label.payload_as_object"></span></label>
+        <input type="checkbox" id="node-input-payloadAsObject" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.payload_as_object_help"></span>
     </div>
     <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
@@ -61,6 +65,9 @@
             enableMultiple: {
                 value: false,
                 required: true
+            },
+            payloadAsObject: {
+                value: false
             }
         },
         inputs: 1,
@@ -97,6 +104,9 @@
                 let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
                 this.device_id = device_id.length ? device_id[0] : null;
             }
+
+            let state = $('#node-input-state').multipleSelect('getSelects', 'value');
+            this.state = state.length ? state : null;
         }
     });
 </script>

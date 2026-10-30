@@ -18,6 +18,8 @@
         "output": "Вывод",
         "enable_multiple": "Несколько устройств",
         "enable_multiple_help": "Получать обновления от каждого выбранного устройства.",
+        "payload_as_object": "Payload объектом",
+        "payload_as_object_help": "Отправлять {свойство: значение}, даже если выбрано одно свойство (меняет на противоположную опцию «Payload объектом» сервера)",
         "expose_to_home_assistant": "Добавить в Home Assistant",
         "expose_to_home_assistant_help": "Добавить переключатель Home Assistant для приостановки этой входной ноды."
     },

@@ -9,7 +9,9 @@
         "legacy_api": "旧版 API",
         "refresh_devices_list": "刷新设备列表",
         "enable_multiple": "多个设备",
-        "enable_multiple_help": "读取一个或多个所选设备的数值。"
+        "enable_multiple_help": "读取一个或多个所选设备的数值。",
+        "payload_as_object": "对象 payload",
+        "payload_as_object_help": "即使只选择一个属性，也输出 {属性: 值}（反转服务器的“对象 payload”选项）"
     },
     "placeholder": {
         "name": "名称",

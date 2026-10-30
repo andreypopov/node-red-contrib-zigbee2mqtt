@@ -152,10 +152,14 @@ class Zigbee2MqttEditor {
             numberDisplayed: 1,
             dropWidth: 320,
             width: 320,
-            single: !(typeof $(this).attr('multiple') !== typeof undefined && $(this).attr('multiple') !== false)
+            single: !that.isMultipleProperties(),
+            placeholder: RED._("node-red-contrib-zigbee2mqtt/server:editor.complete_payload")
         }).multipleSelect('disable');
 
-        that.getDevicePropertyInput().html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/server:editor.complete_payload")+'</option>');
+        if (!that.isMultipleProperties()) {
+            // with several properties allowed, selecting none means the complete payload
+            that.getDevicePropertyInput().html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/server:editor.complete_payload")+'</option>');
+        }
 
         let html = '';
         let device = that.getDevice();
@@ -192,7 +196,14 @@ class Zigbee2MqttEditor {
             });
         }
         that.getDevicePropertyInput().multipleSelect('enable');
-        if (that.getDevicePropertyInput().find('option[value='+that.property+']').length) {
+        if (that.isMultipleProperties()) {
+            let selected = (Array.isArray(that.property) ? that.property : [that.property]).filter((value) => {
+                return value && value !== '0' && that.getDevicePropertyInput().find('option[value="' + value + '"]').length;
+            });
+            // set the <select> itself: the widget was initialised before these options
+            // existed, so setSelects() wouldn't find them; refresh() below picks this up
+            that.getDevicePropertyInput().val(selected);
+        } else if (that.getDevicePropertyInput().find('option[value='+that.property+']').length) {
             that.getDevicePropertyInput().val(that.property);
         } else {
             that.getDevicePropertyInput().val(that.getDevicePropertyInput().find('option').eq(0).attr('value'));
@@ -445,15 +456,21 @@ class Zigbee2MqttEditor {
         let input = this.getFilterPropertiesInput();
         if (!input) return;
 
-        const state = this.isMultiple()
+        let state = this.isMultiple()
             ? '0'
             : (this.getDevicePropertyInput() ? this.getDevicePropertyInput().val() : '0');
+        if (Array.isArray(state)) state = state.length ? state : '0';
         const show = this.getFilterChanges().is(':checked') && (!state || state === '0');
         input.closest('.form-row').toggle(show);
     }
 
     getEnableMultipleCheckbox() {
         return $('#node-input-enableMultiple');
+    }
+
+    isMultipleProperties() {
+        let input = this.getDevicePropertyInput();
+        return !!(input && input.attr('multiple'));
     }
 
     isMultiple() {

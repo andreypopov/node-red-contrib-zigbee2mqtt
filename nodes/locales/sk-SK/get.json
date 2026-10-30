@@ -9,6 +9,8 @@
         "refresh_devices_list": "Obnoviť zoznam zariadení",
         "enable_multiple": "Viacero zariadení",
         "enable_multiple_help": "Získať hodnoty jedného alebo viacerých vybraných zariadení.",
+        "payload_as_object": "Payload ako objekt",
+        "payload_as_object_help": "Posielať {vlastnosť: hodnota} aj keď je vybraná iba jedna vlastnosť (obráti voľbu Payload ako objekt servera)",
         "friendly_name": "Názov zariadenia"
     },
     "placeholder": {

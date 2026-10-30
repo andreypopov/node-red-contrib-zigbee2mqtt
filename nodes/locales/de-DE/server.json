@@ -10,7 +10,9 @@
         "tls-config": "TLS-Konfiguration",
         "flow_label": "Flow-Kennzeichnung",
         "homeassistant_discovery_prefix": "Home-Assistant-Discovery-Präfix",
-        "debug_level": "Protokollstufe"
+        "debug_level": "Protokollstufe",
+        "payload_as_object": "Objekt-Payload",
+        "payload_as_object_help": "In- und Get-Nodes geben eine einzelne ausgewählte Eigenschaft als {Eigenschaft: Wert} aus. Die Objekt-Payload-Option eines Nodes kehrt dies um."
     },
     "placeholder": {
         "name": "Name",
