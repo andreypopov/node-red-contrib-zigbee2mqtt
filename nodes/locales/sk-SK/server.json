@@ -39,6 +39,7 @@
         "complete_payload": "Kompletný payload",
         "zigbee2mqtt": "zigbee2mqtt",
         "homekit": "Apple HomeKit",
+        "common": "Bežné",
         "debug_notice": "Notice (všetky správy)",
         "debug_warning": "Warning (upozornenia a chyby)",
         "debug_error": "Error (iba chyby)"

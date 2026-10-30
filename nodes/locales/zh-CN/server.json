@@ -39,6 +39,7 @@
         "complete_payload": "完整 Payload",
         "zigbee2mqtt": "zigbee2mqtt",
         "homekit": "Apple HomeKit",
+        "common": "通用",
         "debug_notice": "Notice（所有消息）",
         "debug_warning": "Warning（警告和错误）",
         "debug_error": "Error（仅错误）"

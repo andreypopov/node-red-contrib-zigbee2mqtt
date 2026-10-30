@@ -39,6 +39,7 @@
         "complete_payload": "Complete payload",
         "zigbee2mqtt": "zigbee2mqtt",
         "homekit": "Apple Homekit",
+        "common": "Common",
         "debug_notice": "Notice (all messages)",
         "debug_warning": "Warning (warnings and errors)",
         "debug_error": "Error (errors only)"

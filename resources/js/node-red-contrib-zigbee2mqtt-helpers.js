@@ -183,6 +183,20 @@ class Zigbee2MqttEditor {
             });
         }
 
+        if (device) {
+            // Zigbee2MQTT adds these to every device's state, but most devices don't expose them
+            let common = ['last_seen', 'linkquality'].filter((property) => {
+                return !that.getDevicePropertyInput().find('option[value="' + property + '"]').length;
+            });
+            if (common.length) {
+                html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.common")});
+                html.appendTo(that.getDevicePropertyInput());
+                common.forEach((property) => {
+                    $('<option/>', {value: property, text: property}).appendTo(html);
+                });
+            }
+        }
+
         if (device && 'homekit' in device && device.homekit && Object.keys(device.homekit).length) {
             html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.homekit")});
             html.appendTo(that.getDevicePropertyInput());
