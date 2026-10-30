@@ -148,7 +148,7 @@ module.exports = function(RED) {
         publishHomeAssistantDiscovery() {
             let node = this;
             let deviceKey = Array.isArray(node.config.device_id) ? node.config.device_id[0] : node.config.device_id;
-            let device = deviceKey && node.server.devices && node.server.getDeviceByKey(deviceKey);
+            let device = deviceKey && node.server.getDeviceOrGroupByKey(deviceKey);
             let serverName = node.server.config.name || node.server.config.host || 'Zigbee2MQTT';
             let entityName = node.name || (device && device.friendly_name) || `Zigbee2MQTT input ${node.id.slice(0, 8)}`;
             let uniqueId = `node_red_zigbee2mqtt_${node.server.id}_${node.id}`.replace(/[^a-zA-Z0-9_-]/g, '_');

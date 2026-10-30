@@ -72,6 +72,21 @@ test('input node routes matching single-device, availability and multiple-device
     });
 });
 
+test('input node names its Home Assistant switch after the selected group', () => {
+    const server = makeServer();
+    server.id = 'server';
+    server.config.name = 'Home';
+    const room = { id: 2, friendly_name: 'room' };
+    server.getDeviceOrGroupByKey = (key) => key === 2 ? room : null;
+    const { node } = instantiate(registerIn, 'zigbee2mqtt-in', {
+        server: 'server', device_id: 2, exposeToHomeAssistant: true
+    }, server);
+
+    node.publishHomeAssistantDiscovery();
+
+    assert.equal(JSON.parse(server.mqtt.publications.at(-1)[1]).name, 'room');
+});
+
 test('input node restores its last status on reconnect and detaches listeners on close', () => {
     const server = makeServer();
     const { node } = instantiate(registerIn, 'zigbee2mqtt-in', {
