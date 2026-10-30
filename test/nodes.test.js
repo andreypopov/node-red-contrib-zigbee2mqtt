@@ -291,6 +291,23 @@ test('output node publishes numeric tilt commands for Venetian blinds', (t) => {
     assert.equal(server.mqtt.publications[0][1], '{"tilt":45}');
 });
 
+test('output node does not publish values that are not numbers', (t) => {
+    const server = makeServer();
+    for (const [payloadType, payload, command] of [
+        ['str', 'abc', 'tilt'], ['str', '', 'brightness'], ['str', 'x', 'scene'], ['num', 'abc', 'sensitivity']
+    ]) {
+        const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+            server: 'server', device_id: 'lamp', payloadType, payload, commandType: 'z2m_cmd', command
+        }, server);
+        t.after(() => clearTimeout(node.cleanTimer));
+
+        node.emit('input', {});
+
+        assert.equal(node.lastStatus.fill, 'red');
+    }
+    assert.equal(server.mqtt.publications.length, 0);
+});
+
 test('output node preserves floating-point values for device parameters', (t) => {
     const server = makeServer();
     const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {

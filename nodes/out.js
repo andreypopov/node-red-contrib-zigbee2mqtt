@@ -330,6 +330,20 @@ module.exports = function(RED) {
                             return false;
                         }
 
+                        // a value that isn't a number would be published as null
+                        if (typeof payload === 'number' && Number.isNaN(payload)) {
+                            node.logger.warning('Payload is not a number, not sent: ' + command);
+                            node.status({
+                                fill: "red",
+                                shape: "dot",
+                                text: "node-red-contrib-zigbee2mqtt/out:status.no_payload"
+                            });
+                            node.cleanTimer = setTimeout(function(){
+                                node.status({}); //clean
+                            }, 3000);
+                            return false;
+                        }
+
                         if (payload !== undefined) {
                             var toSend = {};
                             var text = '';
