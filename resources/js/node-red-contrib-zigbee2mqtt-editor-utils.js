@@ -98,6 +98,7 @@
             values = expose.values;
         } else if (expose.type === 'binary' && 'value_on' in expose && 'value_off' in expose) {
             values = [expose.value_on, expose.value_off];
+            if ('value_toggle' in expose) values.push(expose.value_toggle);
         }
 
         return [...new Set(values)]
@@ -105,13 +106,62 @@
             .map((value) => ({ value, label: value }));
     }
 
-    function getStateCommandOptions() {
-        return stateCommands.map((command) => ({
-            value: command,
-            label: command === 'state'
-                ? 'State (on|off|toggle|lock|unlock|open|close)'
-                : `State_${command.slice('state_'.length)} (on|off|toggle)`
-        }));
+    // Property a built-in Out command writes, e.g. brightness_move -> brightness
+    function getCommandProperty(command) {
+        if (/^brightness(_|$)/.test(command)) return 'brightness';
+        if (/^color_temp(_|$)/.test(command)) return 'color_temp';
+        if (/^color(_|$)/.test(command)) return 'color';
+        return command;
+    }
+
+    // Keep only the commands the device can use. Devices without exposes (and groups,
+    // which have no definition) and devices none of the commands apply to keep the full
+    // list; `keep` stays listed so a saved command isn't replaced when the editor opens.
+    function filterCommandOptions(commands, device, keep = null) {
+        const exposes = device && device.definition && device.definition.exposes;
+        if (!Array.isArray(exposes) || !exposes.length) return commands;
+
+        const writable = new Set();
+        const types = new Set();
+        function addExpose(expose) {
+            if (!expose || typeof expose !== 'object') return;
+            types.add(expose.type);
+            if (Array.isArray(expose.features)) expose.features.forEach(addExpose);
+            if (typeof expose.property === 'string' && (Number(expose.access) & 0b010)) {
+                writable.add(expose.property);
+            }
+        }
+        exposes.forEach(addExpose);
+
+        const supported = ({ value }) => {
+            if (value === 'lock') return types.has('lock');
+            if (value === 'scene' || value === 'alert') return types.has('light');
+            return writable.has(getCommandProperty(value));
+        };
+        if (!commands.some(supported)) return commands;
+        return commands.filter((command) => command.value === keep || supported(command));
+    }
+
+    // Payload choices for an Out command: the values the device declares, falling back to
+    // the generic state values. State values that match a generic one (ON -> on) use it,
+    // so the labels stay the same and saved nodes keep their value.
+    function getPayloadOptions(device, command) {
+        const generic = getStatePayloadOptions(command);
+        const options = getWritableExposePayloadOptions(device, command);
+        if (!options.length) return generic;
+
+        return options.map((option) => generic.find(({ value }) => value === option.value.toLowerCase()) || option);
+    }
+
+    // With a device, the labels list only the state values it declares
+    function getStateCommandOptions(device = null) {
+        return stateCommands.map((command) => {
+            const name = command === 'state' ? 'State' : `State_${command.slice('state_'.length)}`;
+            const values = getWritableExposePayloadOptions(device, command).length
+                ? getPayloadOptions(device, command).map(({ value }) => value)
+                : getStatePayloadOptions(command).map(({ value }) => value);
+            return { value: command, label: `${name} (${values.join('|')})` };
+        });
     }
 
     function isStateCommand(command) {
@@ -177,6 +227,8 @@
         getComparePropertyOptions,
         getWritableExposeOptions,
         getWritableExposePayloadOptions,
+        filterCommandOptions,
+        getPayloadOptions,
         getStateCommandOptions,
         getStatePayloadOptions,
         getDefaultOutNodeLabel,

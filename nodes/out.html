@@ -213,8 +213,8 @@
             }
 
             function getCommandTypes(device) {
-                const commands = [
-                    ...Zigbee2mqttEditorUtils.getStateCommandOptions(),
+                const allCommands = [
+                    ...Zigbee2mqttEditorUtils.getStateCommandOptions(device),
                     {'value':'brightness', 'label':'Brightness (0..255)'},
                     {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
                     {'value':'brightness_move_onoff', 'label':'Brightness Move On/Off (-255...255|stop)'},
@@ -236,6 +236,8 @@
                     {'value':'lock', 'label':'Lock (lock|unlock|on|off|toggle)'},
                     {'value':'alert', 'label':'Alert'}
                 ];
+                const savedCommand = node.commandType === 'z2m_cmd' ? node.command : null;
+                const commands = Zigbee2mqttEditorUtils.filterCommandOptions(allCommands, device, savedCommand);
                 const commandValues = new Set(commands.map(({value}) => value));
                 const exposeOptions = Zigbee2mqttEditorUtils.getWritableExposeOptions(device)
                     .filter(({value}) => !commandValues.has(value))
@@ -269,9 +271,12 @@
 
             function getPayloadTypes(command, device) {
                 let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                let options = Zigbee2mqttEditorUtils.getStatePayloadOptions(command);
-                if (!options.length) {
-                    options = Zigbee2mqttEditorUtils.getWritableExposePayloadOptions(device, command);
+                // the device's own values where it declares them (e.g. no open/close for a socket)
+                let options = Zigbee2mqttEditorUtils.getPayloadOptions(device, command);
+                // keep a saved value the device doesn't list, so opening the editor doesn't change it
+                if (options.length && command === node.command && node.payloadType === 'z2m_payload' && node.payload
+                    && !options.some(({value}) => value === node.payload)) {
+                    options = [...options, {value: node.payload, label: node.payload}];
                 }
                 if (!options.length && 'color_temp' === command) {
                     options = [
