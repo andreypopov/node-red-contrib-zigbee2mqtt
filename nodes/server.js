@@ -424,15 +424,19 @@ module.exports = function(RED) {
                 return {'error': true, 'description': 'no such group'};
             }
 
-            if (!newName.length) {
+            const friendlyName = node.normalizeGroupName(newName);
+            if (!friendlyName) {
                 return {'error': true, 'description': 'can not be empty'};
+            }
+            if (friendlyName === group.friendly_name) {
+                return {'success': true, 'description': 'name unchanged'};
             }
 
             let payload = {
-                'from': group.friendly_name, 'to': newName,
+                'from': group.friendly_name, 'to': friendlyName,
             };
             node.mqtt.publish(node.getTopic('/bridge/request/group/rename'), JSON.stringify(payload));
-            node.logger.notice('Rename group ' + id + ' to ' + newName);
+            node.logger.notice('Rename group ' + id + ' to ' + friendlyName);
 
             return {'success': true, 'description': 'command sent'};
         }
@@ -454,9 +458,18 @@ module.exports = function(RED) {
             return {'success': true, 'description': 'command sent'};
         }
 
+        // Trimmed group name, or null if it is empty, only slashes, or has control characters
+        normalizeGroupName(name) {
+            const friendlyName = typeof name === 'string' ? name.trim() : '';
+            if (!friendlyName || /^[\/\\]+$/.test(friendlyName) || /[\u0000-\u001F\u007F]/.test(friendlyName)) {
+                return null;
+            }
+            return friendlyName;
+        }
+
         addGroup(name) {
             let node = this;
-            const friendlyName = typeof name === 'string' ? name.trim() : '';
+            const friendlyName = node.normalizeGroupName(name);
             if (!friendlyName) {
                 return {'error': true, 'description': 'can not be empty'};
             }
