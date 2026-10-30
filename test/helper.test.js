@@ -43,6 +43,12 @@ test("payload conversion helpers ignore plain-text MQTT states", () => {
     assert.deepEqual(Helper.formatPayload("ON"), {});
 });
 
+test('payload conversion helpers accept a null color', () => {
+    const payload = { state: 'ON', brightness: 128, color: null };
+    assert.equal(Helper.payload2homekit(payload).Lightbulb.On, true);
+    assert.deepEqual(Helper.formatPayload(payload), {});
+});
+
 test('payload2homekit maps lights, temperature, battery and lock state', () => {
     const result = Helper.payload2homekit({
         state: 'ON',

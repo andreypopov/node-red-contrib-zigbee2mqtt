@@ -214,10 +214,12 @@ class Zigbee2mqttHelper {
 
                 var hue = null;
                 var sat = null;
-                if ("color" in payload && "hue" in payload.color && "saturation" in payload.color) {
+                // color can be null, e.g. before a light has reported one
+                var color = payload.color && typeof payload.color === "object" ? payload.color : {};
+                if ("hue" in color && "saturation" in color) {
                     hue = payload.color.hue;
                     sat = payload.color.saturation;
-                } else if ("color" in payload && "x" in payload.color) {
+                } else if ("x" in color) {
                     var rgb = Zigbee2mqttHelper.cie2rgb(payload.color.x, payload.color.y, payload.brightness);
                     var hsv = Zigbee2mqttHelper.rgb2hsv(rgb.r, rgb.g, rgb.b);
                     hue = hsv.h;
@@ -396,7 +398,7 @@ class Zigbee2mqttHelper {
         if (!payload || typeof payload !== "object" || Array.isArray(payload)) return result;
 
         //convert XY to RGB, HSV
-        if ("color" in payload && "x" in payload.color) {
+        if (payload.color && typeof payload.color === "object" && "x" in payload.color) {
             var bri = "brightness" in payload ? payload.brightness : 255;
             var rgb = Zigbee2mqttHelper.cie2rgb(payload.color.x, payload.color.y, bri);
             var hsv = Zigbee2mqttHelper.rgb2hsv(rgb.r, rgb.g, rgb.b);
