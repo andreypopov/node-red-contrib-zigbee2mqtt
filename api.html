@@ -2,6 +2,18 @@
     $.getScript('resources/node-red-contrib-zigbee2mqtt/js/multiple-select.min.js', function() {
         $.getScript('resources/node-red-contrib-zigbee2mqtt/js/node-red-contrib-zigbee2mqtt-editor-utils.js', function() {
             $.getScript('resources/node-red-contrib-zigbee2mqtt/js/node-red-contrib-zigbee2mqtt-helpers.js');
+            // Nodes drawn before this script arrived used their fallback labels.
+            // Mark them dirty so Node-RED recomputes the labels now.
+            if (window.RED && RED.nodes && RED.view) {
+                let stale = false;
+                RED.nodes.eachNode(function(n) {
+                    if (typeof n.type === 'string' && n.type.indexOf('zigbee2mqtt-') === 0) {
+                        n.dirty = true;
+                        stale = true;
+                    }
+                });
+                if (stale) RED.view.redraw(true);
+            }
         });
     });
 </script>
