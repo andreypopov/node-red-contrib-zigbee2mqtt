@@ -135,6 +135,9 @@
         },
         icon: "icon.png",
         label: function() {
+            if (typeof Zigbee2mqttEditorUtils === 'undefined') {
+                return this.name || this.friendly_name || this.device_id || 'z2m-out';
+            }
             const label = Zigbee2mqttEditorUtils.getDefaultOutNodeLabel(this);
             const server = this.server ? RED.nodes.node(this.server) : null;
             return Zigbee2mqttEditorUtils.appendServerFlowLabel(label, server);
